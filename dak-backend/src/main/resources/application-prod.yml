@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${DAK_DB_URL}
+    username: ${DAK_DB_USERNAME}
+    password: ${DAK_DB_PASSWORD}
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.dak.backend: INFO
+
+app:
+  jwt:
+    secret: ${DAK_JWT_SECRET}

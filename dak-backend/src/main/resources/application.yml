@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: dak-backend
+  profiles:
+    active: dev
+  jackson:
+    property-naming-strategy: LOWER_CAMEL_CASE   # 05 API Spec 2.8: JSON fields use lower camel case
+    default-property-inclusion: non_null
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # schema is owned by Flyway migrations, not Hibernate auto-generation
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: 8080
+  error:
+    include-message: never      # never leak internal error detail; GlobalExceptionHandler owns the response body
+    include-stacktrace: never
+
+app:
+  jwt:
+    access-token-expiry-minutes: 30
+    refresh-token-expiry-days: 14
