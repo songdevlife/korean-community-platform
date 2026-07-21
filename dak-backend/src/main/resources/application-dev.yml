@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/dak_dev
+    username: ${DAK_DB_USERNAME:dak}
+    password: ${DAK_DB_PASSWORD:dak}
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    com.dak.backend: DEBUG
+    org.hibernate.SQL: DEBUG
+
+app:
+  jwt:
+    secret: ${DAK_JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
