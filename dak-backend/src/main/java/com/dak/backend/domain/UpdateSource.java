@@ -26,6 +26,21 @@ public class UpdateSource {
     @Column(name = "source_type", nullable = false, length = 40)
     private String sourceType;
 
+    // Nullable: not every source is RSS-monitored (e.g. sources used only for manual URL import).
+    @Column(name = "rss_feed_url", columnDefinition = "TEXT")
+    private String rssFeedUrl;
+
+    @Column(name = "last_polled_at")
+    private OffsetDateTime lastPolledAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
+
+    public static UpdateSource createNew(String name, String sourceType) {
+        UpdateSource source = new UpdateSource();
+        source.name = name;
+        source.sourceType = sourceType;
+        source.createdAt = OffsetDateTime.now();
+        return source;
+    }
 }

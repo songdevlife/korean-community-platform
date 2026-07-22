@@ -28,12 +28,13 @@ public class AustraliaUpdate {
     @Column(name = "korean_summary", nullable = false, columnDefinition = "TEXT")
     private String koreanSummary;
 
-    // Many-to-one: an update belongs to exactly one category (05 API Spec §8.3 "Updates belong to one category").
+    // Nullable as of V5: an AI-imported draft has no category until an admin assigns one.
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private UpdateCategory category;
 
-    @Column(name = "geographic_scope", nullable = false, length = 50)
+    // Nullable as of V5: same reasoning as category.
+    @Column(name = "geographic_scope", length = 50)
     private String geographicScope;
 
     @Column(nullable = false, length = 20)
@@ -51,6 +52,7 @@ public class AustraliaUpdate {
     @OneToMany(mappedBy = "australiaUpdate", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<UpdateSourceReference> sources = new HashSet<>();
 
+    /** Manual creation by an administrator — category and scope are known up front. */
     public static AustraliaUpdate createNew(String title, String koreanSummary,
                                              UpdateCategory category, String geographicScope) {
         OffsetDateTime now = OffsetDateTime.now();
@@ -59,6 +61,23 @@ public class AustraliaUpdate {
         update.koreanSummary = koreanSummary;
         update.category = category;
         update.geographicScope = geographicScope;
+        update.createdAt = now;
+        update.updatedAt = now;
+        return update;
+    }
+
+    /**
+     * AI-assisted import (05 API Spec §10.5) — category and geographic scope are
+     * deliberately left unset; an administrator must complete these before publishing
+     * (enforced in AdminAustraliaUpdateService.updateStatus()).
+     */
+    public static AustraliaUpdate createDraftFromImport(String title, String draftSummary) {
+        OffsetDateTime now = OffsetDateTime.now();
+        AustraliaUpdate update = new AustraliaUpdate();
+        update.title = title;
+        update.koreanSummary = draftSummary;
+        update.status = "DRAFT";
+        update.aiGenerated = true;
         update.createdAt = now;
         update.updatedAt = now;
         return update;

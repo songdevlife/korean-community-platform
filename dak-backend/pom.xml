@@ -85,6 +85,13 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- HTML parsing for the Australia Updates URL/RSS import pipeline -->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.17.2</version>
+        </dependency>
+        
         <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
