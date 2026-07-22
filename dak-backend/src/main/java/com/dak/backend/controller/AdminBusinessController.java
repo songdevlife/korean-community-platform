@@ -1,15 +1,13 @@
 package com.dak.backend.controller;
 
 import com.dak.backend.common.ApiResponse;
+import com.dak.backend.dto.AdminBusinessSummaryResponse;
 import com.dak.backend.dto.BusinessDetailResponse;
 import com.dak.backend.dto.UpdateBusinessStatusRequest;
 import com.dak.backend.service.AdminBusinessService;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -21,6 +19,15 @@ public class AdminBusinessController {
 
     public AdminBusinessController(AdminBusinessService adminBusinessService) {
         this.adminBusinessService = adminBusinessService;
+    }
+
+    @GetMapping
+    public ApiResponse<Page<AdminBusinessSummaryResponse>> listAll(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        return ApiResponse.ok(adminBusinessService.listAll(status, page, pageSize));
     }
 
     @PatchMapping("/{businessId}/status")

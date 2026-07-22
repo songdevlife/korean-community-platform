@@ -25,12 +25,13 @@ public class BusinessController {
     @GetMapping
     public ApiResponse<Page<BusinessSummaryResponse>> search(
             @RequestParam(required = false) String suburb,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize
     ) {
         Pageable pageable = PageRequest.of(page, Math.min(pageSize, 100));
-        return ApiResponse.ok(businessService.search(suburb, keyword, pageable));
+        return ApiResponse.ok(businessService.search(suburb, category, keyword, pageable));
     }
 
     @GetMapping("/{slug}")

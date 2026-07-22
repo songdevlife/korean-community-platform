@@ -4,6 +4,9 @@ import com.dak.backend.domain.AustraliaUpdate;
 import com.dak.backend.dto.*;
 import com.dak.backend.exception.ApiException;
 import com.dak.backend.repository.AustraliaUpdateRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,19 @@ public class AdminAustraliaUpdateService {
         this.aiSummarizationService = aiSummarizationService;
     }
 
+    @Transactional(readOnly = true)
+    public Page<AdminUpdateSummaryResponse> listAll(String status, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page, Math.min(pageSize, 100));
+        Page<AustraliaUpdate> updates = (status != null)
+                ? australiaUpdateRepository.findByStatus(status, pageable)
+                : australiaUpdateRepository.findAll(pageable);
+
+        return updates.map(u -> new AdminUpdateSummaryResponse(
+                u.getId(), u.getTitle(), u.getStatus(), u.isAiGenerated(),
+                u.getCategory() != null, !u.getSources().isEmpty()
+        ));
+    }
+
     @Transactional
     public ImportUpdateResponse importFromUrl(ImportUpdateRequest request) {
         UrlContentFetcher.FetchedContent content = urlContentFetcher.fetch(request.sourceUrl());
@@ -32,9 +48,6 @@ public class AdminAustraliaUpdateService {
         String title = content.title().isBlank() ? "Untitled (review required)" : content.title();
         String draftSummary = aiSummarizationService.summarize(title, content.bodyText());
 
-        // Per 05 API Spec §10.5 notes: "Imported content must remain a draft until
-        // reviewed" and "Failed imports should not create incomplete public content" —
-        // createDraftFromImport always starts at status=DRAFT, never PUBLISHED.
         AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(title, draftSummary);
         australiaUpdateRepository.save(update);
 
@@ -48,9 +61,6 @@ public class AdminAustraliaUpdateService {
                 .orElseThrow(() -> ApiException.notFound("Australia Update not found."));
 
         if ("PUBLISHED".equals(request.status())) {
-            // Per 04 Database Design §12.5: publication requires a source, plus (as of V5)
-            // category and geographic scope must have been filled in by an administrator
-            // since AI-imported drafts start without them.
             if (update.getSources().isEmpty()) {
                 throw ApiException.badRequest("MISSING_SOURCE",
                         "An Australia Update must have at least one source before it can be published.");

@@ -11,6 +11,8 @@ import java.util.UUID;
 
 public interface AustraliaUpdateRepository extends JpaRepository<AustraliaUpdate, UUID> {
 
+    Page<AustraliaUpdate> findByStatus(String status, Pageable pageable);
+
     @Query("""
             SELECT u FROM AustraliaUpdate u
             WHERE u.status = :status
