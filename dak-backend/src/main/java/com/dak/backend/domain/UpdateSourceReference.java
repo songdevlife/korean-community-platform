@@ -37,14 +37,24 @@ public class UpdateSourceReference {
     @Column(name = "accessed_at", nullable = false)
     private OffsetDateTime accessedAt;
 
+    @Column(name = "imported_via_poll", nullable = false)
+    private boolean importedViaPoll = false;
+
     public static UpdateSourceReference createNew(AustraliaUpdate update, UpdateSource source,
-                                                   String sourceUrl, String sourceTitle) {
+                String sourceUrl, String sourceTitle) {
         UpdateSourceReference ref = new UpdateSourceReference();
         ref.australiaUpdate = update;
         ref.source = source;
         ref.sourceUrl = sourceUrl;
         ref.sourceTitle = sourceTitle;
         ref.accessedAt = OffsetDateTime.now();
+        return ref;
+    }
+
+        public static UpdateSourceReference createFromPoll(AustraliaUpdate update, UpdateSource source,
+                    String sourceUrl, String sourceTitle) {
+        UpdateSourceReference ref = createNew(update, source, sourceUrl, sourceTitle);
+        ref.importedViaPoll = true;
         return ref;
     }
 }
