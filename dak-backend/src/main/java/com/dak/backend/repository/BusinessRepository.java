@@ -22,12 +22,16 @@ public interface BusinessRepository extends JpaRepository<Business, UUID> {
             SELECT b FROM Business b
             WHERE b.status = :status
               AND (:suburb IS NULL OR b.suburb = :suburb)
+              AND (:category IS NULL OR EXISTS (
+                    SELECT 1 FROM b.categories c WHERE c.name = :category
+                  ))
               AND (:keyword IS NULL OR
                    LOWER(b.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR
                    LOWER(b.shortDescription) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')))
             """)
     Page<Business> search(@Param("status") String status,
                            @Param("suburb") String suburb,
+                           @Param("category") String category,
                            @Param("keyword") String keyword,
                            Pageable pageable);
 }

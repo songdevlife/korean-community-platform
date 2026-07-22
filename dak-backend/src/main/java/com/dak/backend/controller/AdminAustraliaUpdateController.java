@@ -1,12 +1,10 @@
 package com.dak.backend.controller;
 
 import com.dak.backend.common.ApiResponse;
-import com.dak.backend.dto.AustraliaUpdateDetailResponse;
-import com.dak.backend.dto.ImportUpdateRequest;
-import com.dak.backend.dto.ImportUpdateResponse;
-import com.dak.backend.dto.UpdateAustraliaUpdateStatusRequest;
+import com.dak.backend.dto.*;
 import com.dak.backend.service.AdminAustraliaUpdateService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +18,15 @@ public class AdminAustraliaUpdateController {
 
     public AdminAustraliaUpdateController(AdminAustraliaUpdateService adminAustraliaUpdateService) {
         this.adminAustraliaUpdateService = adminAustraliaUpdateService;
+    }
+
+    @GetMapping
+    public ApiResponse<Page<AdminUpdateSummaryResponse>> listAll(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        return ApiResponse.ok(adminAustraliaUpdateService.listAll(status, page, pageSize));
     }
 
     @PostMapping("/import")

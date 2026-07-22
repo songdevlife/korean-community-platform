@@ -34,8 +34,8 @@ public class BusinessService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BusinessSummaryResponse> search(String suburb, String keyword, Pageable pageable) {
-        return businessRepository.search("PUBLISHED", suburb, keyword, pageable)
+    public Page<BusinessSummaryResponse> search(String suburb, String category, String keyword, Pageable pageable) {
+        return businessRepository.search("PUBLISHED", suburb, category, keyword, pageable)
                 .map(this::toSummary);
     }
 
@@ -71,8 +71,6 @@ public class BusinessService {
         business.setLatitude(request.latitude());
         business.setLongitude(request.longitude());
         business.setCategories(categories);
-        // MVP: no moderation queue yet, so new listings start as PENDING for manual admin review
-        // rather than going straight to PUBLISHED (05 API Spec §10.2 admin publish workflow).
         business.setStatus("PENDING");
 
         businessRepository.save(business);
