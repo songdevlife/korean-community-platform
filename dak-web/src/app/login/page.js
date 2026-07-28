@@ -146,11 +146,14 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Disabled until the password reset endpoint is implemented (see doc 07) */}
+          {/* Password reset needs email delivery, which does not exist yet.
+              Stated plainly rather than shown as an inert "Forgot password?",
+              which tells someone who cannot get in nothing at all. Restore the
+              link here when the reset endpoint and mail delivery land. */}
           {mode === 'login' && (
-            <span className="block text-right text-[13px] text-muted cursor-not-allowed -mt-[6px] mb-5">
-              Forgot password?
-            </span>
+            <p className="text-right text-[13px] text-faint -mt-[6px] mb-5">
+              Password reset is coming soon.
+            </p>
           )}
 
           {error && <p className="text-adelaide-red text-[13px] mb-3">{error}</p>}

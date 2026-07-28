@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getBusinesses, getGuides, getUpdates } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import SearchForm from '@/components/SearchForm';
+import SearchLogger from '@/components/SearchLogger';
 import { BusinessResultRow, ArticleResultRow } from '@/components/SearchResultRow';
 import { timeAgo, isNew } from '@/utils/date';
 
@@ -52,6 +53,7 @@ export default async function SearchPage({ searchParams }) {
 
   return (
     <PageShell>
+      <SearchLogger keyword={keyword} resultCount={totalCount} />
       <h1 className="text-xl font-bold text-snow mb-4">Search</h1>
 
       <SearchForm keyword={keyword} activeType={activeType} />

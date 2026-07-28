@@ -102,7 +102,7 @@ export default async function HomePage() {
           <p className="text-muted text-sm">No businesses listed yet.</p>
         </div>
       ) : (
-        <div className="grid gap-3 grid-cols-3">
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
           {businesses.map((business) => (
             <Link
               key={business.id}

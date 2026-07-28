@@ -64,13 +64,24 @@ public class GuideService {
                 g.getSummary(),
                 g.getBody(),
                 toCategory(g),
-                // TODO: replace with a display name once User exposes one —
-                // an email address should not appear in a public response.
-                g.getAuthor() == null ? null : g.getAuthor().getEmail(),
+                authorName(g),
                 g.getStatus(),
                 g.getPublishedAt(),
                 g.getCreatedAt(),
                 g.getUpdatedAt());
+    }
+
+    /**
+     * The author's display name, never their email address. This response is
+     * served to anyone through the public /guides/{slug} endpoint, so an email
+     * here is an unauthenticated disclosure of an account holder's address —
+     * and for guides written by staff, of an administrator's.
+     *
+     * displayName is non-null in the schema, so the fallback only covers a
+     * guide whose author row is missing entirely.
+     */
+    private static String authorName(Guide g) {
+        return g.getAuthor() == null ? null : g.getAuthor().getDisplayName();
     }
 
     private static GuideCategoryResponse toCategory(Guide g) {

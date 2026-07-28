@@ -35,6 +35,12 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/v1/health").permitAll()
                 .requestMatchers("/sitemap.xml").permitAll()
+                // Search logging is open because most searches happen before
+                // anyone signs in, and those are the ones worth knowing about.
+                // Write-only: there is no GET on this path, so the log cannot be
+                // read back through the API.
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/search-logs")
+                        .permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET,
                         "/api/v1/business-categories", "/api/v1/business-categories/**").permitAll()
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
