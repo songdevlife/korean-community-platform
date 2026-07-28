@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, AlertTriangle, Check, X, Archive,
-  Pencil, ExternalLink, Sparkles, ChevronDown, Undo2, Plus,
+  Pencil, ExternalLink, Sparkles, ChevronDown, Undo2, Plus, RefreshCw,
 } from 'lucide-react';
 import {
   fetchPendingBusinesses,
@@ -15,6 +15,7 @@ import {
   fetchArchivedUpdates,
   updateUpdateStatus,
   updateUpdateMetadata,
+  triggerRssPoll,
   fetchDraftGuides,
   fetchPublishedGuides,
   updateGuideStatus,
@@ -94,6 +95,11 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({ title: '', koreanSummary: '' });
   const [saving, setSaving] = useState(false);
+
+  // A poll runs for minutes and reports no progress, so the only honest
+  // feedback is that it is still going, then that the queue reloaded.
+  const [polling, setPolling] = useState(false);
+  const [pollNotice, setPollNotice] = useState('');
 
   function cancelEditing() {
     setEditingId(null);
@@ -186,6 +192,40 @@ export default function AdminPage() {
   function changeArchivedPage(page) {
     setArchivedPage(page);
     loadArchived(page);
+  }
+  // Reloads the draft queue from page one afterwards: new imports are the
+  // newest rows, so an admin sitting on page three would see nothing change.
+  // The archive is invalidated too, because rejected articles are archived
+  // rather than discarded.
+  async function handlePoll() {
+    if (polling) return;
+
+    setActionError('');
+    setPollNotice('');
+    setPolling(true);
+
+    try {
+      await triggerRssPoll();
+
+      setArchived([]);
+      setArchivedPage(0);
+      setArchiveOpen(false);
+
+      if (draftPage !== 0) {
+        setDraftPage(0);
+      } else {
+        await loadData();
+      }
+
+      setPollNotice('Poll finished. Anything new is at the top of the draft queue.');
+    } catch (err) {
+      setActionError(
+        err.response?.data?.error?.message ||
+          'The poll failed or timed out. It may still be running on the server, so reload this page in a few minutes before running it again.'
+      );
+    } finally {
+      setPolling(false);
+    }
   }
 
   async function handleBusinessAction(businessId, status) {
@@ -307,7 +347,9 @@ export default function AdminPage() {
 
   const secondaryBtn =
     'flex items-center gap-1.5 text-[13px] px-3 py-1.5 rounded-lg ' +
-    'border border-border-dark text-muted hover:text-snow hover:border-faint transition-colors';
+    'border border-border-dark text-muted hover:text-snow hover:border-faint transition-colors ' +
+    'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-muted ' +
+    'disabled:hover:border-border-dark';
 
   const selectClass =
     'text-[13px] px-2.5 py-1.5 rounded-lg bg-surface border border-border-dark ' +
@@ -366,11 +408,42 @@ export default function AdminPage() {
       {actionError && <p className="text-adelaide-red text-[13px] mb-4">{actionError}</p>}
 
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-snow mb-3">
-          Pending businesses <span className="text-muted font-normal">({businessTotal})</span>
-        </h2>
+        {/* The poll control sits with the queue it fills, so the thing it
+            changes is directly below it. */}
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <h2 className="text-lg font-semibold text-snow">
+            Draft updates <span className="text-muted font-normal">({draftTotal})</span>
+          </h2>
+          <button
+            onClick={handlePoll}
+            disabled={polling}
+            className={`${secondaryBtn} shrink-0`}
+          >
+            <RefreshCw
+              size={14}
+              strokeWidth={2}
+              className={polling ? 'animate-spin' : undefined}
+            />
+            {polling ? 'Polling...' : 'Poll feeds'}
+          </button>
+        </div>
 
-        {businesses.length === 0 ? (
+        {/* Said before the wait, not after: a control that appears to do
+            nothing for minutes invites a second click, and a second poll
+            imports everything twice. */}
+        {polling && (
+          <p className="text-[13px] text-muted mb-3">
+            Reading the feeds and drafting summaries. This takes a few minutes.
+            Leave the page open and do not press the button again.
+          </p>
+        )}
+
+        {!polling && pollNotice && (
+          <p className="text-[13px] text-muted mb-3">{pollNotice}</p>
+        )}
+
+        {updates.length === 0 ? (
+
           <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
             <p className="text-muted text-sm">Nothing awaiting review.</p>
           </div>

@@ -66,6 +66,21 @@ export async function updateUpdateMetadata(updateId, changes) {
 }
 
 /**
+ * Runs the RSS feeds once, now. Scheduled polling stays disabled while the
+ * backend runs on a local machine - nothing polls while the machine is off, and
+ * every restart would fire the schedule again - so this is the only way new
+ * articles arrive.
+ *
+ * Slow by nature: each article costs one model call for the relevance decision
+ * and the Korean draft, so a run over a few dozen articles takes minutes. The
+ * caller is responsible for showing that it is still working.
+ */
+export async function triggerRssPoll() {
+  const response = await apiClient.post('/admin/australia-updates/poll-now');
+  return response.data.data;
+}
+
+/**
  * Edits a guide. Send only the fields being changed; omitted fields are left
  * as they are. Note that changing slug alters the public URL.
  */
