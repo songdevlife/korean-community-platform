@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.UUID;
 
 public record CreateBusinessRequest(
-        @NotBlank @Size(max = 200) String name,
-        @Size(max = 300) String shortDescription,
+        @NotBlank(message = "Enter the business name.")
+        @Size(max = 200, message = "Business name must be 200 characters or fewer.")
+        String name,
+
+        @Size(max = 300, message = "Short description must be 300 characters or fewer.")
+        String shortDescription,
         String description,
         String phone,
         String email,
@@ -20,7 +24,9 @@ public record CreateBusinessRequest(
         String postcode,
         Double latitude,
         Double longitude,
-        @NotEmpty List<UUID> categoryIds,
+        @NotEmpty(message = "Choose at least one category.")
+        List<UUID> categoryIds,
         // Optional. MVP accepts external URLs rather than uploads; see V9 migration.
-        @Size(max = 10) List<String> imageUrls
+        @Size(max = 10, message = "You can add up to 10 images.")
+        List<String> imageUrls
 ) {}

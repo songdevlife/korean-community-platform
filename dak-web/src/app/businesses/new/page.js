@@ -8,6 +8,24 @@ import { fetchBusinessCategories, createBusiness } from '@/api/businesses';
 import { useAuth } from '@/context/AuthContext';
 import PageShell from '@/components/PageShell';
 
+// The API names fields as the DTO declares them; the inputs carry prefixed ids
+// to avoid colliding with anything else on the page. This is the join between
+// the two, and it has to be updated when either side changes.
+const FIELD_IDS = {
+  name: 'b-name',
+  shortDescription: 'b-short',
+  description: 'b-desc',
+  phone: 'b-phone',
+  email: 'b-email',
+  websiteUrl: 'b-website',
+  addressLine: 'b-address',
+  suburb: 'b-suburb',
+  state: 'b-state',
+  postcode: 'b-postcode',
+};
+
+/**
+ * Business submission. A client component in full: form state throughout, and
 /**
  * Business submission. A client component in full: form state throughout, and
  * nothing here a crawler should see — a listing becomes public through the
@@ -32,6 +50,10 @@ export default function BusinessCreatePage() {
   const [categoryIds, setCategoryIds] = useState([]);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
+  // Field-level messages keyed by field name. The API returns these in
+  // error.details; this form is long enough that a single line at the top could
+  // sit several screens away from the input it refers to.
+  const [fieldErrors, setFieldErrors] = useState({});
   const [busy, setBusy] = useState(false);
   // Holds the submitted listing once accepted. A submission goes to PENDING and
   // so appears nowhere public — redirecting to the directory would show the
@@ -56,6 +78,7 @@ export default function BusinessCreatePage() {
 
   async function handleSubmit() {
     setError('');
+    setFieldErrors({});
     setBusy(true);
     try {
       // Empty strings are sent as null: the backend treats absent and blank
@@ -70,7 +93,25 @@ export default function BusinessCreatePage() {
       const created = await createBusiness(payload);
       setSubmitted(created ?? { name: form.name });
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Could not submit this listing.');
+      const apiError = err.response?.data?.error;
+      const details = apiError?.details ?? [];
+
+      if (details.length > 0) {
+        setFieldErrors(
+          Object.fromEntries(details.map((d) => [d.field, d.message]))
+        );
+        setError('');
+
+        // The submit button sits at the bottom of a long form, so the field
+        // that failed is often above the fold. Marking it is not enough if
+        // nobody scrolls back up to see the mark.
+        const firstField = details[0].field;
+        const target =
+          document.getElementById(FIELD_IDS[firstField] ?? '') ?? null;
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        setError(apiError?.message || 'Could not submit this listing.');
+      }
     } finally {
       setBusy(false);
     }
@@ -238,6 +279,9 @@ export default function BusinessCreatePage() {
             maxLength={200}
             className={fieldClass}
           />
+          {fieldErrors.name && (
+            <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.name}</p>
+          )}
         </div>
 
         <div>
@@ -261,6 +305,9 @@ export default function BusinessCreatePage() {
               </button>
             ))}
           </div>
+          {fieldErrors.categoryIds && (
+            <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.categoryIds}</p>
+          )}
         </div>
 
         <div>
@@ -275,6 +322,9 @@ export default function BusinessCreatePage() {
             maxLength={300}
             className={fieldClass}
           />
+          {fieldErrors.shortDescription && (
+            <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.shortDescription}</p>
+          )}
         </div>
 
         <div>

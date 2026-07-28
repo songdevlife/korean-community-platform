@@ -10,9 +10,18 @@ import java.util.UUID;
  * so an admin should supply an English slug for search visibility.
  */
 public record CreateGuideRequest(
-        @NotBlank @Size(max = 300) String title,
-        @Size(max = 320) String slug,
-        @Size(max = 500) String summary,
-        @NotBlank String body,
+        @NotBlank(message = "Enter a title.")
+        @Size(max = 300, message = "Title must be 300 characters or fewer.")
+        String title,
+
+        @Size(max = 320, message = "Slug must be 320 characters or fewer.")
+        String slug,
+
+        @Size(max = 500, message = "Summary must be 500 characters or fewer.")
+        String summary,
+
+        @NotBlank(message = "Enter the guide body.")
+        String body,
+
         UUID categoryId
 ) {}

@@ -20,6 +20,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
+  // Field-level messages keyed by field name. The API already returns these in
+  // error.details; showing only the summary told someone their form was wrong
+  // without saying which part.
+  const [fieldErrors, setFieldErrors] = useState({});
   const [busy, setBusy] = useState(false);
 
   const { saveSession } = useAuth();
@@ -28,6 +32,7 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    setFieldErrors({});
     setBusy(true);
     try {
       const authResponse =
@@ -37,8 +42,19 @@ export default function LoginPage() {
       saveSession(authResponse);
       router.push('/');
     } catch (err) {
-      const message = err.response?.data?.error?.message || 'Something went wrong.';
-      setError(message);
+      const apiError = err.response?.data?.error;
+      const details = apiError?.details ?? [];
+
+      if (details.length > 0) {
+        // Each field carries its own message, so the summary above the button
+        // would only repeat what is already beside the input.
+        setFieldErrors(
+          Object.fromEntries(details.map((d) => [d.field, d.message]))
+        );
+        setError('');
+      } else {
+        setError(apiError?.message || 'Something went wrong.');
+      }
       setBusy(false);
     }
   }
@@ -112,6 +128,9 @@ export default function LoginPage() {
                 className={inputClass}
                 required
               />
+              {fieldErrors.displayName && (
+                <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.displayName}</p>
+              )}
             </div>
           )}
 
@@ -127,6 +146,9 @@ export default function LoginPage() {
               className={inputClass}
               required
             />
+            {fieldErrors.email && (
+              <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.email}</p>
+            )}
           </div>
 
           <div className="mb-[18px]">
@@ -144,6 +166,13 @@ export default function LoginPage() {
               className={inputClass}
               required
             />
+            {fieldErrors.password && (
+              <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.password}</p>
+            )}
+            {/* Stated up front rather than only after a rejected attempt. */}
+            {mode === 'signup' && !fieldErrors.password && (
+              <p className="text-faint text-[12px] mt-1.5">At least 8 characters.</p>
+            )}
           </div>
 
           {/* Password reset needs email delivery, which does not exist yet.

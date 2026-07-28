@@ -9,6 +9,15 @@ import { createGuide } from '@/api/admin';
 import { useAuth } from '@/context/AuthContext';
 import PageShell from '@/components/PageShell';
 
+// Joins the field names the API returns to the ids the inputs carry.
+const FIELD_IDS = {
+  title: 'new-title',
+  slug: 'new-slug',
+  summary: 'new-summary',
+  body: 'new-body',
+  categoryId: 'new-category',
+};
+
 /**
  * Guide authoring. Admin-only and entirely a client component — a long form
  * with no reason to be crawlable.
@@ -26,6 +35,7 @@ export default function GuideCreatePage() {
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [busy, setBusy] = useState(false);
 
   const isAdmin = user?.role === 'ADMINISTRATOR';
@@ -39,6 +49,7 @@ export default function GuideCreatePage() {
 
   async function handleSubmit() {
     setError('');
+    setFieldErrors({});
     setBusy(true);
     try {
       // categoryId is a UUID on the backend — an empty string would fail
@@ -54,7 +65,21 @@ export default function GuideCreatePage() {
       // The admin queue is where it can be reviewed and published.
       router.push('/admin');
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Could not create the guide.');
+      const apiError = err.response?.data?.error;
+      const details = apiError?.details ?? [];
+
+      if (details.length > 0) {
+        setFieldErrors(
+          Object.fromEntries(details.map((d) => [d.field, d.message]))
+        );
+        setError('');
+        // The body field is tall enough that the submit button can sit well
+        // below whichever field failed.
+        const target = document.getElementById(FIELD_IDS[details[0].field] ?? '');
+        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        setError(apiError?.message || 'Could not create the guide.');
+      }
       setBusy(false);
     }
   }
@@ -128,6 +153,9 @@ export default function GuideCreatePage() {
             maxLength={300}
             className={fieldClass}
           />
+          {fieldErrors.title && (
+            <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.title}</p>
+          )}
         </div>
 
         <div>
@@ -143,6 +171,9 @@ export default function GuideCreatePage() {
             placeholder="korean-licence-transfer-south-australia-2026"
             className={`${fieldClass} placeholder:text-faint`}
           />
+          {fieldErrors.slug && (
+            <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.slug}</p>
+          )}
         </div>
 
         <div>
@@ -177,6 +208,9 @@ export default function GuideCreatePage() {
             className={`${fieldClass} resize-y leading-relaxed`}
           />
           <p className="text-[11px] text-faint mt-1">{draft.summary.length}/500</p>
+          {fieldErrors.summary && (
+            <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.summary}</p>
+          )}
         </div>
 
         <div>
@@ -190,8 +224,11 @@ export default function GuideCreatePage() {
             onChange={(e) => setDraft({ ...draft, body: e.target.value })}
             rows={24}
             className={`${fieldClass} resize-y leading-relaxed font-mono text-[13px]`}
-          />
-        </div>
+            />
+            {fieldErrors.body && (
+              <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.body}</p>
+            )}
+          </div>
 
         <div className="flex gap-2 mt-1">
           <button
