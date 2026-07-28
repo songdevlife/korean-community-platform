@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { getGuides, getBusinesses, getBusinessCategories, getUpdates } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import GuideCard from '@/components/GuideCard';
@@ -37,6 +37,24 @@ export default async function HomePage() {
 
   return (
     <PageShell aside={<UpdatesSidePanel updates={updates} />}>
+      {/* Mobile only. The sidebar carries the mark and the name on desktop, but
+          there is no sidebar below md, so someone arriving from a search result
+          on a phone sees a search box with nothing identifying the site around
+          it. Hidden from md up rather than duplicated. */}
+      <div className="md:hidden flex flex-col items-center text-center mb-5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo-mark-dark.png"
+          alt=""
+          aria-hidden="true"
+          className="w-14 h-14 object-contain mb-2 opacity-90"
+        />
+        <span className="block text-2xl font-bold text-snow leading-none">DAK</span>
+        <span className="block text-[11px] tracking-[.08em] text-muted mt-1.5">
+          Discover Adelaide Korea
+        </span>
+      </div>
+
       <HomeGreeting />
 
       {/* Hero block. Wraps the headline and search in their own raised panel,
