@@ -10,6 +10,10 @@ import AustraliaUpdateDetailPage from './pages/AustraliaUpdateDetailPage';
 import AdminPage from './pages/AdminPage';
 import DashboardPage from './pages/DashboardPage';
 import FavouritesPage from './pages/FavouritesPage';
+import GuidesPage from './pages/GuidesPage';
+import GuideDetailPage from './pages/GuideDetailPage';
+import GuideCreatePage from './pages/GuideCreatePage';
+import BusinessCreatePage from './pages/BusinessCreatePage';
 
 function App() {
   return (
@@ -26,6 +30,11 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/favourites" element={<FavouritesPage />} />
+          <Route path="/businesses/new" element={<BusinessCreatePage />} />
+          <Route path="/guides" element={<GuidesPage />} />
+          <Route path="/guides/:slug" element={<GuideDetailPage />} />
+          <Route path="/admin/guides/new" element={<GuideCreatePage />} />
+          
         </Routes>
       </BrowserRouter>
     </AuthProvider>

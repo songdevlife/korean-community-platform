@@ -20,3 +20,13 @@ export async function saveItem(resourceType, resourceId) {
 export async function removeSavedItem(savedItemId) {
   await apiClient.delete(`/users/me/saved-items/${savedItemId}`);
 }
+
+/**
+ * Unsaves by resource, for detail pages that know what they are showing but not
+ * the id of the saved-item row. Idempotent server-side.
+ */
+export async function removeSavedByResource(resourceType, resourceId) {
+  await apiClient.delete('/users/me/saved-items', {
+    params: { resourceType, resourceId },
+  });
+}
