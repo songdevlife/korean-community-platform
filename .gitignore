@@ -7,3 +7,9 @@ docs/
 # Archives
 *.zip
 *.7z
+
+# Superseded Vite build — kept locally for comparison; no new files tracked
+dak-frontend/
+
+# Build output
+log.txt
