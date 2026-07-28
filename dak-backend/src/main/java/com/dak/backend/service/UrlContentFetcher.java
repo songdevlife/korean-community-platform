@@ -9,7 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UrlContentFetcher {
@@ -18,10 +21,15 @@ public class UrlContentFetcher {
 
     private static final int MAX_BODY_CHARS = 5000;
 
-    // A body element that yields less than this is almost certainly a caption or
+// A body element that yields less than this is almost certainly a caption or
     // a stray container rather than the article, so fall through to the next
     // candidate instead of accepting it.
-    private static final int MIN_ARTICLE_CHARS = 200;
+    //
+    // Raised from 200 after ACCC recall pages returned 291 characters of page
+    // furniture — "Regulators are established or appointed by government" and
+    // similar — which cleared the old threshold, so the walk stopped at the
+    // first candidate and never reached the one holding the recall itself.
+    private static final int MIN_ARTICLE_CHARS = 600;
 
     // Paragraphs shorter than this are rarely prose. News pages mark topic
     // labels, timestamps and bylines up as <p>, and those were appearing at the
@@ -125,13 +133,25 @@ public class UrlContentFetcher {
      * keeps the extract to prose and drops stray link lists and button labels
      * that survive the noise removal.
      */
-    private String paragraphText(Element root) {
-        Elements paragraphs = root.select("p");
+private String paragraphText(Element root) {
+        // <p> alone is not enough. News sites mark prose up as paragraphs, but
+        // government pages often use definition lists and plain divs — the ACCC
+        // recall pages put the reason, the hazard and the required action in
+        // blocks that select("p") never sees, which is why those extracts came
+        // back holding only the surrounding help text.
+        Elements blocks = root.select("p, li, dd, blockquote");
         StringBuilder sb = new StringBuilder();
+        Set<String> seen = new HashSet<>();
 
-        for (Element p : paragraphs) {
-            String text = p.text().trim();
+        for (Element block : blocks) {
+            // A <p> inside an <li> would otherwise be collected twice, once on
+            // its own and once as part of its parent's text.
+            if (block.parents().stream().anyMatch(blocks::contains)) continue;
+
+            String text = block.text().trim();
             if (text.length() < MIN_PARAGRAPH_CHARS) continue;
+            if (!seen.add(text)) continue;
+
             if (sb.length() > 0) sb.append("\n\n");
             sb.append(text);
         }
