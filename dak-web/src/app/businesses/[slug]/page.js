@@ -183,9 +183,51 @@ export default async function BusinessPage({ params }) {
 
           {/* Contact details stay outside the admin wrapper — they mirror fields
               in the form, and hiding them while editing removes the reference. */}
-          <div className="lg:hidden mt-8 pt-5 border-t border-border-dark">
-            ...
-          </div>
+{(fullAddress || business.phone || business.email) && (
+            <div className="lg:hidden mt-8 pt-5 border-t border-border-dark">
+              <h2 className="text-sm font-semibold text-snow mb-3">Contact</h2>
+              <div className="flex flex-col gap-3">
+                {fullAddress && (
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2.5 text-[13px] text-snow min-w-0">
+                      <MapPin size={15} strokeWidth={1.75} className="text-muted shrink-0 mt-0.5" />
+                      {fullAddress}
+                    </div>
+                    <CopyButton value={fullAddress} label="Copy address" />
+                  </div>
+                )}
+
+                {/* The Call button above dials it; this is where someone reads
+                    or copies it — to save a contact, or to check they have the
+                    right place before ringing. */}
+                {business.phone && (
+                  <div className="flex items-start justify-between gap-2">
+                    <a
+                      href={`tel:${business.phone}`}
+                      className="flex items-start gap-2.5 text-[13px] text-snow hover:text-white min-w-0"
+                    >
+                      <Phone size={15} strokeWidth={1.75} className="text-muted shrink-0 mt-0.5" />
+                      {business.phone}
+                    </a>
+                    <CopyButton value={business.phone} label="Copy phone number" />
+                  </div>
+                )}
+
+                {business.email && (
+                  <div className="flex items-start justify-between gap-2">
+                    <a
+                      href={`mailto:${business.email}`}
+                      className="flex items-start gap-2.5 text-[13px] text-korea-blue hover:underline break-all min-w-0"
+                    >
+                      <Mail size={15} strokeWidth={1.75} className="shrink-0 mt-0.5" />
+                      {business.email}
+                    </a>
+                    <CopyButton value={business.email} label="Copy email address" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </article>
 
         <aside className="hidden lg:flex lg:flex-col w-72 shrink-0 gap-3">

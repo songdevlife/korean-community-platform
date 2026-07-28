@@ -138,9 +138,32 @@ export default async function AustraliaUpdatePage({ params }) {
 
           {/* Sources stay outside the admin wrapper — they are not editable here
               and should remain visible while the form is open. */}
-          {sources.length > 0 && (
+{sources.length > 0 && (
             <div className="lg:hidden mt-8 pt-5 border-t border-border-dark">
-              ...
+              <h2 className="text-sm font-semibold text-snow mb-3">Sources</h2>
+              <ul className="flex flex-col gap-2.5 mb-4">
+                {sources.map((source) => (
+                  <li key={source.id}>
+                    <a
+                      href={source.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-start gap-2 text-[13px] text-korea-blue hover:underline"
+                    >
+                      <ExternalLink size={14} strokeWidth={1.75} className="shrink-0 mt-0.5" />
+                      {source.sourceTitle || source.sourceName}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Age matters more here than on a guide: these cover prices,
+                  alerts and rule changes, where a reader needs to know whether
+                  they are reading something from this week or last quarter. */}
+              <div className="flex items-center gap-2 text-[13px] text-muted">
+                <Calendar size={14} strokeWidth={1.75} className="shrink-0" />
+                Published {timeAgo(update.createdAt)}
+              </div>
             </div>
           )}
         </article>
