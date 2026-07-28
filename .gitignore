@@ -1,0 +1,9 @@
+﻿# Internal design and development logs — not published
+docs/
+
+# Legal documents — drafts with unfilled placeholders
+**/Legal_and_Policies/
+
+# Archives
+*.zip
+*.7z

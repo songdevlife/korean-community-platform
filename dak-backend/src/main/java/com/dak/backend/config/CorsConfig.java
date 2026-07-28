@@ -6,7 +6,16 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Allows the local Vite dev server (localhost:5173) to call this API.
+ * Allows the local frontend dev servers to call this API.
+ *
+ * Two origins during the Next.js migration: 5173 is the Vite build being
+ * replaced, 3000 the Next.js one replacing it. Both stay until the old project
+ * is retired, since the two are run side by side to compare screens.
+ *
+ * Note that only browser-initiated requests need this. Next.js fetches public
+ * content server-side, which is why the migration reached the login page before
+ * CORS came up at all — that was the first request a browser made directly.
+ *
  * Production must restrict this to the real frontend domain once deployed
  * (05 API Spec §2.9: "Production CORS configuration must use an approved
  * list of frontend domains").
@@ -17,7 +26,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("http://localhost:5173", "http://localhost:3000")
                 .allowedMethods("GET", "POST", "PATCH", "DELETE", "PUT")
                 .allowedHeaders("*")
                 .allowCredentials(true);

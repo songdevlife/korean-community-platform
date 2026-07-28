@@ -11,6 +11,7 @@ import com.dak.backend.repository.BusinessRepository;
 import com.dak.backend.repository.SavedItemRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.dak.backend.repository.GuideRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,14 +22,17 @@ public class SavedItemService {
     private final SavedItemRepository savedItemRepository;
     private final BusinessRepository businessRepository;
     private final AustraliaUpdateRepository australiaUpdateRepository;
+    private final GuideRepository guideRepository;
 
     public SavedItemService(SavedItemRepository savedItemRepository,
-                             BusinessRepository businessRepository,
-                             AustraliaUpdateRepository australiaUpdateRepository) {
+                            BusinessRepository businessRepository,
+                            AustraliaUpdateRepository australiaUpdateRepository,
+                            GuideRepository guideRepository) {
         this.savedItemRepository = savedItemRepository;
         this.businessRepository = businessRepository;
         this.australiaUpdateRepository = australiaUpdateRepository;
-    }
+        this.guideRepository = guideRepository;
+}
 
     @Transactional(readOnly = true)
     public List<SavedItemResponse> getSavedItems(User user, String resourceType) {
@@ -78,6 +82,7 @@ public class SavedItemService {
         boolean exists = switch (resourceType) {
             case "BUSINESS" -> businessRepository.existsById(resourceId);
             case "AUSTRALIA_UPDATE" -> australiaUpdateRepository.existsById(resourceId);
+            case "GUIDE" -> guideRepository.existsById(resourceId);
             default -> throw ApiException.badRequest("UNSUPPORTED_RESOURCE_TYPE",
                     "Saving this resource type is not yet supported.");
         };
@@ -90,22 +95,36 @@ public class SavedItemService {
     private SavedItemResponse toResponse(SavedItem item) {
         String title = "(삭제된 항목)";
         String slugOrId = item.getResourceId().toString();
+        // Saving is a user's action; unpublishing is an admin's. A saved row is
+        // kept either way, but the link must not survive the resource leaving
+        // public view — following it would 404 with no explanation.
+        boolean available = false;
 
         if ("BUSINESS".equals(item.getResourceType())) {
             Business business = businessRepository.findById(item.getResourceId()).orElse(null);
             if (business != null) {
                 title = business.getName();
                 slugOrId = business.getSlug();
+                available = "PUBLISHED".equals(business.getStatus());
             }
         } else if ("AUSTRALIA_UPDATE".equals(item.getResourceType())) {
             var update = australiaUpdateRepository.findById(item.getResourceId()).orElse(null);
             if (update != null) {
                 title = update.getTitle();
                 slugOrId = update.getId().toString();
+                available = "PUBLISHED".equals(update.getStatus());
+            }
+        } else if ("GUIDE".equals(item.getResourceType())) {
+            var guide = guideRepository.findById(item.getResourceId()).orElse(null);
+            if (guide != null) {
+                title = guide.getTitle();
+                slugOrId = guide.getSlug();
+                available = "PUBLISHED".equals(guide.getStatus());
             }
         }
 
         return new SavedItemResponse(
-                item.getId(), item.getResourceType(), item.getResourceId(), title, slugOrId, item.getCreatedAt());
+                item.getId(), item.getResourceType(), item.getResourceId(),
+                title, slugOrId, available, item.getCreatedAt());
     }
 }

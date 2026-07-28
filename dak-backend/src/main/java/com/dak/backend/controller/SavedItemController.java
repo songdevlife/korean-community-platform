@@ -52,4 +52,21 @@ public class SavedItemController {
     public void remove(@AuthenticationPrincipal User user, @PathVariable UUID savedItemId) {
         savedItemService.remove(user, savedItemId);
     }
+
+    /**
+     * Unsave by resource rather than by saved-item id. A detail page knows what
+     * it is displaying but not the id of the row recording that it was saved —
+     * /check returns only a boolean — so without this route the save action is
+     * one-way anywhere outside the favourites list.
+     *
+     * Idempotent by design: removeByResource does nothing when no row matches,
+     * so a double click cannot produce a 404 for a state the caller wanted anyway.
+     */
+    @DeleteMapping
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeByResource(@AuthenticationPrincipal User user,
+                                  @RequestParam String resourceType,
+                                  @RequestParam UUID resourceId) {
+        savedItemService.removeByResource(user, resourceType, resourceId);
+    }
 }

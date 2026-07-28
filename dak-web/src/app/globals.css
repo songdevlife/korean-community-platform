@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/**
+ * DAK design tokens, carried across from the Vite build's tailwind.config.js.
+ *
+ * Tailwind v4 defines these in CSS rather than a config file. A --color-* entry
+ * under @theme generates the same utilities the old config did, so bg-night,
+ * text-snow and border-border-dark keep working unchanged in components moved
+ * over from the previous frontend.
+ */
+@theme {
+  /* Light-theme tokens, retained for a possible future light mode */
+  --color-cream: #FDF8F3;
+  --color-ink: #1A1A1A;
+
+  /* Accents — carried over from the logo artwork */
+  --color-adelaide-red: #E63946;
+  --color-korea-blue: #2563EB;
+  --color-soft-green: #4CAF7D;
+  --color-warm-orange: #F0A868;
+
+  /* Dark theme. Slightly warm greys rather than neutral, so the cream-toned
+     logo sits on them without reading as cold. */
+  --color-night: #1C1C1A;         /* page background */
+  --color-surface: #242422;       /* cards, sidebar, raised areas */
+  --color-border-dark: #3A3A37;   /* dividers, input borders */
+  --color-snow: #F2F2EF;          /* primary text */
+  --color-muted: #A3A39D;         /* secondary text */
+  --color-faint: #6F6F69;         /* placeholders, disabled */
+
+  /* Pages fade up slightly on entry rather than snapping into place. Small
+     distance and short duration: enough to read as a transition, not enough to
+     delay someone who navigates quickly. */
+  --animate-page-enter: pageEnter 500ms ease-out;
+}
+
+@keyframes pageEnter {
+  0%   { opacity: 0; transform: translateY(14px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* The app is dark-only for now, so the background is set here rather than
+   through a theme toggle. */
+body {
+  background-color: var(--color-night);
+  color: var(--color-snow);
+}
+
+/**
+ * Chrome paints its own background on autofilled inputs, which overrides the
+ * field's own and makes a filled form look like a different component from an
+ * empty one. background-color alone is ignored — the long inset shadow is the
+ * established way to defeat it, and text-fill-color handles the text the same
+ * override would otherwise recolour.
+ */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-night) inset;
+  -webkit-text-fill-color: var(--color-snow);
+  caret-color: var(--color-snow);
+  /* Chrome fades its own colour back in after a moment; a long transition
+     outlasts that without being visible as an animation. */
+  transition: background-color 100000s ease-in-out 0s;
+}

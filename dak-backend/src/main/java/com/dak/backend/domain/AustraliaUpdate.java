@@ -25,8 +25,30 @@ public class AustraliaUpdate {
     @Column(nullable = false, length = 300)
     private String title;
 
-    @Column(name = "korean_summary", nullable = false, columnDefinition = "TEXT")
+    /**
+     * What DAK publishes: a Korean-language summary written by an administrator.
+     *
+     * Nullable as of V14. An import arrives with nothing here, and publication is
+     * gated in AdminAustraliaUpdateService.updateStatus() rather than by the
+     * column, so a draft can be saved half-finished without a blank summary ever
+     * reaching a reader.
+     */
+    @Column(name = "korean_summary", columnDefinition = "TEXT")
     private String koreanSummary;
+
+    /**
+     * Raw text pulled from the source article, kept as the material a summary is
+     * written from. Administrator-only: it appears on AdminUpdateSummaryResponse
+     * and has no equivalent field on the public response, so it cannot reach a
+     * reader through the API.
+     *
+     * Separate from koreanSummary as of V14. The two previously shared one column,
+     * which meant an administrator who skipped the rewrite published the
+     * publisher's own article text. Reproducing an article — in English or
+     * translated — is republication rather than reporting on it.
+     */
+    @Column(name = "extracted_text", columnDefinition = "TEXT")
+    private String extractedText;
 
     // Nullable as of V5: an AI-imported draft has no category until an admin assigns one.
     @ManyToOne(fetch = FetchType.LAZY)
@@ -67,19 +89,31 @@ public class AustraliaUpdate {
     }
 
     /**
-     * AI-assisted import (05 API Spec §10.5) — category and geographic scope are
-     * deliberately left unset; an administrator must complete these before publishing
-     * (enforced in AdminAustraliaUpdateService.updateStatus()).
+     * Import from a source URL (05 API Spec §10.5). Category and geographic scope
+     * are left unset; an administrator supplies them before publishing (enforced
+     * in AdminAustraliaUpdateService.updateStatus()).
+     *
+     * The Korean draft is whatever the summariser produced, and may be null —
+     * when no provider is configured, when a call fails, or when the model
+     * returned nothing usable. A null draft blocks publication rather than
+     * allowing something unreviewed through, which is the safe direction.
+     *
+     * aiGenerated tracks whether a draft actually came from a model, not whether
+     * the item was imported. The flag drives a disclosure banner, so claiming an
+     * AI process that did not run would be a false statement about editorial
+     * process.
      */
-    public static AustraliaUpdate createDraftFromImport(String title, String draftSummary) {
+    public static AustraliaUpdate createDraftFromImport(String title, String extractedText,
+                                                         String koreanDraft) {
         OffsetDateTime now = OffsetDateTime.now();
         AustraliaUpdate update = new AustraliaUpdate();
         update.title = title;
-        update.koreanSummary = draftSummary;
+        update.extractedText = extractedText;
+        update.koreanSummary = koreanDraft;
         update.status = "DRAFT";
-        update.aiGenerated = true;
+        update.aiGenerated = koreanDraft != null && !koreanDraft.isBlank();
         update.createdAt = now;
         update.updatedAt = now;
         return update;
-    }
+        }
 }

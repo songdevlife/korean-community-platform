@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -82,6 +84,16 @@ public class Business {
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     private Set<BusinessCategory> categories = new HashSet<>();
+
+    /**
+     * Ordered by display_order so the first element is the card thumbnail.
+     * Cascade + orphanRemoval means images are managed entirely through the
+     * owning business rather than a separate repository.
+     */
+    @OneToMany(mappedBy = "business", fetch = FetchType.LAZY,
+               cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC")
+    private List<BusinessImage> images = new ArrayList<>();
 
     public static Business createNew(String name, String slug) {
         OffsetDateTime now = OffsetDateTime.now();

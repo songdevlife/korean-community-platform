@@ -2,8 +2,10 @@ package com.dak.backend.service;
 
 import com.dak.backend.domain.Business;
 import com.dak.backend.domain.BusinessCategory;
+import com.dak.backend.domain.BusinessImage;
 import com.dak.backend.dto.BusinessCategoryResponse;
 import com.dak.backend.dto.BusinessDetailResponse;
+import com.dak.backend.dto.BusinessImageResponse;
 import com.dak.backend.dto.BusinessSummaryResponse;
 import com.dak.backend.dto.CreateBusinessRequest;
 import com.dak.backend.exception.ApiException;
@@ -34,8 +36,9 @@ public class BusinessService {
     }
 
     @Transactional(readOnly = true)
-    public Page<BusinessSummaryResponse> search(String suburb, String category, String keyword, Pageable pageable) {
-        return businessRepository.search("PUBLISHED", suburb, category, keyword, pageable)
+    public Page<BusinessSummaryResponse> search(String suburb, String category, String keyword,
+                                                 Boolean verified, Pageable pageable) {
+        return businessRepository.search("PUBLISHED", suburb, category, keyword, verified, pageable)
                 .map(this::toSummary);
     }
 
@@ -73,6 +76,17 @@ public class BusinessService {
         business.setCategories(categories);
         business.setStatus("PENDING");
 
+        // Images are optional; cascade on the association persists them with
+        // the business rather than requiring a separate save.
+        if (request.imageUrls() != null) {
+            int order = 0;
+            for (String url : request.imageUrls()) {
+                if (url == null || url.isBlank()) continue;
+                business.getImages().add(
+                        BusinessImage.createNew(business, url.trim(), null, order++));
+            }
+        }
+
         businessRepository.save(business);
 
         return toDetail(business);
@@ -103,8 +117,14 @@ public class BusinessService {
         return new BusinessSummaryResponse(
                 b.getId(), b.getName(), b.getSlug(), toCategoryResponses(b),
                 b.getSuburb(), b.isVerified(), b.getKoreanAvailable(),
-                b.getLatitude(), b.getLongitude()
+                thumbnailUrl(b),
+                b.getLatitude(), b.getLongitude(), b.getCreatedAt()
         );
+    }
+
+    /** First image by display order, or null when the business has none. */
+    private String thumbnailUrl(Business b) {
+        return b.getImages().isEmpty() ? null : b.getImages().get(0).getImageUrl();
     }
 
     private BusinessDetailResponse toDetail(Business b) {
@@ -113,13 +133,20 @@ public class BusinessService {
                 b.getPhone(), b.getEmail(), b.getWebsiteUrl(),
                 b.getAddressLine(), b.getSuburb(), b.getState(), b.getPostcode(), b.getCountry(),
                 b.getLatitude(), b.getLongitude(), b.getKoreanAvailable(), b.isVerified(), b.getStatus(),
-                toCategoryResponses(b), b.getCreatedAt()
+                toCategoryResponses(b), toImageResponses(b), b.getCreatedAt()
         );
     }
 
     private List<BusinessCategoryResponse> toCategoryResponses(Business b) {
         return b.getCategories().stream()
                 .map(c -> new BusinessCategoryResponse(c.getId(), c.getName(), c.getSlug()))
+                .toList();
+    }
+
+    private List<BusinessImageResponse> toImageResponses(Business b) {
+        return b.getImages().stream()
+                .map(i -> new BusinessImageResponse(
+                        i.getId(), i.getImageUrl(), i.getAltText(), i.getDisplayOrder()))
                 .toList();
     }
 }

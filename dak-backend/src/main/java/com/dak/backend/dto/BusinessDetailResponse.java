@@ -24,5 +24,6 @@ public record BusinessDetailResponse(
         boolean verified,
         String status,
         List<BusinessCategoryResponse> categories,
+        List<BusinessImageResponse> images,
         OffsetDateTime createdAt
 ) {}

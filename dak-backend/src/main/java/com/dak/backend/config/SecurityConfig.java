@@ -2,6 +2,7 @@ package com.dak.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,11 +34,17 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/v1/health").permitAll()
+                .requestMatchers("/sitemap.xml").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET,
                         "/api/v1/business-categories", "/api/v1/business-categories/**").permitAll()
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
+                // Any signed-in user may submit a listing. Submissions land in
+                // PENDING and an administrator reviews them, so the queue is the
+                // spam control rather than the role. Requiring BUSINESS_OWNER
+                // needed a role-upgrade path that does not exist, which left no
+                // route to submit at all.
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/businesses")
-                        .hasAnyRole("BUSINESS_OWNER", "ADMINISTRATOR")
+                        .authenticated()
                 .requestMatchers(org.springframework.http.HttpMethod.GET,
                         "/api/v1/businesses", "/api/v1/businesses/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET,
@@ -52,6 +59,8 @@ public class SecurityConfig {
                         .hasRole("ADMINISTRATOR")
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMINISTRATOR")
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/update-sources").hasRole("ADMINISTRATOR")
+                .requestMatchers(HttpMethod.GET, "/api/v1/guides", "/api/v1/guides/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/guide-categories").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

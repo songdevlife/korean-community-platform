@@ -36,6 +36,13 @@ public class UpdateSource {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+        /**
+     * Applied to updates imported from this source when they have no scope of
+     * their own. Null where the source covers no single area.
+     */
+    @Column(name = "default_geographic_scope", length = 50)
+    private String defaultGeographicScope;
+
     public static UpdateSource createNew(String name, String sourceType) {
         UpdateSource source = new UpdateSource();
         source.name = name;

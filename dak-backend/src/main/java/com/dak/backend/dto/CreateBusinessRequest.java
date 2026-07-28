@@ -20,5 +20,7 @@ public record CreateBusinessRequest(
         String postcode,
         Double latitude,
         Double longitude,
-        @NotEmpty List<UUID> categoryIds
+        @NotEmpty List<UUID> categoryIds,
+        // Optional. MVP accepts external URLs rather than uploads; see V9 migration.
+        @Size(max = 10) List<String> imageUrls
 ) {}

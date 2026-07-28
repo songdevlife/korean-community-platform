@@ -3,6 +3,7 @@ package com.dak.backend.controller;
 import com.dak.backend.common.ApiResponse;
 import com.dak.backend.dto.AdminBusinessSummaryResponse;
 import com.dak.backend.dto.BusinessDetailResponse;
+import com.dak.backend.dto.UpdateBusinessRequest;
 import com.dak.backend.dto.UpdateBusinessStatusRequest;
 import com.dak.backend.service.AdminBusinessService;
 import jakarta.validation.Valid;
@@ -34,5 +35,12 @@ public class AdminBusinessController {
     public ApiResponse<BusinessDetailResponse> updateStatus(@PathVariable UUID businessId,
                                                               @Valid @RequestBody UpdateBusinessStatusRequest request) {
         return ApiResponse.ok(adminBusinessService.updateStatus(businessId, request));
+    }
+
+    @PatchMapping("/{businessId}")
+    public ApiResponse<BusinessDetailResponse> update(
+            @PathVariable UUID businessId,
+            @Valid @RequestBody UpdateBusinessRequest request) {
+        return ApiResponse.ok(adminBusinessService.update(businessId, request));
     }
 }

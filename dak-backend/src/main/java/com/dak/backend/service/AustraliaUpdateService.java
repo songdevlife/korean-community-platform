@@ -30,8 +30,9 @@ public class AustraliaUpdateService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AustraliaUpdateSummaryResponse> search(UUID categoryId, String keyword, Pageable pageable) {
-        return australiaUpdateRepository.search("PUBLISHED", categoryId, keyword, pageable)
+    public Page<AustraliaUpdateSummaryResponse> search(UUID categoryId, String scope,
+                                                        String keyword, Pageable pageable) {
+        return australiaUpdateRepository.search("PUBLISHED", categoryId, scope, keyword, pageable)
                 .map(this::toSummary);
     }
 
@@ -74,10 +75,13 @@ public class AustraliaUpdateService {
     }
 
     private AustraliaUpdateSummaryResponse toSummary(AustraliaUpdate u) {
+        UpdateCategoryResponse category = u.getCategory() == null ? null
+                : new UpdateCategoryResponse(
+                        u.getCategory().getId(), u.getCategory().getName(), u.getCategory().getSlug());
+
         return new AustraliaUpdateSummaryResponse(
-                u.getId(), u.getTitle(), toCategoryResponse(u.getCategory()),
-                u.getGeographicScope(), u.isAiGenerated(), u.getCreatedAt()
-        );
+                u.getId(), u.getTitle(), u.getKoreanSummary(), category,
+                u.getGeographicScope(), u.isAiGenerated(), u.getCreatedAt());
     }
 
     private AustraliaUpdateDetailResponse toDetail(AustraliaUpdate u) {

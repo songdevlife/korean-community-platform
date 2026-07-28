@@ -28,3 +28,15 @@ app:
   jwt:
     access-token-expiry-minutes: 30
     refresh-token-expiry-days: 14
+  rss:
+    # Off until imports assign a category. Drafts without one cannot be
+    # published, so polling only grows an unclearable backlog.
+    polling-enabled: false
+  site:
+    # Used to build absolute URLs in the sitemap. No domain is registered yet;
+    # this must be set to the real one before launch (D13).
+    base-url: https://discoveradelaidekorea.au
+  ai:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: claude-haiku-4-5-20251001
+    enabled: true

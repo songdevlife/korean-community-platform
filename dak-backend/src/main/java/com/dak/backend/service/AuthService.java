@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -28,6 +30,13 @@ public class AuthService {
     private final TokenHasher tokenHasher;
 
     private static final long REFRESH_TOKEN_EXPIRY_DAYS = 14;
+
+    // Role names ordered by privilege. A user can hold several — an administrator
+    // typically also holds USER — and getRoles() returns a Set, so picking the
+    // first element gave a different answer between logins. The response reports
+    // the highest-privilege role instead.
+    private static final List<String> ROLE_PRECEDENCE =
+            List.of("ADMINISTRATOR", "MODERATOR", "BUSINESS_OWNER", "USER");
 
     public AuthService(UserRepository userRepository, RoleRepository roleRepository,
                         SessionRepository sessionRepository, PasswordEncoder passwordEncoder,
@@ -130,7 +139,14 @@ public class AuthService {
     }
 
     private AuthResponse buildAuthResponse(User user) {
-        String role = user.getRoles().stream().findFirst().map(Role::getName).orElse("USER");
+        Set<String> roleNames = user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
+        String role = ROLE_PRECEDENCE.stream()
+                .filter(roleNames::contains)
+                .findFirst()
+                .orElse("USER");
 
         AuthResponse.UserSummary summary = new AuthResponse.UserSummary(
                 user.getId(), user.getEmail(), user.getDisplayName(),

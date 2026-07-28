@@ -35,6 +35,13 @@ public class AdminAustraliaUpdateController {
         return ApiResponse.ok(adminAustraliaUpdateService.importFromUrl(request));
     }
 
+    @PatchMapping("/{updateId}/metadata")
+    public ApiResponse<AustraliaUpdateDetailResponse> updateMetadata(
+            @PathVariable UUID updateId,
+            @Valid @RequestBody UpdateAustraliaUpdateMetadataRequest request) {
+        return ApiResponse.ok(adminAustraliaUpdateService.updateMetadata(updateId, request));
+    }
+
     @PatchMapping("/{updateId}/status")
     public ApiResponse<AustraliaUpdateDetailResponse> updateStatus(@PathVariable UUID updateId,
                                                                      @Valid @RequestBody UpdateAustraliaUpdateStatusRequest request) {
