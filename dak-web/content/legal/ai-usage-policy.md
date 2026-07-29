@@ -94,6 +94,8 @@ This includes, but is not limited to:
 
 Where appropriate, users should consult qualified professionals or the relevant government authority.
 
+AI-generated content should not be relied upon as the sole basis for making important personal, legal, medical, financial, immigration, taxation, employment, or safety-related decisions.
+
 ## 6. Australia Updates
 
 Australia Updates may include AI-assisted summaries of publicly available information.
@@ -128,6 +130,8 @@ DAK does not guarantee:
 
 Users should confirm important details directly with the business.
 
+Business information may change without notice and may not always reflect the most recent updates.
+
 ## 9. Community Content
 
 AI may summarise or recommend community posts.
@@ -160,17 +164,24 @@ AI features may occasionally be:
 
 DAK does not guarantee uninterrupted AI service availability.
 
+DAK may suspend or restrict AI features without prior notice where necessary for maintenance, security, legal compliance, or service improvements.
+
 ## 12. Limitation of Liability
 
 To the maximum extent permitted by applicable law, DAK is not responsible for losses arising from reliance on AI-generated information.
 
+To the extent permitted by applicable law, DAK does not warrant that AI-generated content will always be accurate, complete, reliable, or suitable for any particular purpose.
+
 Nothing in this Policy excludes rights that cannot be excluded under Australian consumer protection laws.
+
 
 ## 13. Improvements
 
 AI systems continue to evolve.
 
 DAK may improve AI quality through feedback, testing, and updates over time.
+
+AI features may change as new technologies, regulations, and best practices evolve.
 
 ## 14. Changes to this Policy
 
@@ -182,6 +193,6 @@ Continued use of AI features after changes become effective constitutes acceptan
 
 ## 15. Contact
 
-Questions regarding this AI Usage & Disclaimer Policy may be submitted through DAK's official support channels once the service launches.
+Questions regarding this AI Usage & Disclaimer Policy may be submitted to admin@discoveradelaidekorea.au.
 
 *Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
