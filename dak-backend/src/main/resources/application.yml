@@ -28,6 +28,11 @@ app:
   jwt:
     access-token-expiry-minutes: 30
     refresh-token-expiry-days: 14
+  registration:
+    # Open by default so a local checkout runs without configuration. The
+    # production profile closes it — that is where getting this wrong has a
+    # consequence.
+    enabled: true
   rss:
     # Off until imports assign a category. Drafts without one cannot be
     # published, so polling only grows an unclearable backlog.

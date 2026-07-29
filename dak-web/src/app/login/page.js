@@ -6,6 +6,15 @@ import { login, register } from '@/api/auth';
 import { useAuth } from '@/context/AuthContext';
 import PageShell from '@/components/PageShell';
 
+// Mirrors app.registration.enabled on the backend, which is what actually
+// refuses. This only decides whether to offer a form that would be rejected.
+// Both have to change together when registration opens.
+const REGISTRATION_OPEN =
+  process.env.NEXT_PUBLIC_REGISTRATION_OPEN !== 'false';
+
+/**
+ * Login and sign-up in one page, toggled by a mode switch.
+
 /**
  * Login and sign-up in one page, toggled by a mode switch.
  *
@@ -104,15 +113,24 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Mode switch */}
-        <div className="grid grid-cols-2 border border-border-dark rounded-[10px] overflow-hidden mb-6">
-          <button type="button" onClick={() => setMode('login')} className={tabClass(mode === 'login')}>
-            Log in
-          </button>
-          <button type="button" onClick={() => setMode('signup')} className={tabClass(mode === 'signup')}>
-            Sign up
-          </button>
-        </div>
+{/* Mode switch. Hidden entirely while registration is closed — a single
+            disabled tab is a control that explains nothing. */}
+        {REGISTRATION_OPEN && (
+          <div className="grid grid-cols-2 border border-border-dark rounded-[10px] overflow-hidden mb-6">
+            <button type="button" onClick={() => setMode('login')} className={tabClass(mode === 'login')}>
+              Log in
+            </button>
+            <button type="button" onClick={() => setMode('signup')} className={tabClass(mode === 'signup')}>
+              Sign up
+            </button>
+          </div>
+        )}
+
+        {!REGISTRATION_OPEN && (
+          <p className="text-[13px] text-faint text-center mb-6">
+            New accounts are not open yet.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit}>
           {mode === 'signup' && (
@@ -210,8 +228,8 @@ export default function LoginPage() {
                 : 'Create account'}
           </button>
 
-          <p className="text-center text-[13px] text-muted mt-[22px]">
-            {mode === 'login' ? (
+          <p className={`text-center text-[13px] text-muted mt-[22px] ${REGISTRATION_OPEN ? '' : 'hidden'}`}>
+          {mode === 'login' ? (
               <>
                 Don&apos;t have an account?{' '}
                 <button

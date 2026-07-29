@@ -15,3 +15,9 @@ app:
     secret: ${DAK_JWT_SECRET}
   cors:
     allowed-origins: ${DAK_CORS_ORIGINS}
+  registration:
+    # Closed unless deliberately opened. Registration collects a name and an
+    # email address, and DAK has no published privacy policy to collect them
+    # under — so the default has to be the one that is safe when nobody has
+    # thought about it.
+    enabled: ${DAK_REGISTRATION_ENABLED:false}

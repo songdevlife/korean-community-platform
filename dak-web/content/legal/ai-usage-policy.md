@@ -50,6 +50,10 @@ AI-generated responses may be based on:
 
 Some responses may be generated using trusted third-party AI service providers.
 
+User prompts submitted to AI features may be processed by third-party AI service providers solely for the purpose of generating a response.
+
+For information about how personal information is collected, used, and protected, please refer to our Privacy Policy.
+
 ## 4. Accuracy
 
 Although DAK aims to provide reliable information:
@@ -61,6 +65,8 @@ Although DAK aims to provide reliable information:
 -   AI responses may become outdated.
 
 -   AI may misunderstand user questions.
+
+-   AI may occasionally generate information that appears accurate but is incorrect or misleading.
 
 Users should independently verify important information.
 

@@ -4,7 +4,7 @@
 
 ## 1. Our Commitment
 
-Discover Adelaide Korea ("DAK") is committed to providing a website and services that are accessible and inclusive for as many people as possible.
+Discover Adelaide Korea ("DAK") is committed to providing a website and services that are accessible and inclusive to as many people as reasonably possible.
 
 We strive to ensure that users of all abilities can access our platform and participate in our community.
 
@@ -30,7 +30,7 @@ devices.
 
 ## 3. Standards
 
-Where practical, DAK aims to align with the principles of the **Web Content Accessibility Guidelines (WCAG)**.
+Where practical, DAK aims to align with the principles of the **Web Content Accessibility Guidelines (WCAG) 2.2 Level AA**.
 
 As our platform grows, we will continue improving accessibility features and addressing identified issues.
 
@@ -48,9 +48,11 @@ We regularly review user feedback and consider accessibility improvements when d
 
 ## 6. Feedback
 
-If you experience difficulty accessing any part of DAK or have suggestions for improving accessibility, please contact us through our official support channels once the service launches.
+If you experience difficulty accessing any part of DAK or have suggestions for improving accessibility, please contact us through our official support channels admin@discoveradelaidekorea.au.
 
-We value your feedback and will make reasonable efforts to address accessibility concerns.
+If you identify an accessibility issue, please provide the page URL, device, browser, and a description of the issue so we can investigate it.
+
+We will make reasonable efforts to address verified accessibility concerns.
 
 ## 7. Changes to this Statement
 
