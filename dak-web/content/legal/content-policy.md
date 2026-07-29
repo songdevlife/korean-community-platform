@@ -1,0 +1,217 @@
+# Content Policy
+
+**Content & Copyright Policy**
+
+**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+
+## 1. Purpose
+
+This Content & Copyright Policy explains the ownership, use, protection, and reporting procedures relating to content published on Discover Adelaide Korea ("DAK").
+
+It applies to all users, businesses, contributors, and visitors using DAK.
+
+## 2. Types of Content
+
+Content on DAK may include:
+
+-   Community posts
+
+-   Comments
+
+-   Reviews
+
+-   Business listings
+
+-   Business photos
+
+-   Local guides
+
+-   Australia Updates
+
+-   AI-generated summaries
+
+-   Images
+
+-   Videos
+
+-   Logos
+
+-   Graphics
+
+-   Website design
+
+-   Software
+
+-   Documentation
+
+## 3. Ownership of DAK Content
+
+Unless otherwise stated, all original DAK content, including:
+
+-   Website design
+
+-   Branding
+
+-   Logos
+
+-   Icons
+
+-   Graphics
+
+-   Software
+
+-   AI-generated platform content created by DAK
+
+-   Original guides written by DAK
+
+is owned by DAK or its licensors.
+
+Unauthorised copying, reproduction, redistribution, or commercial use is prohibited.
+
+## 4. User Content
+
+Users retain ownership of the content they submit.
+
+By submitting content to DAK, you grant DAK a worldwide, non-exclusive, royalty-free licence to:
+
+-   Host
+
+-   Store
+
+-   Display
+
+-   Reproduce
+
+-   Format
+
+-   Translate
+
+-   Distribute
+
+-   Promote
+
+your content solely for operating, improving, and promoting the DAK platform.
+
+This licence ends when the content is deleted, except where retention is required by law or for legitimate operational purposes.
+
+## 5. Business Content
+
+Business owners are responsible for ensuring they have the legal right to upload:
+
+-   Logos
+
+-   Business names
+
+-   Photos
+
+-   Menus
+
+-   Promotional images
+
+-   Marketing materials
+
+Businesses remain responsible for any copyright infringement arising from content they submit.
+
+## 6. Australia Updates
+
+DAK may publish summaries of publicly available information.
+
+DAK's policy is to:
+
+-   Create original summaries in our own words.
+
+-   Credit the original source where reasonably possible.
+
+-   Link users to the original publication where available.
+
+-   Avoid reproducing copyrighted material beyond what is permitted by
+applicable law.
+
+Whenever practical, users should consult the original source for complete information.
+
+## 7. AI-Generated Content
+
+AI-generated summaries and recommendations are created to improve accessibility and understanding.
+
+They are not intended to replace the original source.
+
+Users should not reproduce AI-generated content from DAK for commercial purposes without permission.
+
+## 8. Copyright Infringement
+
+If you believe content published on DAK infringes your copyright, you may submit a copyright complaint.
+
+Please include:
+
+-   Your name
+
+-   Contact information
+
+-   Identification of the copyrighted work
+
+-   Identification of the allegedly infringing content
+
+-   Evidence of ownership
+
+-   A statement made in good faith that you believe the use is
+unauthorised
+
+DAK may request additional information where necessary.
+
+## 9. Removal of Content
+
+DAK may remove content where it reasonably believes that:
+
+-   Copyright has been infringed.
+
+-   The content violates applicable laws.
+
+-   The content breaches DAK policies.
+
+-   The content presents a significant legal risk.
+
+Where appropriate, DAK may temporarily disable access while a complaint is reviewed.
+
+## 10. Repeat Infringers
+
+Users or businesses who repeatedly infringe intellectual property rights may have:
+
+-   Content removed.
+
+-   Upload privileges restricted.
+
+-   Accounts suspended.
+
+-   Accounts permanently terminated.
+
+## 11. Third-Party Content
+
+DAK may include links, embeds, or references to third-party content.
+
+Ownership of third-party content remains with its respective owner.
+
+Inclusion on DAK does not transfer ownership or imply endorsement.
+
+## 12. Fair Use and Legal Exceptions
+
+Nothing in this Policy limits any rights or exceptions available under applicable copyright laws, including any permitted uses recognised by Australian law.
+
+## 13. Reporting Procedure
+
+Copyright reports should be submitted through DAK's official support channels.
+
+DAK will review reports within a reasonable time and may contact the reporting party or the content uploader for additional information before making a decision.
+
+## 14. Changes to this Policy
+
+We may update this Content & Copyright Policy from time to time.
+
+Material changes will be published on the DAK website.
+
+Continued use of DAK after changes become effective constitutes acceptance of the updated Policy.
+
+## 15. Contact
+
+Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels once the service launches.
+
+*Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
