@@ -142,7 +142,7 @@ export default async function AustraliaUpdatePage({ params }) {
             <div className="lg:hidden mt-8 pt-5 border-t border-border-dark">
               <h2 className="text-sm font-semibold text-snow mb-3">Sources</h2>
               <ul className="flex flex-col gap-2.5 mb-4">
-                {sources.map((source) => (
+              {sources.map((source) => (
                   <li key={source.id}>
                     <a
                       href={source.sourceUrl}
@@ -153,6 +153,16 @@ export default async function AustraliaUpdatePage({ params }) {
                       <ExternalLink size={14} strokeWidth={1.75} className="shrink-0 mt-0.5" />
                       {source.sourceTitle || source.sourceName}
                     </a>
+                    {/* Who published it, not just what it was called. A recall
+                        issued by a regulator and a newspaper report of the same
+                        thing carry different weight, and the headline alone does
+                        not say which this is. Omitted when the title is missing,
+                        since the link already shows the organisation then. */}
+                    {source.sourceTitle && source.sourceName && (
+                      <span className="block text-[12px] text-faint pl-[22px] mt-0.5">
+                        {source.sourceName}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -174,7 +184,7 @@ export default async function AustraliaUpdatePage({ params }) {
             <div className="rounded-xl border border-border-dark p-4">
               <h2 className="text-sm font-semibold text-snow mb-3">Sources</h2>
               <ul className="flex flex-col gap-2.5">
-                {sources.map((source) => (
+              {sources.map((source) => (
                   <li key={source.id}>
                     <a
                       href={source.sourceUrl}
@@ -185,6 +195,11 @@ export default async function AustraliaUpdatePage({ params }) {
                       <ExternalLink size={14} strokeWidth={1.75} className="shrink-0 mt-0.5" />
                       {source.sourceTitle || source.sourceName}
                     </a>
+                    {source.sourceTitle && source.sourceName && (
+                      <span className="block text-[12px] text-faint pl-[22px] mt-0.5">
+                        {source.sourceName}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
