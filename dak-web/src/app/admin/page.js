@@ -408,41 +408,11 @@ export default function AdminPage() {
       {actionError && <p className="text-adelaide-red text-[13px] mb-4">{actionError}</p>}
 
       <section className="mb-8">
-        {/* The poll control sits with the queue it fills, so the thing it
-            changes is directly below it. */}
-        <div className="flex items-center justify-between gap-4 mb-3">
-          <h2 className="text-lg font-semibold text-snow">
-            Draft updates <span className="text-muted font-normal">({draftTotal})</span>
-          </h2>
-          <button
-            onClick={handlePoll}
-            disabled={polling}
-            className={`${secondaryBtn} shrink-0`}
-          >
-            <RefreshCw
-              size={14}
-              strokeWidth={2}
-              className={polling ? 'animate-spin' : undefined}
-            />
-            {polling ? 'Polling...' : 'Poll feeds'}
-          </button>
-        </div>
+                <h2 className="text-lg font-semibold text-snow mb-3">
+          Pending businesses <span className="text-muted font-normal">({businessTotal})</span>
+        </h2>
 
-        {/* Said before the wait, not after: a control that appears to do
-            nothing for minutes invites a second click, and a second poll
-            imports everything twice. */}
-        {polling && (
-          <p className="text-[13px] text-muted mb-3">
-            Reading the feeds and drafting summaries. This takes a few minutes.
-            Leave the page open and do not press the button again.
-          </p>
-        )}
-
-        {!polling && pollNotice && (
-          <p className="text-[13px] text-muted mb-3">{pollNotice}</p>
-        )}
-
-        {updates.length === 0 ? (
+        {businesses.length === 0 ? (
 
           <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
             <p className="text-muted text-sm">Nothing awaiting review.</p>
@@ -483,9 +453,36 @@ export default function AdminPage() {
       </section>
 
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-snow mb-3">
-          Draft updates <span className="text-muted font-normal">({draftTotal})</span>
-        </h2>
+{/* The poll control sits with the queue it fills, so the thing it
+            changes is directly below it. */}
+        <div className="flex items-center justify-between gap-4 mb-3">
+          <h2 className="text-lg font-semibold text-snow">
+            Draft updates <span className="text-muted font-normal">({draftTotal})</span>
+          </h2>
+          <button
+            onClick={handlePoll}
+            disabled={polling}
+            className={`${secondaryBtn} shrink-0`}
+          >
+            <RefreshCw
+              size={14}
+              strokeWidth={2}
+              className={polling ? 'animate-spin' : undefined}
+            />
+            {polling ? 'Polling...' : 'Poll feeds'}
+          </button>
+        </div>
+
+        {polling && (
+          <p className="text-[13px] text-muted mb-3">
+            Reading the feeds and drafting summaries. This takes a few minutes.
+            Leave the page open and do not press the button again.
+          </p>
+        )}
+
+        {!polling && pollNotice && (
+          <p className="text-[13px] text-muted mb-3">{pollNotice}</p>
+        )}
 
         {updates.length === 0 ? (
           <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
