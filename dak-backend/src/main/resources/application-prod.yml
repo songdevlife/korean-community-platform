@@ -13,3 +13,5 @@ logging:
 app:
   jwt:
     secret: ${DAK_JWT_SECRET}
+  cors:
+    allowed-origins: ${DAK_CORS_ORIGINS}

@@ -17,10 +17,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
  *   when an admin publishes needs a short window; a 404 needs none.
  */
 async function getPublic(path, { revalidate = 60 } = {}) {
-    console.log('→', `${API_URL}${path}`);
-    const response = await fetch(`${API_URL}${path}`, {
-      next: { revalidate },
-    });
+  const response = await fetch(`${API_URL}${path}`, {
+    next: { revalidate },
+  });
 
   // 404 is an ordinary outcome here — an unknown slug — so it returns null and
   // the page decides what to render. Anything else is a real fault and throws.

@@ -543,8 +543,8 @@ export default function AdminPage() {
                         )}
 
                         <div>
-                          <label className="block text-[12px] font-medium text-muted mb-1.5">
-                            Korean summary — write this yourself; do not paste the source
+                        <label className="block text-[12px] font-medium text-muted mb-1.5">
+                            Korean summary — review the draft; do not paste the source
                           </label>
                           <textarea
                             value={draft.koreanSummary}

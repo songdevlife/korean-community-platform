@@ -14,3 +14,5 @@ logging:
 app:
   jwt:
     secret: ${DAK_JWT_SECRET:dev-only-secret-change-me-dev-only-secret-change-me}
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:3000
