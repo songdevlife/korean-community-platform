@@ -49,6 +49,8 @@ This includes, where applicable:
 
 Providing false or misleading information may result in suspension or removal of the listing.
 
+Business owners are responsible for ensuring they have the necessary rights and authority to publish all information submitted to DAK.
+
 ## 4. Verification
 
 DAK may verify a business through methods such as:
@@ -65,6 +67,8 @@ DAK may verify a business through methods such as:
 
 Verification improves trust but does not guarantee the quality of a business or its services.
 
+Verification confirms only certain information provided by the business and should not be interpreted as an endorsement or certification by DAK.
+
 ## 5. Ownership Claims
 
 If multiple users claim ownership of the same listing, DAK may request evidence of ownership before granting management access.
@@ -79,6 +83,8 @@ Examples of evidence include:
 
 -   Other reasonable proof of authority
 
+-   DAK reserves the right to reject ownership claims where sufficient evidence cannot be provided.
+
 ## 6. User Reviews
 
 Businesses may not:
@@ -91,6 +97,8 @@ Businesses may not:
 
 Businesses may respond to reviews respectfully but must not harass or threaten reviewers.
 
+DAK reserves the right to remove reviews or responses that violate our Community Guidelines or applicable laws.
+
 ## 7. DAK Exclusive Promotions
 
 Businesses participating in DAK Exclusive promotions must:
@@ -102,6 +110,8 @@ Businesses participating in DAK Exclusive promotions must:
 -   Avoid misleading or deceptive advertising.
 
 DAK reserves the right to remove promotions that are inaccurate, expired, or misleading.
+
+Businesses are solely responsible for fulfilling the terms of their published promotions.
 
 ## 8. Listing Updates
 
@@ -121,6 +131,8 @@ Business owners should promptly update their listings when information changes, 
 
 Repeated failure to maintain accurate information may affect listing visibility.
 
+DAK may temporarily hide listings that appear to contain outdated or inaccurate information until they are updated.
+
 ## 9. Prohibited Content
 
 Business listings must not include:
@@ -137,6 +149,8 @@ Business listings must not include:
 
 -   Malware or harmful links
 
+-   Content that infringes the privacy, publicity, or other legal rights of any person.
+
 ## 10. Suspension or Removal
 
 DAK may suspend or remove listings that:
@@ -152,6 +166,8 @@ DAK may suspend or remove listings that:
 -   Breach applicable laws.
 
 Where appropriate, DAK may request corrections before removing a listing.
+
+DAK may remove listings immediately where necessary to protect users, comply with legal obligations, or prevent fraud.
 
 ## 11. Search Ranking
 
@@ -173,11 +189,15 @@ DAK does not guarantee any specific ranking or placement in search results.
 
 Paid features, if introduced, will be clearly identified and will not alter the accuracy or integrity of search results.
 
+The specific factors and weighting used to determine search rankings are determined by DAK and may change without notice.
+
 ## 12. Intellectual Property
 
 Business owners must have the right to use all photos, logos, trademarks, and other materials submitted to DAK.
 
 By uploading content, the business grants DAK a non-exclusive licence to display and use that content for operating and promoting the platform.
+
+The business retains ownership of its intellectual property unless otherwise agreed in writing.
 
 ## 13. Disclaimer
 
@@ -186,6 +206,8 @@ DAK provides business listings for informational purposes only.
 Inclusion on DAK does not constitute an endorsement or guarantee of a business, its products, or its services.
 
 Users are responsible for making their own decisions before engaging with any listed business.
+
+DAK is not a party to any transaction, agreement, or dispute between users and businesses.
 
 ## 14. Changes to this Policy
 
@@ -197,6 +219,6 @@ Continued use of DAK constitutes acceptance of the updated Policy.
 
 ## 15. Contact
 
-Questions regarding this Policy may be submitted through DAK's official support channels once the service launches.
+Questions regarding this Policy may be submitted to admin@discoveradelaidekorea.au.
 
 *Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
