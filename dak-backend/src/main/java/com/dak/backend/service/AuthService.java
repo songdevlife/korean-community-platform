@@ -76,8 +76,14 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         String normalisedEmail = request.email().trim().toLowerCase();
 
+// Same code and same wording as the password branch below. Distinguishing
+        // "no such account" from "wrong password" tells an attacker which email
+        // addresses are registered, one guess at a time — and the single-argument
+        // helper was putting the code itself on screen where a sentence belonged.
         User user = userRepository.findByEmailIgnoreCase(normalisedEmail)
-                .orElseThrow(() -> ApiException.unauthorized("INVALID_CREDENTIALS"));
+                .orElseThrow(() -> new ApiException(
+                        org.springframework.http.HttpStatus.UNAUTHORIZED,
+                        "INVALID_CREDENTIALS", "Email or password is incorrect."));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new ApiException(org.springframework.http.HttpStatus.UNAUTHORIZED,
