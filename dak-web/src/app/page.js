@@ -10,7 +10,7 @@ import UpdatesSidePanel from '@/components/UpdatesSidePanel';
 
 export const metadata = {
   description:
-    'Korean-language local information for Adelaide: find Korean-speaking businesses, services and community updates in South Australia.',
+    'Korean-language local information for Adelaide: find services and community updates in South Australia.',
   alternates: { canonical: '/' },
 };
 
