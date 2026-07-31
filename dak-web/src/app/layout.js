@@ -15,6 +15,13 @@ import './globals.css';
  * that duplication disappears with file-based routing.
  */
 export const metadata = {
+  // Every page sets alternates.canonical as a path — '/guides', '/legal' and so
+  // on. Without a base to resolve them against, Next emits those paths as-is,
+  // and a relative canonical tells a crawler nothing it did not already know.
+  // The value is the apex domain because www redirects to it, so this is the
+  // address that should appear in results.
+  metadataBase: new URL('https://discoveradelaidekorea.au'),
+
   // Per-page metadata overrides this; the template supplies the suffix so a
   // page only has to name itself.
   title: {
