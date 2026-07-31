@@ -21,7 +21,6 @@ export async function generateMetadata({ params }) {
   return {
     title: doc.title,
     description: doc.blurb,
-    robots: { index: false, follow: false },
   };
 }
 

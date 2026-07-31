@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, LayoutGrid, BookOpen, Newspaper, User, LogOut } from 'lucide-react';
+import { Home, Search, LayoutGrid, BookOpen, Newspaper, User, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const NAV_ITEMS = [
@@ -97,10 +97,26 @@ function Layout({ children }) {
         </nav>
 
 
+{/* Legal sits at the foot of the sidebar rather than in the nav list:
+            it is something people look for when they have a reason to, not
+            something to browse. mt-auto pushes it down when signed out, where
+            the account footer below would otherwise be doing that job. */}
+        <Link
+          href="/legal"
+          className={`mt-auto flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-colors ${
+            isActive('/legal')
+              ? 'bg-surface text-snow font-medium'
+              : 'text-faint hover:text-snow hover:bg-surface/60'
+          }`}
+        >
+          <Scale size={16} strokeWidth={1.75} className="shrink-0" />
+          Legal
+        </Link>
+
         {/* Account footer. Identity and sign-out only — navigation to My Page
             now lives in the list above. */}
         {user && (
-          <div className="mt-auto pt-4 border-t border-border-dark">
+          <div className="pt-4 border-t border-border-dark">
             <span className="block px-3 pb-1 text-sm text-snow font-medium truncate">
               {user.displayName}
             </span>

@@ -5,11 +5,6 @@ import { LEGAL_DOCUMENTS } from '@/utils/legal';
 
 export const metadata = {
   title: 'Legal',
-  // Kept out of the index while the documents still carry unfilled values.
-  // Remove this once they are complete — legal pages are ordinarily worth
-  // indexing, and a privacy policy a search engine cannot see is less useful
-  // to the person looking for it.
-  robots: { index: false, follow: false },
 };
 
 export default function LegalIndexPage() {

@@ -1,4 +1,7 @@
-@import "tailwindcss";
+/* Must come before the Tailwind import: CSS requires @import rules to appear
+   before any other rule, and Tailwind's import expands into rules. */
+   @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
+   @import "tailwindcss";
 
 /**
  * DAK design tokens, carried across from the Vite build's tailwind.config.js.
@@ -28,11 +31,21 @@
   --color-muted: #A3A39D;         /* secondary text */
   --color-faint: #6F6F69;         /* placeholders, disabled */
 
-  /* Pages fade up slightly on entry rather than snapping into place. Small
-     distance and short duration: enough to read as a transition, not enough to
-     delay someone who navigates quickly. */
-  --animate-page-enter: pageEnter 500ms ease-out;
-}
+/* One typeface for both scripts. Left to the browser, Korean falls to Malgun
+     Gothic on Windows and Apple SD Gothic Neo on macOS — so the site looks
+     different depending on who is reading it, and the Latin and Hangul in the
+     same sentence come from two unrelated designs.
+     The variable dynamic subset loads only the glyphs a page actually uses,
+     which matters here: the full Korean set is over a megabyte. */
+     --font-sans: "Pretendard Variable", Pretendard, -apple-system,
+     BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+     "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+ 
+   /* Pages fade up slightly on entry rather than snapping into place. Small
+      distance and short duration: enough to read as a transition, not enough to
+      delay someone who navigates quickly. */
+   --animate-page-enter: pageEnter 500ms ease-out;
+ }
 
 @keyframes pageEnter {
   0%   { opacity: 0; transform: translateY(14px); }
@@ -41,10 +54,14 @@
 
 /* The app is dark-only for now, so the background is set here rather than
    through a theme toggle. */
-body {
-  background-color: var(--color-night);
-  color: var(--color-snow);
-}
+   body {
+    background-color: var(--color-night);
+    color: var(--color-snow);
+    font-family: var(--font-sans);
+    /* Hangul carries more visual weight than Latin at the same size, so slightly
+       tighter tracking keeps mixed lines from looking loose. */
+    letter-spacing: -0.01em;
+  }
 
 /**
  * Chrome paints its own background on autofilled inputs, which overrides the

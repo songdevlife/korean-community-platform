@@ -28,6 +28,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
+      <head>
+        {/* Opening the connection while the HTML is still parsing, rather than
+            waiting until the CSS import is reached. Korean text renders in a
+            fallback face until the subset arrives, so the swap is visible. */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+      </head>
       <body>
         <AuthProvider>
           <Layout>{children}</Layout>

@@ -607,7 +607,9 @@ Some of the services DAK relies on store or process personal information outside
 
 -   **United States** — the provider used to draft Korean-language summaries of Australian news articles. Only the text of the source article is sent; no personal information is included in these requests.
 
-No other overseas providers are in use. DAK does not currently operate email delivery, analytics, payment processing or a customer support platform, and this section will be updated before any of them is introduced.
+-   **Content delivery network** — the web font used across the site is served from a public content delivery network. Your browser requests the font files directly, which means the network operating it receives your IP address and browser details. No account information is involved, and this happens whether or not you are signed in.
+
+DAK does not currently operate email delivery, analytics, payment processing or a customer support platform, and this section will be updated before any of them is introduced.
 
 Before disclosing personal information to an overseas recipient, we will take reasonable steps required by applicable law to ensure the recipient handles it consistently with the Australian Privacy Principles, unless an exception applies.
 

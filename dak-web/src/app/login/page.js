@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { login, register } from '@/api/auth';
 import { useAuth } from '@/context/AuthContext';
@@ -221,14 +222,33 @@ export default function LoginPage() {
                          bg-gradient-to-r from-transparent via-korea-blue to-transparent
                          group-hover:opacity-100 transition-opacity duration-300"
             />
-            {busy
+{busy
               ? 'Please wait…'
               : mode === 'login'
                 ? 'Log in'
                 : 'Create account'}
           </button>
 
-          <p className={`text-center text-[13px] text-muted mt-[22px] ${REGISTRATION_OPEN ? '' : 'hidden'}`}>
+          {/* Shown at the point consent is actually given, in Korean, because
+              that is the language of everyone this is written for — while the
+              documents themselves are in English and are the versions that
+              govern. Saying which one governs is the part that matters if the
+              two are ever read differently. */}
+          {mode === 'signup' && (
+            <p className="text-center text-[12px] text-faint leading-relaxed mt-3">
+              가입하면{' '}
+              <Link href="/legal/terms-of-service" className="text-muted underline underline-offset-2 hover:text-snow">
+                이용약관
+              </Link>
+              과{' '}
+              <Link href="/legal/privacy-policy" className="text-muted underline underline-offset-2 hover:text-snow">
+                개인정보처리방침
+              </Link>
+              에 동의하게 됩니다. 두 문서는 영문이 정본입니다.
+            </p>
+          )}
+
+          <p className="text-center text-[13px] text-muted mt-[22px]">
           {mode === 'login' ? (
               <>
                 Don&apos;t have an account?{' '}
