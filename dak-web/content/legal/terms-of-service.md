@@ -1,6 +1,6 @@
 # Terms of Service
 
-**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+**Effective Date:** 31 July 2026
 
 ## 1. Acceptance of These Terms
 
@@ -254,4 +254,4 @@ Any disputes arising from these Terms shall be subject to the jurisdiction of th
 
 Questions regarding these Terms may be submitted through DAK's official support channels or by email at **admin@discoveradelaidekorea.au.**
 
-*Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
+*Last Updated: 31 July 2026*

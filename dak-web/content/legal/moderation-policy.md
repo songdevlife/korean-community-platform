@@ -2,7 +2,7 @@
 
 **Moderation & Enforcement Policy**
 
-**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+**Effective Date:** 31 July 2026
 
 ## 1. Purpose
 
@@ -218,4 +218,4 @@ The latest version of this Policy will always be available on the DAK website.
 
 Questions regarding moderation decisions or this Policy may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 
-*Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
+*Last Updated: 31 July 2026*

@@ -1,7 +1,7 @@
 # Privacy Policy
 
-**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**\
-**Last Updated:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+**Effective Date:** 31 July 2026\
+**Last Updated:** 31 July 2026
 
 ## 1. About This Privacy Policy
 
@@ -849,7 +849,7 @@ You may complain if you believe DAK has mishandled your personal information or 
 
 Send your complaint to:
 
-**Privacy Contact:** **[TO BE COMPLETED: PRIVACY CONTACT — NAME OR ROLE]**\
+**Privacy Contact:** DAK Privacy Contact\
 **Email:** admin@discoveradelaidekorea.au
 
 
@@ -885,7 +885,7 @@ The OAIC may ordinarily expect you to complain to DAK first and allow us a reaso
 
 ## 24. Children and Young People
 
-DAK is intended primarily for users aged **[TO BE COMPLETED: MINIMUM AGE — the registration form does not currently collect age]**.
+DAK is intended primarily for users aged 16 years and over.
 
 We do not knowingly seek to collect personal information from children below the minimum permitted age without appropriate authorisation.
 

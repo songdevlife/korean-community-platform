@@ -2,7 +2,7 @@
 
 **Content & Copyright Policy**
 
-**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+**Effective Date:** 31 July 2026
 
 ## 1. Purpose
 
@@ -229,4 +229,4 @@ Continued use of DAK after changes become effective constitutes acceptance of th
 
 Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 
-*Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
+*Last Updated: 31 July 2026*

@@ -2,7 +2,7 @@
 
 **AI Usage & Disclaimer Policy**
 
-**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+**Effective Date:** 31 July 2026
 
 ## 1. Purpose
 
@@ -195,4 +195,4 @@ Continued use of AI features after changes become effective constitutes acceptan
 
 Questions regarding this AI Usage & Disclaimer Policy may be submitted to admin@discoveradelaidekorea.au.
 
-*Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
+*Last Updated: 31 July 2026*

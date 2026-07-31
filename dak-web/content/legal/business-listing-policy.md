@@ -1,6 +1,6 @@
 # Business Listing Policy
 
-**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+**Effective Date:** 31 July 2026
 
 ## 1. Purpose
 
@@ -221,4 +221,4 @@ Continued use of DAK constitutes acceptance of the updated Policy.
 
 Questions regarding this Policy may be submitted to admin@discoveradelaidekorea.au.
 
-*Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
+*Last Updated: 31 July 2026*

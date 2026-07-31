@@ -1,6 +1,6 @@
 # Community Guidelines
 
-**Effective Date:** **[TO BE COMPLETED: EFFECTIVE DATE]**
+**Effective Date:** 31 July 2026
 
 ## 1. Our Community
 
@@ -219,4 +219,4 @@ Continued use of DAK after updates constitutes acceptance of the revised Guideli
 
 The latest version of these Community Guidelines will always be available on the DAK website.
 
-*Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
+*Last Updated: 31 July 2026*
