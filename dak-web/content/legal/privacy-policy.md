@@ -44,8 +44,8 @@ business name]\
 **Trading Name:** Discover Adelaide Korea / DAK\
 **ABN:** 29 114 002 930\
 **Location:** Adelaide, South Australia, Australia\
-**Privacy Contact Email:** privacy@discoveradelaidekorea.au\
-**Postal Address:** **[TO BE COMPLETED: POSTAL ADDRESS]**
+**Privacy Contact Email:** admin@discoveradelaidekorea.au\
+
 
 References to "DAK", "we", "us" and "our" mean the entity identified above.
 
@@ -743,23 +743,23 @@ We retain personal information only for as long as reasonably necessary for:
 
 -   Complying with legal obligations
 
-Indicative retention periods should be confirmed before launch and may include:
+DAK does not currently operate automatic deletion after a fixed period. Information is retained while it is needed for the purposes above, and is deleted when you ask us to delete it or when we determine it is no longer required.
 
--   Active account information: while the account remains active
+In practice this means:
 
--   Deleted account records: **[TO BE COMPLETED: RETENTION PERIOD — must match what the system deletes]**, subject to exceptions
+-   Account information: retained while the account exists, and deleted when you close your account or ask us to delete it
 
--   Security logs: **[TO BE COMPLETED: RETENTION PERIOD — must match what the system deletes]**
+-   Content you have published: remains visible until you delete it or ask us to remove it
 
--   Payment and taxation records: as required by applicable law
+-   Search records: retained indefinitely, and not linked to any account or person
 
--   Moderation records: **[TO BE COMPLETED: RETENTION PERIOD — must match what the system deletes]**, depending on severity
+-   Payment and taxation records: retained as required by applicable law
 
--   Support enquiries: **[TO BE COMPLETED: RETENTION PERIOD — must match what the system deletes]**
+-   Backup copies: retained for disaster recovery only, and overwritten in the ordinary course of backup rotation
 
--   Backup copies: until rotated or securely overwritten
+If you want your personal information deleted, contact us using the details in section 29 and we will action the request unless we are required or authorised by law to retain it.
 
--   Unsuccessful business verification material: **[TO BE COMPLETED: RETENTION PERIOD — must match what the system deletes]**
+We will introduce scheduled deletion as the platform develops, and this section will be updated to describe it before it takes effect.
 
 When information is no longer required, we will take reasonable steps to destroy it or de-identify it, unless retention is required or authorised by law.
 
@@ -773,7 +773,7 @@ You may request access to personal information that DAK holds about you.
 
 Requests should be sent to:
 
-**Email:** privacy@discoveradelaidekorea.au
+**Email:** admin@discoveradelaidekorea.au
 
 Your request should include sufficient information to identify:
 
@@ -826,7 +826,7 @@ You may request correction of personal information that is:
 
 You may update certain information directly through your account settings or contact us at:
 
-**Email:** privacy@discoveradelaidekorea.au
+**Email:** admin@discoveradelaidekorea.au
 
 We will respond within a reasonable period and ordinarily within **30 days**.
 
@@ -850,8 +850,8 @@ You may complain if you believe DAK has mishandled your personal information or 
 Send your complaint to:
 
 **Privacy Contact:** **[TO BE COMPLETED: PRIVACY CONTACT — NAME OR ROLE]**\
-**Email:** privacy@discoveradelaidekorea.au\
-**Postal Address:** **[TO BE COMPLETED: POSTAL ADDRESS]**
+**Email:** admin@discoveradelaidekorea.au
+
 
 Please include:
 
@@ -867,7 +867,7 @@ Please include:
 
 We will:
 
-1.  Acknowledge the complaint within **[TO BE COMPLETED: RESPONSE TIME COMMITMENT]**.
+1.  Acknowledge the complaint within 7 business days.
 
 2.  Investigate the complaint fairly.
 

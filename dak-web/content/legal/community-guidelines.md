@@ -26,7 +26,7 @@ Do not:
 
 Healthy disagreement is welcome. Personal attacks are not.
 
-DAK reserves the right to remove content or take moderation action where respectful discussion standards are not maintained.qn
+DAK reserves the right to remove content or take moderation action where respectful discussion standards are not maintained.
 
 ## 3. Post Accurate Information
 

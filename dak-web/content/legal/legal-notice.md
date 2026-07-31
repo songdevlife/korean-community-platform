@@ -14,9 +14,7 @@ References to "DAK", "we", "our", and "us" throughout this website refer to the 
 
 General enquiries may be submitted through:
 
--   Contact Form (available after launch)
-
--   Support Email: support@discoveradelaidekorea.au
+-   Support Email: admin@discoveradelaidekorea.au
 
 -   Website:
 [https://discoveradelaidekorea.au](https://discoveradelaidekorea.au/)
@@ -28,8 +26,6 @@ DAK may update its contact details from time to time. The latest contact informa
 Where applicable, DAK may operate under a registered Australian Business Number (ABN).
 
 ABN: 29 114 002 930
-
-Business Name: **[TO BE COMPLETED: REGISTERED BUSINESS NAME — ASIC registration outstanding]**
 
 Registered Country: Australia
 
