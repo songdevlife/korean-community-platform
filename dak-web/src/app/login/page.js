@@ -127,12 +127,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {!REGISTRATION_OPEN && (
-          <p className="text-[13px] text-faint text-center mb-6">
-            New accounts are not open yet.
-          </p>
-        )}
-
         <form onSubmit={handleSubmit}>
           {mode === 'signup' && (
             <div className="mb-[18px]">
@@ -248,8 +242,20 @@ export default function LoginPage() {
             </p>
           )}
 
-          <p className="text-center text-[13px] text-muted mt-[22px]">
-          {mode === 'login' ? (
+          {/* Hidden while registration is closed: offering to switch to a form
+              that has been removed leaves the reader clicking at nothing. */}
+              
+          {/* Sits where the sign-up prompt would be, and replaces it. Above the
+              form it was the first thing someone arriving to log in had to read,
+              about something that does not concern them. */}
+          {!REGISTRATION_OPEN && (
+            <p className="text-center text-[13px] text-muted mt-[22px]">
+              New accounts are not open yet.
+            </p>
+          )}
+
+          <p className={`text-center text-[13px] text-muted mt-[22px] ${REGISTRATION_OPEN ? '' : 'hidden'}`}>
+            {mode === 'login' ? (
               <>
                 Don&apos;t have an account?{' '}
                 <button
