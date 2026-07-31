@@ -25,6 +25,8 @@ applicable law.
 
 You are responsible for all activities conducted through your account.
 
+You must not create an account on behalf of another person without proper authority or permission.
+
 ## 3. User Accounts
 
 You agree to:
@@ -36,6 +38,8 @@ You agree to:
 -   Notify us immediately of any unauthorised use of your account.
 
 We may suspend or terminate accounts that violate these Terms.
+
+We may also require users to verify their identity or account ownership where reasonably necessary to protect the security or integrity of the platform.
 
 ## 4. Acceptable Use
 
@@ -53,7 +57,10 @@ You agree not to:
 
 -   Scrape, copy, or harvest platform content without permission.
 
+-   Use automated tools, bots or scripts in a manner that unreasonably interferes with the operation, security or performance of DAK.
+
 -   Circumvent security or access restrictions.
+
 
 ## 5. Community Content
 
@@ -91,6 +98,8 @@ You must not post content that is:
 
 DAK may remove content or restrict accounts that violate these Terms.
 
+DAK may also preserve, review or disclose content where reasonably necessary to investigate suspected policy violations, protect users or comply with legal obligations.
+
 ## 6. Business Directory
 
 Businesses are responsible for ensuring that their listings are accurate, complete, and up to date.
@@ -98,6 +107,8 @@ Businesses are responsible for ensuring that their listings are accurate, comple
 DAK may verify information where practical but does not guarantee the accuracy of business listings.
 
 Business owners remain solely responsible for the information they publish.
+
+DAK reserves the right to edit, suspend, remove or refuse business listings that breach these Terms or other applicable DAK policies.
 
 ## 7. Reviews and Ratings
 
@@ -121,6 +132,8 @@ Summaries are provided for convenience only.
 
 Users should consult the original source or relevant authority before relying on any information.
 
+Publication of summaries does not imply endorsement of the original source or guarantee the accuracy or completeness of the underlying information.
+
 ## 9. AI Features
 
 DAK may provide AI-assisted services including search, summaries, recommendations, and local assistance.
@@ -136,6 +149,8 @@ professional advice.
 
 Users are responsible for verifying important information independently.
 
+Users should not submit confidential, highly sensitive or third-party personal information to AI features unless authorised to do so.
+
 ## 10. Intellectual Property
 
 Unless otherwise stated, DAK and its original content, branding, software, graphics, and design are owned by DAK or its licensors.
@@ -143,6 +158,8 @@ Unless otherwise stated, DAK and its original content, branding, software, graph
 You may not reproduce, distribute, modify, or commercially exploit DAK content without prior written permission.
 
 You retain ownership of the content you submit, but grant DAK a non-exclusive, worldwide, royalty-free licence to host, display, reproduce, and distribute that content for operating and promoting the service.
+
+You represent and warrant that you have all necessary rights, permissions and licences to submit the content and grant the licence described above.
 
 ## 11. Premium Services
 
@@ -157,6 +174,8 @@ If DAK offers paid subscriptions:
 -   Refunds will be handled in accordance with applicable consumer laws
 and any published refund policy.
 
+-   DAK may modify subscription pricing or available Premium features upon reasonable prior notice, to the extent permitted by applicable law.
+
 ## 12. Third-Party Services
 
 DAK may contain links to third-party websites or services.
@@ -164,6 +183,8 @@ DAK may contain links to third-party websites or services.
 We are not responsible for the content, security, availability, or privacy practices of third-party services.
 
 Users access third-party services at their own risk.
+
+Your use of third-party services is governed by the terms and privacy policies of those third parties.
 
 ## 13. Suspension and Termination
 
@@ -181,6 +202,8 @@ DAK may suspend or terminate accounts that:
 
 Where appropriate, users may appeal moderation decisions through our support process.
 
+DAK may retain certain account information following suspension or termination where reasonably necessary for legal compliance, fraud prevention, dispute resolution or enforcement purposes.
+
 ## 14. Disclaimer
 
 DAK is provided on an "as is" and "as available" basis.
@@ -197,15 +220,21 @@ To the maximum extent permitted by law, DAK makes no warranties regarding:
 
 Service interruptions, bugs, or errors may occur.
 
+Users acknowledge that use of DAK is at their own risk to the extent permitted by applicable law.
+
 ## 15. Limitation of Liability
 
 To the extent permitted by law, DAK and its operators are not liable for indirect, incidental, special, consequential, or punitive damages arising from the use of the service.
 
 Nothing in these Terms excludes rights that cannot be excluded under applicable consumer protection laws.
 
+Where liability cannot be excluded by law, DAK's liability will be limited to the maximum extent permitted by applicable law.
+
 ## 16. Indemnity
 
 You agree to indemnify and hold harmless DAK, its operators, employees, and affiliates from claims, liabilities, losses, or expenses arising from your misuse of the service or your breach of these Terms.
+
+This indemnity applies only to the extent permitted by applicable law.
 
 ## 17. Changes to These Terms
 
@@ -223,6 +252,6 @@ Any disputes arising from these Terms shall be subject to the jurisdiction of th
 
 ## 19. Contact
 
-Questions regarding these Terms may be submitted through DAK's official support channels once the service launches.
+Questions regarding these Terms may be submitted through DAK's official support channels or by email at **admin@discoveradelaidekorea.au.**
 
 *Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***

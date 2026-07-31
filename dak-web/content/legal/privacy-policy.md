@@ -250,6 +250,8 @@ When you use AI-assisted features, we may process:
 
 You should not enter passwords, payment card details, government identifiers, medical records, immigration documents or other unnecessary sensitive information into AI features.
 
+Information submitted to AI features may be processed by third-party AI service providers solely for the purpose of generating responses, subject to applicable contractual and privacy safeguards.
+
 **4.9 Communications**
 
 We may collect information when you:
@@ -299,6 +301,8 @@ We may collect personal information:
 -   From another user who reports or refers to your content
 
 Where reasonable and practicable, we collect personal information directly from the individual concerned.
+
+Where we collect personal information indirectly, we will do so only where permitted by applicable law.
 
 ## 6. Anonymous and Pseudonymous Use
 
@@ -451,6 +455,8 @@ You should not publish another person's personal information without their permi
 
 Deleting your account may not immediately remove all public content. Some content may be retained or de-identified where necessary for community integrity, legal compliance, dispute resolution or enforcement purposes.
 
+Search engines and third-party services may retain cached or archived copies of publicly available content beyond DAK's control.
+
 ## 11. AI-Assisted Features
 
 DAK may use artificial intelligence systems to assist with:
@@ -527,6 +533,8 @@ DAK does not sell personal information in the ordinary meaning of selling person
 
 We do not intend to rent user contact lists to third parties for unrelated marketing.
 
+Where required by law, DAK may disclose personal information without prior notice to comply with legal obligations or lawful requests from government authorities.
+
 ## 13. Third-Party Login Services
 
 DAK may allow you to sign in using services such as:
@@ -588,6 +596,8 @@ We will take reasonable steps to process opt-out requests promptly.
 Service and transactional communications, such as security alerts, password resets, subscription notices and policy updates, may still be sent where necessary.
 
 DAK will also seek to comply with applicable requirements of the **Spam Act 2003 (Cth)**.
+
+You may continue to receive essential service communications even after opting out of marketing communications.
 
 ## 15. Overseas Disclosure and Processing
 
@@ -693,6 +703,8 @@ Depending on the stage of the platform, safeguards may include:
 
 No internet service is completely secure. We cannot guarantee that unauthorised access or disclosure will never occur.
 
+Users are responsible for maintaining the confidentiality of their account credentials and notifying DAK promptly if they believe their account has been compromised.
+
 You should use a strong, unique password and protect access to your email and devices.
 
 ## 19. Data Breaches
@@ -752,6 +764,8 @@ Indicative retention periods should be confirmed before launch and may include:
 When information is no longer required, we will take reasonable steps to destroy it or de-identify it, unless retention is required or authorised by law.
 
 Deletion from active systems may not immediately remove information from secure backups.
+
+Secure backup copies will be retained only for disaster recovery and security purposes and will be overwritten or deleted in accordance with DAK's backup retention practices.
 
 ## 21. Access to Personal Information
 
@@ -865,6 +879,8 @@ We will:
 
 If you are not satisfied with our response, you may contact the **Office of the Australian Information Commissioner**.
 
+Nothing in this Privacy Policy limits your rights to make a complaint to a regulator or seek other remedies available under applicable law.
+
 The OAIC may ordinarily expect you to complain to DAK first and allow us a reasonable opportunity to respond.
 
 ## 24. Children and Young People
@@ -912,6 +928,8 @@ Essential cookies may be necessary for the platform to function.
 Where required, we will seek consent before activating non-essential analytics, advertising or personalisation cookies.
 
 Further details may be provided in the DAK Cookie Policy.
+
+You may manage or disable cookies through your browser settings, although some features of DAK may not function correctly as a result.
 
 ## 26. External Links and Embedded Services
 
@@ -961,6 +979,8 @@ The current version will be published on the DAK website with an updated effecti
 
 Where changes materially affect how we handle personal information, we may provide additional notice through email, account notifications or the website.
 
+Continued use of DAK after the updated Privacy Policy becomes effective constitutes acceptance of the revised Policy, to the extent permitted by applicable law.
+
 ## Search Logging
 
 DAK records the words entered into its search box, together with the number of results returned and the time of the search. This record carries no account identifier, no IP address and no session identifier, and cannot be linked back to the person who searched.
@@ -971,8 +991,7 @@ It exists so that DAK can see what readers are looking for and, in particular, w
 
 For privacy enquiries, access requests, correction requests or complaints:
 
-**Privacy Contact:** **[TO BE COMPLETED: PRIVACY CONTACT — NAME OR ROLE]**\
-**Email:** privacy@discoveradelaidekorea.au\
-**Postal Address:** **[TO BE COMPLETED: POSTAL ADDRESS]**\
+**Privacy Contact:** DAK Privacy Team\
+**Email:** admin@discoveradelaidekorea.au\
 **Website:**
 [[https://discoveradelaidekorea.au](https://discoveradelaidekorea.au/)]

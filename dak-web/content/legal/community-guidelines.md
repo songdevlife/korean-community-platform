@@ -26,6 +26,8 @@ Do not:
 
 Healthy disagreement is welcome. Personal attacks are not.
 
+DAK reserves the right to remove content or take moderation action where respectful discussion standards are not maintained.qn
+
 ## 3. Post Accurate Information
 
 Before posting information:
@@ -37,6 +39,8 @@ Before posting information:
 -   Avoid spreading rumours or misinformation.
 
 When sharing important public information, include the original source whenever possible.
+
+Users are responsible for ensuring that information they publish is accurate to the best of their knowledge at the time of posting.
 
 ## 4. Spam and Advertising
 
@@ -53,6 +57,8 @@ Do not:
 -   Manipulate engagement.
 
 Business promotion should use the appropriate business listing or approved promotional features where available.
+
+DAK may remove promotional content that is posted outside the designated business promotion channels.
 
 ## 5. Reviews
 
@@ -71,6 +77,8 @@ Do not:
 -   Accept payment for positive reviews without disclosure.
 
 -   Coordinate review manipulation.
+
+-   Businesses and users remain solely responsible for the accuracy and legality of any reviews they submit.
 
 ## 6. Illegal or Harmful Content
 
@@ -122,6 +130,8 @@ Do not publish another person's:
 
 -   Personal photographs without permission
 
+-   Do not publish any personal information where doing so would breach applicable privacy laws or another person's reasonable expectation of privacy.
+
 ## 9. AI-Generated Content
 
 AI-generated content is permitted provided that:
@@ -133,6 +143,9 @@ AI-generated content is permitted provided that:
 -   It complies with these Guidelines.
 
 -   The user remains responsible for its accuracy.
+
+-   AI-generated content must not be presented as verified factual information unless independently confirmed.
+
 
 ## 10. Business Listings
 
@@ -148,6 +161,8 @@ Business owners should:
 
 Repeated false information may result in listing suspension.
 
+Business Listings are also subject to the DAK Business Listing Policy.
+
 ## 11. Australia Updates
 
 DAK may publish AI-assisted summaries of publicly available information.
@@ -156,6 +171,8 @@ Users should not repost copyrighted material in full.
 
 Whenever possible, link to the original source instead of copying substantial portions of the content.
 
+AI-generated summaries are provided for informational purposes and do not replace official announcements or original sources.
+
 ## 12. Reporting Content
 
 Users may report content they believe violates these Guidelines.
@@ -163,6 +180,8 @@ Users may report content they believe violates these Guidelines.
 Reports are reviewed by DAK moderators.
 
 Submitting false or abusive reports may itself violate these Guidelines.
+
+DAK may request additional information where necessary to investigate reported content.
 
 ## 13. Enforcement
 
@@ -180,7 +199,9 @@ Depending on the severity of the violation, DAK may:
 
 -   Remove business listings.
 
-Serious or repeated violations may result in immediate account termination.
+Serious or repeated violations may result in immediate account termination.\
+
+DAK may take immediate action without prior notice where necessary to protect users, comply with legal obligations, or maintain platform security.
 
 ## 14. Appeals
 
@@ -188,10 +209,14 @@ If you believe moderation action was taken in error, you may contact DAK through
 
 Appeals will be reviewed in good faith, but moderation decisions remain at DAK's discretion.
 
+Submission of an appeal does not guarantee that moderation action will be reversed.
+
 ## 15. Changes
 
 These Community Guidelines may be updated from time to time.
 
 Continued use of DAK after updates constitutes acceptance of the revised Guidelines.
+
+The latest version of these Community Guidelines will always be available on the DAK website.
 
 *Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***

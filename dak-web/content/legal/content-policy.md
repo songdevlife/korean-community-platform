@@ -66,6 +66,8 @@ Unless otherwise stated, all original DAK content, including:
 
 is owned by DAK or its licensors.
 
+Ownership of third-party content remains with its respective owner unless otherwise stated.
+
 Unauthorised copying, reproduction, redistribution, or commercial use is prohibited.
 
 ## 4. User Content
@@ -94,6 +96,7 @@ your content solely for operating, improving, and promoting the DAK platform.
 
 This licence ends when the content is deleted, except where retention is required by law or for legitimate operational purposes.
 
+Users represent and warrant that they have the necessary rights and permissions to submit the content they upload.
 ## 5. Business Content
 
 Business owners are responsible for ensuring they have the legal right to upload:
@@ -129,6 +132,8 @@ applicable law.
 
 Whenever practical, users should consult the original source for complete information.
 
+DAK does not claim ownership of the original source materials referenced in Australia Updates.
+
 ## 7. AI-Generated Content
 
 AI-generated summaries and recommendations are created to improve accessibility and understanding.
@@ -136,6 +141,8 @@ AI-generated summaries and recommendations are created to improve accessibility 
 They are not intended to replace the original source.
 
 Users should not reproduce AI-generated content from DAK for commercial purposes without permission.
+
+AI-generated content may contain inaccuracies and should be independently verified where accuracy is important.
 
 ## 8. Copyright Infringement
 
@@ -158,6 +165,8 @@ unauthorised
 
 DAK may request additional information where necessary.
 
+Knowingly submitting false or fraudulent copyright complaints may result in action under DAK's policies.
+
 ## 9. Removal of Content
 
 DAK may remove content where it reasonably believes that:
@@ -171,6 +180,8 @@ DAK may remove content where it reasonably believes that:
 -   The content presents a significant legal risk.
 
 Where appropriate, DAK may temporarily disable access while a complaint is reviewed.
+
+DAK may remove or disable access to content without prior notice where reasonably necessary to comply with legal obligations or protect the platform.
 
 ## 10. Repeat Infringers
 
@@ -192,6 +203,8 @@ Ownership of third-party content remains with its respective owner.
 
 Inclusion on DAK does not transfer ownership or imply endorsement.
 
+Users should comply with the applicable terms and conditions of third-party services when accessing external content.
+
 ## 12. Fair Use and Legal Exceptions
 
 Nothing in this Policy limits any rights or exceptions available under applicable copyright laws, including any permitted uses recognised by Australian law.
@@ -201,6 +214,8 @@ Nothing in this Policy limits any rights or exceptions available under applicabl
 Copyright reports should be submitted through DAK's official support channels.
 
 DAK will review reports within a reasonable time and may contact the reporting party or the content uploader for additional information before making a decision.
+
+Submission of a report does not guarantee that content will be removed.
 
 ## 14. Changes to this Policy
 
@@ -212,6 +227,6 @@ Continued use of DAK after changes become effective constitutes acceptance of th
 
 ## 15. Contact
 
-Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels once the service launches.
+Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 
 *Last Updated: **[TO BE COMPLETED: EFFECTIVE DATE]***
