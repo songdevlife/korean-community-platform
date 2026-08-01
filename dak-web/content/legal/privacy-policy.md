@@ -186,33 +186,16 @@ DAK does not intend to store complete payment card numbers. Payments will ordina
 
 We may automatically collect:
 
--   IP address
-
--   Browser type
-
--   Device type
-
--   Operating system
-
--   Device identifiers
-
--   Session information
-
--   Login timestamps
-
--   Pages viewed
-
--   Search queries
-
--   Links clicked
-
--   Referring website
-
--   Approximate location derived from an IP address
-
--   Cookie and analytics information
-
--   Error, security and diagnostic logs
+- IP address (processed only in truncated or anonymised form where practicable)
+- Browser type
+- Operating system
+- Screen resolution
+- Device type
+- Pages viewed
+- Referring website
+- Approximate country or region derived from an IP address
+- Error, security and diagnostic logs
+- Aggregated website analytics
 
 **4.7 Location information**
 
@@ -410,7 +393,11 @@ We may collect, hold and use personal information to:
 
 -   Improve our products and user experience
 
--   Perform analytics and measure platform performance
+-   Understand how visitors use DAK
+
+-   Improve website navigation and user experience
+
+-   Perform anonymous analytics and measure platform performance
 
 -   Develop new features
 
@@ -615,6 +602,14 @@ Before disclosing personal information to an overseas recipient, we will take re
 
 Because internet and cloud services are global, it may not always be practicable to identify every location in which information is technically routed or temporarily processed. We will identify likely overseas locations where practicable.
 
+### Website Analytics
+
+DAK uses GoatCounter, a privacy-friendly analytics service operated by Martin Tournoij.
+
+Depending on the hosting environment used by GoatCounter, anonymous analytics information may be processed or stored outside Australia.
+
+GoatCounter does not use cookies or persistent identifiers and is used solely to understand website usage and improve the platform.
+
 ## 16. Government-Related Identifiers
 
 DAK does not ordinarily collect or use government-related identifiers such as:
@@ -638,6 +633,8 @@ We will not adopt a government-related identifier as a DAK user identifier.
 We will only use or disclose a government-related identifier where permitted or required by law.
 
 Users should not publish government identifiers in posts, reviews, profiles, business listings or AI prompts.
+
+
 
 ## 17. Quality and Accuracy of Information
 
@@ -753,7 +750,7 @@ In practice this means:
 
 -   Content you have published: remains visible until you delete it or ask us to remove it
 
--   Search records: retained indefinitely, and not linked to any account or person
+-   Search records and anonymous website analytics are retained until manually removed as part of DAK's data management practices. DAK does not currently apply automatic deletion periods to analytics records, and they are not linked to any account or identifiable individual.
 
 -   Payment and taxation records: retained as required by applicable law
 
@@ -903,33 +900,30 @@ Parents or guardians who believe a child has provided personal information may c
 
 Before launch, DAK must confirm its minimum age, parental consent approach and whether community or location features will be available to minors.
 
-## 25. Cookies and Similar Technologies
+## 25. Cookies and Privacy-Friendly Analytics
 
-DAK may use cookies, local storage, pixels and similar technologies for:
+DAK does not currently use cookies or similar persistent identifiers for website analytics.
 
--   Authentication
+To understand how the website is used, DAK uses GoatCounter, a privacy-friendly analytics service operated by Martin Tournoij.
 
--   Session management
+GoatCounter collects limited technical information including:
 
--   Security
+- Pages visited
+- Referring website
+- Browser type
+- Operating system
+- Screen resolution
+- Approximate country or region
 
--   Remembering preferences
+GoatCounter does not use cookies, advertising identifiers, fingerprinting or cross-site tracking technologies.
 
--   Analytics
+Analytics information is collected solely to:
 
--   Performance monitoring
+- Understand how visitors use DAK
+- Improve the website and user experience
+- Measure platform performance
 
--   Personalisation
-
--   Measuring promotions
-
--   Preventing fraud and abuse
-
-Essential cookies may be necessary for the platform to function.
-
-Where required, we will seek consent before activating non-essential analytics, advertising or personalisation cookies.
-
-Further details may be provided in the DAK Cookie Policy.
+Users may disable JavaScript or use browser privacy features, although doing so may reduce the accuracy of anonymous usage statistics.
 
 You may manage or disable cookies through your browser settings, although some features of DAK may not function correctly as a result.
 

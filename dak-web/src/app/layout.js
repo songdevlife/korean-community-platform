@@ -1,5 +1,7 @@
+import Script from 'next/script';
 import { AuthProvider } from '@/context/AuthContext';
 import Layout from '@/components/Layout';
+import Analytics from '@/components/Analytics';
 import './globals.css';
 
 /**
@@ -60,6 +62,19 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <Layout>{children}</Layout>
         </AuthProvider>
+        {/* GoatCounter. Chosen over GA4 because it sets no cookies and stores
+            no persistent identifier, which keeps this to a disclosure in the
+            privacy policy rather than a consent banner and the logic to honour
+            one. no_onload because Analytics.jsx counts every route change
+            itself; without it the first view of a session is counted twice.
+            allow_local stays off, so nothing from localhost reaches the data. */}
+        <Script
+          data-goatcounter="https://dak.goatcounter.com/count"
+          data-goatcounter-settings='{"no_onload": true, "allow_local": false}'
+          src="//gc.zgo.at/count.js"
+          strategy="afterInteractive"
+        />
+        <Analytics />
       </body>
     </html>
   );
