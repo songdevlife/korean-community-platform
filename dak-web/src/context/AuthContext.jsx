@@ -48,6 +48,17 @@ export function AuthProvider({ children }) {
     localStorage.setItem('dak_user', JSON.stringify(authResponse.user));
     setUser(authResponse.user);
   }
+  /**
+   * Replaces the stored user without touching the tokens.
+   *
+   * saveSession expects a full auth response and would clear the tokens it
+   * cannot find in a profile response. Editing a profile does not re-issue a
+   * session, so the two are separate operations.
+   */
+  function updateUser(nextUser) {
+    localStorage.setItem('dak_user', JSON.stringify(nextUser));
+    setUser(nextUser);
+  }
 
   function clearSession() {
     localStorage.removeItem('dak_access_token');
@@ -83,7 +94,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, saveSession, clearSession, signOut }}>
+    <AuthContext.Provider value={{ user, loading, saveSession, updateUser, clearSession, signOut }}>
       {children}
     </AuthContext.Provider>
   );

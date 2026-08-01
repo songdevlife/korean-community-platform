@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Heart, ShieldCheck, ChevronRight, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import DisplayNameEditor from '@/components/DisplayNameEditor';
 import { fetchSavedItems } from '@/api/savedItems';
 import { resourceLink, resourceIcon } from '@/utils/savedItems';
 import PageShell from '@/components/PageShell';
@@ -87,9 +88,9 @@ export default function DashboardPage() {
                         flex items-center justify-center text-xl font-bold">
           {user?.displayName?.[0]?.toUpperCase() || '?'}
         </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-snow truncate">{user?.displayName}</p>
-          <p className="text-sm text-muted truncate">{user?.email}</p>
+        <div className="min-w-0 flex-1">
+          <DisplayNameEditor />
+          <p className="text-sm text-muted truncate mt-0.5">{user?.email}</p>
         </div>
       </div>
 
