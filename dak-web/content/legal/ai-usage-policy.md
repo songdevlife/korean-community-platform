@@ -28,7 +28,7 @@ DAK may provide AI-powered features including, but not limited to:
 
 -   AI Personalised Recommendations
 
--   Australia Updates AI Summaries
+-   Australia Updates AI Titles and Summaries
 
 The features available may change over time.
 
@@ -98,11 +98,21 @@ AI-generated content should not be relied upon as the sole basis for making impo
 
 ## 6. Australia Updates
 
-Australia Updates may include AI-assisted summaries of publicly available information.
+Australia Updates may include AI-assisted titles and summaries of publicly available information.
 
-These summaries are intended to make information easier to understand and should not replace official announcements.
+AI generates both the title and summary by rewriting factual information from the original source. DAK does not use AI to produce direct translations or reproduce the original article.
+
+The purpose is to help users quickly understand important information while encouraging them to refer to the original source where appropriate.
 
 Where reasonably possible, DAK will provide links or references to the original source.
+
+Before publication, AI-generated titles and summaries may be reviewed and edited by a DAK administrator to improve factual accuracy, clarity, consistency and compliance with DAK editorial standards.
+
+AI may also assist in determining whether publicly available content is relevant to DAK users before it is submitted for editorial review.
+
+Final publication decisions remain under the control of DAK administrators.
+
+Where DAK indicates that content is AI-generated, this refers to both the AI-generated title and AI-generated summary produced during the same generation process.
 
 ## 7. AI Search Results
 
@@ -179,7 +189,7 @@ Nothing in this Policy excludes rights that cannot be excluded under Australian 
 
 AI systems continue to evolve.
 
-DAK may improve AI quality through feedback, testing, and updates over time.
+DAK may improve AI-generated titles, summaries, relevance assessment and other AI-assisted features through feedback, testing and ongoing model improvements.
 
 AI features may change as new technologies, regulations, and best practices evolve.
 
