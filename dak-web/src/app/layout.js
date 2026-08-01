@@ -5,7 +5,7 @@ import './globals.css';
 /**
  * Root layout. Wraps every route in the app.
  *
- * This file is a server component and must stay one — it renders the html and
+ * This file is a server component and must stay one. it renders the html and
  * body elements, which only the server can emit. The interactive parts sit
  * inside it: AuthProvider and Layout both carry 'use client' and take over in
  * the browser.
@@ -21,15 +21,30 @@ export const metadata = {
   // The value is the apex domain because www redirects to it, so this is the
   // address that should appear in results.
   metadataBase: new URL('https://discoveradelaidekorea.au'),
-
-  // Per-page metadata overrides this; the template supplies the suffix so a
-  // page only has to name itself.
+  // Korean, because the readers are. An English title on a Korean-language site
+  // matches nothing a Korean speaker types, and title is the heaviest ranking
+  // signal a page has. The English name stays after the divider so that anyone
+  // searching for the brand by its full name still lands here.
   title: {
-    default: 'DAK — Discover Adelaide Korea',
+    default: '애들레이드를 더 쉽게, DAK | Discover Adelaide Korea',
     template: '%s | DAK',
   },
   description:
-    'Korean-language local information for Adelaide: businesses, guides and updates for Korean speakers in South Australia.',
+    '애들레이드 한인을 위한 지역 정보 플랫폼. 비즈니스, 생활 가이드, 최신 호주 소식을 제공합니다.',
+  // KakaoTalk reads og:description and ignores the standard meta description,
+  // so without this it prints its own English fallback under the title of every
+  // shared link — which for this audience is the most common way anyone sees
+  // DAK first. Deliberately no images key: opengraph-image.png is picked up by
+  // file convention, and naming a path here would replace that, losing the
+  // content hash that makes a replaced image re-scrape rather than serve stale.
+  openGraph: {
+    title: '애들레이드를 더 쉽게, DAK | Discover Adelaide Korea',
+    description:
+      '애들레이드 한인을 위한 지역 정보 플랫폼. 비즈니스, 생활 가이드, 최신 호주 소식을 제공합니다.',
+    siteName: 'Discover Adelaide Korea',
+    locale: 'ko_KR',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({ children }) {
