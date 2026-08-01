@@ -1,3 +1,5 @@
+package com.dak.backend.controller;
+
 import com.dak.backend.common.ApiResponse;
 import com.dak.backend.domain.User;
 import com.dak.backend.dto.UpdateProfileRequest;
