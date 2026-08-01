@@ -86,10 +86,12 @@ public class AustraliaUpdateService {
 
     private AustraliaUpdateDetailResponse toDetail(AustraliaUpdate u) {
         List<SourceReferenceResponse> sources = u.getSources().stream()
-                .map(s -> new SourceReferenceResponse(
-                        s.getId(), s.getSource().getName(), s.getSourceUrl(),
-                        s.getSourceTitle(), s.getAccessedAt()))
-                .toList();
+        .map(s -> new SourceReferenceResponse(
+                s.getId(), s.getSource().getName(), s.getSourceUrl(),
+                s.getSourceTitle(),
+                s.getSource().getLicenceName(), s.getSource().getLicenceUrl(),
+                s.getAccessedAt()))
+        .toList();
 
         return new AustraliaUpdateDetailResponse(
                 u.getId(), u.getTitle(), u.getKoreanSummary(), toCategoryResponse(u.getCategory()),

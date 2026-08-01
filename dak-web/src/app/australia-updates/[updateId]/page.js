@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles, ExternalLink, Calendar } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar } from 'lucide-react';
 import { getUpdateById } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import SaveButton from '@/components/SaveButton';
+import SourceList from '@/components/SourceList';
 import { timeAgo } from '@/utils/date';
 import UpdateAdminBar from '@/components/UpdateAdminBar';
 
@@ -141,31 +142,9 @@ export default async function AustraliaUpdatePage({ params }) {
 {sources.length > 0 && (
             <div className="lg:hidden mt-8 pt-5 border-t border-border-dark">
               <h2 className="text-sm font-semibold text-snow mb-3">Sources</h2>
-              <ul className="flex flex-col gap-2.5 mb-4">
-              {sources.map((source) => (
-                  <li key={source.id}>
-                    <a
-                      href={source.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-start gap-2 text-[13px] text-korea-blue hover:underline"
-                    >
-                      <ExternalLink size={14} strokeWidth={1.75} className="shrink-0 mt-0.5" />
-                      {source.sourceTitle || source.sourceName}
-                    </a>
-                    {/* Who published it, not just what it was called. A recall
-                        issued by a regulator and a newspaper report of the same
-                        thing carry different weight, and the headline alone does
-                        not say which this is. Omitted when the title is missing,
-                        since the link already shows the organisation then. */}
-                    {source.sourceTitle && source.sourceName && (
-                      <span className="block text-[12px] text-faint pl-[22px] mt-0.5">
-                        {source.sourceName}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <div className="mb-4">
+                <SourceList sources={sources} />
+              </div>
 
               {/* Age matters more here than on a guide: these cover prices,
                   alerts and rule changes, where a reader needs to know whether
@@ -182,27 +161,8 @@ export default async function AustraliaUpdatePage({ params }) {
         <aside className="hidden lg:flex lg:flex-col w-72 shrink-0 gap-3">
           {sources.length > 0 && (
             <div className="rounded-xl border border-border-dark p-4">
-              <h2 className="text-sm font-semibold text-snow mb-3">Sources</h2>
-              <ul className="flex flex-col gap-2.5">
-              {sources.map((source) => (
-                  <li key={source.id}>
-                    <a
-                      href={source.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-start gap-2 text-[13px] text-korea-blue hover:underline"
-                    >
-                      <ExternalLink size={14} strokeWidth={1.75} className="shrink-0 mt-0.5" />
-                      {source.sourceTitle || source.sourceName}
-                    </a>
-                    {source.sourceTitle && source.sourceName && (
-                      <span className="block text-[12px] text-faint pl-[22px] mt-0.5">
-                        {source.sourceName}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+            <h2 className="text-sm font-semibold text-snow mb-3">Sources</h2>
+            <SourceList sources={sources} />
             </div>
           )}
 

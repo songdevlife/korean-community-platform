@@ -43,6 +43,21 @@ public class UpdateSource {
     @Column(name = "default_geographic_scope", length = 50)
     private String defaultGeographicScope;
 
+    /**
+     * Open licence the source publishes under, and the URL of its deed.
+     *
+     * Both null for ordinary copyright sources. CC BY 4.0 asks for a link to
+     * the licence alongside the credit, and asks for it whether or not the
+     * reuse produced an adaptation -- so this is a condition of use rather
+     * than a courtesy, and a missing value is a licence breach rather than a
+     * cosmetic gap.
+     */
+    @Column(name = "licence_name", length = 50)
+    private String licenceName;
+
+    @Column(name = "licence_url", length = 255)
+    private String licenceUrl;
+
     public static UpdateSource createNew(String name, String sourceType) {
         UpdateSource source = new UpdateSource();
         source.name = name;

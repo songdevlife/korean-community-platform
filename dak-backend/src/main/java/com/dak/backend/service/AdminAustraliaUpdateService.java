@@ -203,10 +203,12 @@ public class AdminAustraliaUpdateService {
 
     private AustraliaUpdateDetailResponse toDetail(AustraliaUpdate u) {
         List<SourceReferenceResponse> sources = u.getSources().stream()
-                .map(s -> new SourceReferenceResponse(
-                        s.getId(), s.getSource().getName(), s.getSourceUrl(),
-                        s.getSourceTitle(), s.getAccessedAt()))
-                .toList();
+        .map(s -> new SourceReferenceResponse(
+                s.getId(), s.getSource().getName(), s.getSourceUrl(),
+                s.getSourceTitle(),
+                s.getSource().getLicenceName(), s.getSource().getLicenceUrl(),
+                s.getAccessedAt()))
+        .toList();
 
         UpdateCategoryResponse category = u.getCategory() == null ? null : new UpdateCategoryResponse(
                 u.getCategory().getId(), u.getCategory().getName(), u.getCategory().getSlug());
