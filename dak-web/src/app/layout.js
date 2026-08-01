@@ -32,7 +32,7 @@ export const metadata = {
     template: '%s | DAK',
   },
   description:
-    '애들레이드 한인을 위한 지역 정보 플랫폼. 비즈니스, 생활 가이드, 최신 호주 소식을 제공합니다.',
+    '애들레이드 한인을 위한 지역 정보 플랫폼. 애들레이드 축제(이벤트), 생활 가이드,팁, 최신 호주 뉴스을 제공합니다.',
   // KakaoTalk reads og:description and ignores the standard meta description,
   // so without this it prints its own English fallback under the title of every
   // shared link — which for this audience is the most common way anyone sees
