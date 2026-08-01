@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Heart, ShieldCheck, ChevronRight, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { fetchSavedItems } from '@/api/savedItems';
@@ -17,13 +16,15 @@ const PREVIEW_COUNT = 4;
  */
 export default function DashboardPage() {
   const { user, loading: authLoading, signOut } = useAuth();
-  const router = useRouter();
   const [savedItems, setSavedItems] = useState([]);
   const [loading, setLoading] = useState(true);
-
+// No navigation. Signing out flips this page to its signed-out panel, which
+  // already says what happened and offers a way back in — so leaving for the
+  // home page adds a second screen and, with it, the flicker of rendering the
+  // first one on the way past. Staying put is both simpler and clearer about
+  // what just happened.
   async function handleLogout() {
     await signOut();
-    router.push('/');
   }
 
 
