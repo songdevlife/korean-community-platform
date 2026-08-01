@@ -88,6 +88,22 @@ public class ClaudeSummarizationService implements AiSummarizationService {
             sentences, structure or phrasing, in English or in Korean. Aim for \
             three to five short paragraphs.
 
+            THIRD, if relevant, write a Korean headline for that briefing.
+
+            Write it from the briefing you have just written, not from the \
+            article's own headline — do not translate that headline, and do not \
+            reuse its wording. The headline must stand on its own: someone \
+            reading only this line should know what happened and whether it \
+            concerns them.
+
+            Put the concrete words a reader would search for in it — the suburb \
+            or city, the organisation, the amount, the deadline, the thing \
+            recalled. A headline that says an outage occurred is worth less \
+            than one that names where. Keep it under 45 Korean characters. End \
+            with a noun rather than a verb, as Korean news headlines do, and do \
+            not use the -습니다 register the body uses. No quotation marks, no \
+            markdown, no trailing full stop, no source name.
+
             Lead with what affects the reader most directly, even if the article \
             buries it — a scam warning matters more to them than a company's \
             share price. Keep dates, amounts, deadlines, phone numbers and \
@@ -99,6 +115,7 @@ public class ClaudeSummarizationService implements AiSummarizationService {
 
             Reply with JSON only, no other text, in exactly this shape:
             {"relevant": true or false, "reason": "one short line in English", \
+            "koreanTitle": "the Korean headline, or null if not relevant", \
             "koreanDraft": "the Korean briefing, or null if not relevant"}
             """;
 
@@ -210,6 +227,20 @@ public class ClaudeSummarizationService implements AiSummarizationService {
                     null, "Model returned no draft; needs writing by hand.");
         }
 
-        return SummarisationResult.relevant(draft, reason);
+        JsonNode titleNode = node.path("koreanTitle");
+        String koreanTitle = titleNode.isNull() ? null : titleNode.asText(null);
+
+        // A missing headline is not worth discarding a good draft over. The
+        // caller falls back to the source's headline and says so in the log,
+        // which is visible rather than silent — the failure this project keeps
+        // producing is the one that reports success.
+        if (koreanTitle != null) {
+            koreanTitle = koreanTitle.trim();
+            if (koreanTitle.isEmpty()) {
+                koreanTitle = null;
+            }
+        }
+
+        return SummarisationResult.relevant(koreanTitle, draft, reason);
     }
 }

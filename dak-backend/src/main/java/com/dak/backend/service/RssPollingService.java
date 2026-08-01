@@ -109,12 +109,25 @@ public class RssPollingService {
 
             try {
                 UrlContentFetcher.FetchedContent content = urlContentFetcher.fetch(item.link());
-                String title = !item.title().isBlank() ? item.title() : content.title();
+                String sourceTitle = !item.title().isBlank() ? item.title() : content.title();
 
-                SummarisationResult result = aiSummarizationService.summarize(title, content.bodyText());
+                SummarisationResult result = aiSummarizationService.summarize(sourceTitle, content.bodyText());
+
+                // The headline DAK shows is the model's Korean one. The source's
+                // own headline is not lost — it is written to the
+                // UpdateSourceReference below, which is what the attribution
+                // panel reads, so falling back here costs nothing but a search
+                // result in the wrong language.
+                String displayTitle = sourceTitle;
+                if (result.koreanTitle() != null && !result.koreanTitle().isBlank()) {
+                    displayTitle = result.koreanTitle();
+                } else if (result.relevant()) {
+                    log.info("No Korean headline for '{}' — keeping the source headline for the reviewer to replace",
+                            sourceTitle);
+                }
 
                 AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
-                        title, content.bodyText(), result.koreanDraft());
+                        displayTitle, content.bodyText(), result.koreanDraft());
                 // Geographic scope is a property of the feed far more often than
                 // of the individual article: an Adelaide feed produces Adelaide
                 // news. Seeding it here leaves the admin only the category to
@@ -128,7 +141,7 @@ public class RssPollingService {
                 // what the prompt gets tuned against.
                 if (!result.relevant()) {
                     update.setStatus("ARCHIVED");
-                    log.info("Filtered out '{}': {}", title, result.reason());
+                    log.info("Filtered out '{}': {}", sourceTitle, result.reason());
                 }
 
                 australiaUpdateRepository.save(update);

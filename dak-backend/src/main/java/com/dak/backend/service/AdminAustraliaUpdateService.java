@@ -90,19 +90,27 @@ public class AdminAustraliaUpdateService {
 
         UrlContentFetcher.FetchedContent content = urlContentFetcher.fetch(request.sourceUrl());
 
-        String title = content.title().isBlank() ? "Untitled (review required)" : content.title();
+        String sourceTitle = content.title().isBlank() ? "Untitled (review required)" : content.title();
 
-        SummarisationResult result = aiSummarizationService.summarize(title, content.bodyText());
+        SummarisationResult result = aiSummarizationService.summarize(sourceTitle, content.bodyText());
+
+        // Same rule as the polling path: the Korean headline is what readers
+        // and search engines see, the source's headline stays on the reference.
+        String displayTitle = (result.koreanTitle() != null && !result.koreanTitle().isBlank())
+                ? result.koreanTitle()
+                : sourceTitle;
 
         AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
-                title, content.bodyText(), result.koreanDraft());
+                displayTitle, content.bodyText(), result.koreanDraft());
         // Scope tracks the source rather than the article: an Adelaide feed
         // produces Adelaide news. An admin can still override it.
         update.setGeographicScope(source.getDefaultGeographicScope());
         australiaUpdateRepository.save(update);
 
+        // The source's own headline, deliberately — this is the attribution,
+        // not the display title.
         UpdateSourceReference reference = UpdateSourceReference.createNew(
-                update, source, request.sourceUrl(), title);
+                update, source, request.sourceUrl(), sourceTitle);
         updateSourceReferenceRepository.save(reference);
         // Both sides of the association must be set. Saving the reference alone
         // writes the row, but the parent's collection — which the publish guard
@@ -110,7 +118,7 @@ public class AdminAustraliaUpdateService {
         update.getSources().add(reference);
 
         return new ImportUpdateResponse(
-                update.getId(), request.sourceUrl(), title, content.bodyText(), update.getStatus());
+                update.getId(), request.sourceUrl(), displayTitle, content.bodyText(), update.getStatus());
     }
 
     /**
