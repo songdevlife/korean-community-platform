@@ -1,15 +1,31 @@
-﻿# Internal design and development logs — not published
+# Internal design and development logs — not published
 docs/
-
 # Legal documents — drafts with unfilled placeholders
 **/Legal_and_Policies/
-
 # Archives
 *.zip
 *.7z
-
 # Superseded Vite build — kept locally for comparison; no new files tracked
 dak-frontend/
-
 # Build output
 log.txt
+
+# Environment variables. Nothing here has ever been committed — this entry
+# exists so that stays true by rule rather than by luck. A key added to the
+# history cannot be removed by deleting it in a later commit.
+.env
+.env.*
+!.env.example
+
+# Dependencies and build output. Not currently tracked; listed so a stray
+# `git add .` cannot pull in thousands of files.
+node_modules/
+.next/
+out/
+target/
+
+# Editor and OS noise
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
