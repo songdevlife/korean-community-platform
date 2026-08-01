@@ -15,6 +15,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     boolean existsByEmailIgnoreCase(String email);
 
+    // Backed by the unique index in V18. Checked here so the ordinary case
+    // gets a message rather than a constraint violation.
+    boolean existsByDisplayNameIgnoreCase(String displayName);
+
     @EntityGraph(attributePaths = "roles")
     Optional<User> findWithRolesById(UUID id);
 
