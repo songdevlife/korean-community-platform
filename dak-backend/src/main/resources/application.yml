@@ -45,3 +45,13 @@ app:
     api-key: ${ANTHROPIC_API_KEY:}
     model: claude-haiku-4-5-20251001
     enabled: true
+  email:
+    api-key: ${RESEND_API_KEY:}
+    from: "DAK <noreply@send.discoveradelaidekorea.au>"
+    reply-to: admin@discoveradelaidekorea.au
+    # Off until two things exist: the reset screens, so the link in the message
+    # leads somewhere, and a privacy policy clause naming Resend as a recipient
+    # of email addresses. The endpoint answers 204 either way, so nothing about
+    # the deployed behaviour changes when this flips — which is the point of
+    # shipping it off rather than holding the code back.
+    enabled: false

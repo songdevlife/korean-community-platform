@@ -4,6 +4,7 @@ import com.dak.backend.common.ApiResponse;
 import com.dak.backend.dto.*;
 import com.dak.backend.exception.ApiException;
 import com.dak.backend.service.AuthService;
+import com.dak.backend.service.PasswordResetService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -12,9 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-public class AuthController {
 
+public class AuthController {
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
 
     // Registration is closed until the privacy policy it would be collected
     // under is finished and linked. Enforced here rather than only in the
@@ -23,8 +25,9 @@ public class AuthController {
     @Value("${app.registration.enabled}")
     private boolean registrationEnabled;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
@@ -53,5 +56,22 @@ public class AuthController {
                         @RequestBody(required = false) RefreshRequest request) {
         String refreshToken = request != null ? request.refreshToken() : null;
         authService.logout(refreshToken);
+    }
+
+    /**
+     * 204 whatever happened an unknown address, one that asked a moment ago,
+     * and a real send are indistinguishable from outside. Any other answer
+     * turns this into a way to test whether someone has an account here.
+     */
+    @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        passwordResetService.requestReset(request);
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request);
     }
 }
