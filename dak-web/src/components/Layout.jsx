@@ -28,17 +28,17 @@ function Layout({ children }) {
   // user, neither of which exists during a server render.
   const pathname = usePathname();
   const router = useRouter();
-  const { user, clearSession } = useAuth();
+  const { user, signOut } = useAuth();
 
   // Exact match for home; prefix match elsewhere so detail pages keep
   // their section highlighted (e.g. /businesses/xyz under Directory).
   const isActive = (to) =>
     to === '/' ? pathname === '/' : pathname.startsWith(to);
 
-  // Signing out from a page that requires a session would otherwise leave the
+// Signing out from a page that requires a session would otherwise leave the
   // user staring at a "you need to log in" screen they just chose to leave.
-  function handleLogout() {
-    clearSession();
+  async function handleLogout() {
+    await signOut();
     router.push('/');
   }
 

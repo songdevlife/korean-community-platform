@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Heart, ShieldCheck, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Heart, ShieldCheck, ChevronRight, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { fetchSavedItems } from '@/api/savedItems';
 import { resourceLink, resourceIcon } from '@/utils/savedItems';
@@ -15,9 +16,16 @@ const PREVIEW_COUNT = 4;
  * so a server render has nothing correct to produce.
  */
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const router = useRouter();
   const [savedItems, setSavedItems] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  async function handleLogout() {
+    await signOut();
+    router.push('/');
+  }
+
 
   useEffect(() => {
     // Wait until the session is known. During authLoading `user` is null but
@@ -183,6 +191,32 @@ export default function DashboardPage() {
           })}
         </div>
       )}
+
+      {/* Account controls, and the only route to the legal documents below
+          768px. The sidebar carries both on desktop and is hidden here; the
+          tab bar has no room for either. Without this, someone on a phone can
+          neither end their session nor read what is collected about them
+          unless they happen to be on the sign-up form. */}
+      <div className="md:hidden mt-8 pt-5 border-t border-border-dark flex flex-col gap-1">
+        <Link
+          href="/legal"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
+                     text-muted hover:text-snow hover:bg-surface/60 transition-colors"
+        >
+          <Scale size={18} strokeWidth={1.75} className="shrink-0" />
+          Legal
+        </Link>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left
+                     text-muted hover:text-snow hover:bg-surface/60 cursor-pointer
+                     transition-colors"
+        >
+          <LogOut size={18} strokeWidth={1.75} className="shrink-0" />
+          Log out
+        </button>
+      </div>
     </PageShell>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
+import { logout as logoutRequest } from '@/api/auth';
 
 const AuthContext = createContext(null);
 
@@ -55,8 +56,34 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  /**
+   * Signs out properly: revokes the session on the server, then forgets it here.
+   *
+   * The local half runs whether or not the request succeeds. A failed call
+   * leaves a session alive that will expire on its own, which is bad; refusing
+   * to sign the person out of their own browser because the network was down is
+   * worse, and on a shared machine it is the more immediate risk.
+   *
+   * Lives here rather than in the two components that sign out, so that the
+   * sidebar and the mobile account page cannot drift apart on which half they
+   * remember to do.
+   */
+  async function signOut() {
+    const refreshToken = localStorage.getItem('dak_refresh_token');
+
+    if (refreshToken) {
+      try {
+        await logoutRequest(refreshToken);
+      } catch (err) {
+        console.error('Server-side logout failed; clearing locally anyway:', err);
+      }
+    }
+
+    clearSession();
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, saveSession, clearSession }}>
+    <AuthContext.Provider value={{ user, loading, saveSession, clearSession, signOut }}>
       {children}
     </AuthContext.Provider>
   );
