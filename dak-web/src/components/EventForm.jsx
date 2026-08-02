@@ -219,13 +219,13 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Create', o
             />
           </div>
           <div>
-            <label htmlFor="event-organiser-contact" className={labelClass}>
-              Contact — only with permission
-            </label>
+          <label htmlFor="event-organiser-contact" className={labelClass}>
+            Contact — a link where possible, and only with permission
+          </label>
             <input
               id="event-organiser-contact" type="text" value={draft.organiserContact}
               onChange={(e) => set({ organiserContact: e.target.value })}
-              maxLength={300} placeholder="@instagram_handle"
+              maxLength={300} placeholder="https://instagram.com/... , 오픈채팅 링크, 이메일"
               className={`${fieldClass} placeholder:text-faint`}
             />
           </div>

@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar, MapPin, Ticket, User, ExternalLink } from 'lucide-
 import { getEventById } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import { eventDateTime, eventTime } from '@/utils/date';
+import { displayHost, isUrl } from '@/utils/url';
 
 export async function generateMetadata({ params }) {
   const { eventId } = await params;
@@ -140,15 +141,30 @@ export default async function EventPage({ params }) {
             </div>
           )}
 
-          {event.organiser && (
+           {event.organiser && (
             <div className={rowClass}>
               <User size={16} strokeWidth={1.75} className={iconClass} />
               <div className="min-w-0">
                 <p className="text-snow">{event.organiser}</p>
+                {/* Rendered as a link where it is one. An Instagram address
+                    printed as text is a thing to retype rather than a way to
+                    reach anyone, and reaching the organiser is the only
+                    reason it is here. */}
                 {event.organiserContact && (
-                  <p className="text-[13px] text-muted mt-0.5 break-all">
-                    {event.organiserContact}
-                  </p>
+                  isUrl(event.organiserContact) ? (
+                    <a
+                      href={event.organiserContact}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[13px] text-korea-blue hover:underline mt-0.5 block break-all"
+                    >
+                      {displayHost(event.organiserContact)}
+                    </a>
+                  ) : (
+                    <p className="text-[13px] text-muted mt-0.5 break-all">
+                      {event.organiserContact}
+                    </p>
+                  )
                 )}
               </div>
             </div>
@@ -161,19 +177,29 @@ export default async function EventPage({ params }) {
           </p>
         )}
 
-        {/* The original is where the organiser answers questions, and where
-            anything DAK got wrong can be checked. Details change after they
-            are transcribed. */}
+        {/* Boxed like the source panel on an Australia Update, for the same
+            reason: it is where the organiser answers questions and where
+            anything transcribed wrongly can be checked. The host is shown
+            because "원문 보기" alone does not say where it goes - and unlike
+            an update, there is no stored publication name to show instead. */}
         {event.sourceUrl && (
-          <a
-            href={event.sourceUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 text-[13px] text-korea-blue hover:underline"
-          >
-            <ExternalLink size={14} strokeWidth={1.75} />
-            원문 보기
-          </a>
+          <div className="rounded-xl border border-border-dark p-4">
+            <h2 className="text-sm font-semibold text-snow mb-3">Source</h2>
+            <a
+              href={event.sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-start gap-2 text-[13px] text-korea-blue hover:underline"
+            >
+              <ExternalLink size={14} strokeWidth={1.75} className="shrink-0 mt-0.5" />
+              원문 보기
+            </a>
+            {displayHost(event.sourceUrl) && (
+              <span className="block text-[12px] text-faint pl-[22px] mt-0.5">
+                {displayHost(event.sourceUrl)}
+              </span>
+            )}
+          </div>
         )}
 
         <p className="text-[12px] text-faint leading-relaxed mt-8 pt-5 border-t border-border-dark">
