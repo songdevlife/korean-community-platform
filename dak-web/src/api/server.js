@@ -87,3 +87,20 @@ export async function getUpdateById(id) {
     // Categories change rarely, so they can be cached for longer.
     return getPublic('/business-categories', { revalidate: 3600 });
   }
+
+  export async function getEvents({ category, page = 0, pageSize = 20 } = {}) {
+    const params = new URLSearchParams({ page, pageSize });
+    if (category) params.set('category', category);
+    // Shorter than the sixty seconds elsewhere. This list drops events as they
+    // finish, so a cached copy keeps showing something that has already
+    // happened - which is the one kind of staleness this page cannot afford.
+    return getPublic(`/events?${params}`, { revalidate: 30 });
+  }
+
+  export async function getEventById(id) {
+    return getPublic(`/events/${encodeURIComponent(id)}`, { revalidate: 30 });
+  }
+
+  export async function getEventCategories() {
+    return getPublic('/events/categories', { revalidate: 3600 });
+  }

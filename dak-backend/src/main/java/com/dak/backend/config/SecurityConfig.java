@@ -75,6 +75,7 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/update-sources").hasRole("ADMINISTRATOR")
                 .requestMatchers(HttpMethod.GET, "/api/v1/guides", "/api/v1/guides/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/guide-categories").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/events", "/api/v1/events/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

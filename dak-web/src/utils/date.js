@@ -62,3 +62,57 @@ export function isNew(isoString) {
   const seconds = Math.floor((Date.now() - then.getTime()) / 1000);
   return seconds >= 0 && seconds < DAY * NEW_WINDOW_DAYS;
 }
+
+/**
+ * An event's date and time, in Adelaide time regardless of where it is read.
+ *
+ * Fixed to Australia/Adelaide rather than the reader's own zone: the event
+ * happens at a place, and someone reading from Seoul needs to know when to
+ * turn up in Adelaide rather than what o'clock it will be at home.
+ */
+export function eventDateTime(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleString('ko-KR', {
+    timeZone: 'Australia/Adelaide',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+/** Date only, for a card where the time is secondary. */
+export function eventDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('ko-KR', {
+    timeZone: 'Australia/Adelaide',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'short',
+  });
+}
+
+export function eventTime(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleTimeString('ko-KR', {
+    timeZone: 'Australia/Adelaide',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+/**
+ * Days until an event, for the "3일 뒤" label.
+ *
+ * Compared at day boundaries in Adelaide rather than by elapsed hours, so that
+ * something tomorrow morning reads as tomorrow rather than as today because it
+ * is less than twenty-four hours away.
+ */
+export function daysUntil(iso) {
+  if (!iso) return null;
+  const opts = { timeZone: 'Australia/Adelaide', year: 'numeric', month: '2-digit', day: '2-digit' };
+  const toDay = (d) => new Date(d.toLocaleDateString('en-CA', opts));
+  const diff = toDay(new Date(iso)) - toDay(new Date());
+  return Math.round(diff / 86400000);
+}

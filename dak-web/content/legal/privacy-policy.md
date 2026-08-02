@@ -580,7 +580,7 @@ You may unsubscribe by:
 
 We will take reasonable steps to process opt-out requests promptly.
 
-Service and transactional communications, such as security alerts, password resets, subscription notices and policy updates, may still be sent where necessary.
+Service and transactional communications, such as security alerts, password resets, address verification, subscription notices and policy updates, may still be sent where necessary.
 
 DAK will also seek to comply with applicable requirements of the **Spam Act 2003 (Cth)**.
 

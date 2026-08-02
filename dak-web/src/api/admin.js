@@ -116,3 +116,42 @@ export async function createGuide(payload) {
   const response = await apiClient.post('/admin/guides', payload);
   return response.data.data;
 }
+
+export async function fetchEventsByStatus(status, page = 0) {
+  const response = await apiClient.get('/admin/events', {
+    params: { status, page, pageSize: QUEUE_PAGE_SIZE },
+  });
+  return response.data.data;
+}
+
+export async function fetchEventById(eventId) {
+  const response = await apiClient.get(`/admin/events/${eventId}`);
+  return response.data.data;
+}
+
+export async function createEvent(payload) {
+  const response = await apiClient.post('/admin/events', payload);
+  return response.data.data;
+}
+
+/**
+ * Edits an event. Send only the fields being changed; omitted fields are left
+ * as they are. Status travels through here too rather than through a separate
+ * endpoint, since publishing an event is usually the same act as finishing it.
+ */
+export async function updateEvent(eventId, changes) {
+  const response = await apiClient.patch(`/admin/events/${eventId}`, changes);
+  return response.data.data;
+}
+
+/**
+ * Removes an event outright.
+ *
+ * Unlike updates and guides, which archive: an event entered with the wrong
+ * date is not a record worth keeping, and a duplicate transcription is noise
+ * rather than history. ARCHIVED remains available through updateEvent for
+ * anything worth keeping out of sight but not deleting.
+ */
+export async function deleteEvent(eventId) {
+  await apiClient.delete(`/admin/events/${eventId}`);
+}

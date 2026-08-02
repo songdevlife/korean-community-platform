@@ -1,0 +1,186 @@
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, Calendar, MapPin, Ticket, User, ExternalLink } from 'lucide-react';
+import { getEventById } from '@/api/server';
+import PageShell from '@/components/PageShell';
+import { eventDateTime, eventTime } from '@/utils/date';
+
+export async function generateMetadata({ params }) {
+  const { eventId } = await params;
+  const event = await getEventById(eventId);
+
+  if (!event) return { title: 'Event not found' };
+
+  const description = event.description
+    ?.replace(/\s+/g, ' ')
+    .slice(0, 160)
+    .replace(/\S*$/, '')
+    .trim();
+
+  return {
+    title: event.title,
+    description,
+    alternates: { canonical: `/events/${event.id}` },
+    openGraph: { title: event.title, description, type: 'article' },
+  };
+}
+
+export default async function EventPage({ params }) {
+  const { eventId } = await params;
+  const event = await getEventById(eventId);
+
+  if (!event) notFound();
+
+  // Event rather than Article: this is a thing happening at a time and place,
+  // and the structured data is what lets a search result say so.
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: event.title,
+    startDate: event.startsAt,
+    inLanguage: 'ko',
+    eventStatus: 'https://schema.org/EventScheduled',
+    ...(event.endsAt && { endDate: event.endsAt }),
+    ...(event.description && { description: event.description.replace(/\s+/g, ' ').slice(0, 200) }),
+    ...(event.venueName && {
+      location: {
+        '@type': 'Place',
+        name: event.venueName,
+        ...(event.venueAddress && { address: event.venueAddress }),
+      },
+    }),
+    ...(event.organiser && {
+      organizer: { '@type': 'Organization', name: event.organiser },
+    }),
+    ...(event.isFree && {
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'AUD' },
+    }),
+  };
+
+  const rowClass = 'flex items-start gap-3 text-[14px]';
+  const iconClass = 'shrink-0 mt-0.5 text-faint';
+
+  return (
+    <PageShell>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+
+      <Link
+        href="/events"
+        className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-snow transition-colors mb-5"
+      >
+        <ArrowLeft size={18} strokeWidth={1.75} />
+        <span>Events</span>
+      </Link>
+
+      <div className="max-w-[720px]">
+        {/* Said before anything else, and in the same place the reader's eye
+            already is. Someone arriving from a link shared weeks ago should
+            not read the whole page before learning they missed it. */}
+        {event.hasPassed && (
+          <div className="rounded-xl border border-border-dark bg-surface px-4 py-3 mb-5">
+            <p className="text-[13px] text-muted">종료된 행사입니다.</p>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          {event.category && (
+            <span className="text-[11px] border border-border-dark px-2.5 py-0.5 rounded-full text-snow">
+              {event.category.name}
+            </span>
+          )}
+          {event.isFree && (
+            <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-korea-blue/15 text-korea-blue font-medium">
+              무료
+            </span>
+          )}
+        </div>
+
+        <h1 className={`text-2xl font-bold leading-tight mb-5 ${
+          event.hasPassed ? 'text-muted' : 'text-snow'
+        }`}>
+          {event.title}
+        </h1>
+
+        <div className="rounded-xl border border-border-dark bg-night p-4 flex flex-col gap-3 mb-6">
+          <div className={rowClass}>
+            <Calendar size={16} strokeWidth={1.75} className={iconClass} />
+            <div className="min-w-0">
+              <p className="text-snow">{eventDateTime(event.startsAt)}</p>
+              {event.endsAt && (
+                <p className="text-[13px] text-muted mt-0.5">
+                  종료 {eventTime(event.endsAt)}
+                </p>
+              )}
+              {/* The events are in Adelaide; the readers are not all in
+                  Adelaide, and some are reading from Korea before they
+                  arrive. */}
+              <p className="text-[12px] text-faint mt-0.5">애들레이드 시간 기준</p>
+            </div>
+          </div>
+
+          {event.venueName && (
+            <div className={rowClass}>
+              <MapPin size={16} strokeWidth={1.75} className={iconClass} />
+              <div className="min-w-0">
+                <p className="text-snow">{event.venueName}</p>
+                {event.venueAddress && (
+                  <p className="text-[13px] text-muted mt-0.5">{event.venueAddress}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {(event.isFree || event.priceNote) && (
+            <div className={rowClass}>
+              <Ticket size={16} strokeWidth={1.75} className={iconClass} />
+              <p className="text-snow">{event.isFree ? '무료' : event.priceNote}</p>
+            </div>
+          )}
+
+          {event.organiser && (
+            <div className={rowClass}>
+              <User size={16} strokeWidth={1.75} className={iconClass} />
+              <div className="min-w-0">
+                <p className="text-snow">{event.organiser}</p>
+                {event.organiserContact && (
+                  <p className="text-[13px] text-muted mt-0.5 break-all">
+                    {event.organiserContact}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {event.description && (
+          <p className="text-[15px] leading-relaxed text-snow whitespace-pre-line mb-6">
+            {event.description}
+          </p>
+        )}
+
+        {/* The original is where the organiser answers questions, and where
+            anything DAK got wrong can be checked. Details change after they
+            are transcribed. */}
+        {event.sourceUrl && (
+          <a
+            href={event.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-[13px] text-korea-blue hover:underline"
+          >
+            <ExternalLink size={14} strokeWidth={1.75} />
+            원문 보기
+          </a>
+        )}
+
+        <p className="text-[12px] text-faint leading-relaxed mt-8 pt-5 border-t border-border-dark">
+          DAK는 행사 주최자가 아니며 행사의 진행이나 내용을 보증하지 않습니다.
+          참가 전 원문과 주최자를 통해 세부 사항을 확인해 주세요.
+        </p>
+      </div>
+    </PageShell>
+  );
+}

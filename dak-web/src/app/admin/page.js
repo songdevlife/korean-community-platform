@@ -19,10 +19,12 @@ import {
   fetchDraftGuides,
   fetchPublishedGuides,
   updateGuideStatus,
+  fetchEventsByStatus,
+  updateEvent,
 } from '@/api/admin';
 import { fetchUpdateCategories } from '@/api/updates';
 import { useAuth } from '@/context/AuthContext';
-import { timeAgo } from '@/utils/date';
+import { timeAgo, eventDateTime } from '@/utils/date';
 import PageShell from '@/components/PageShell';
 import Pagination from '@/components/Pagination';
 
@@ -85,6 +87,15 @@ export default function AdminPage() {
   const [publishedGuidePages, setPublishedGuidePages] = useState(0);
   const [publishedGuideTotal, setPublishedGuideTotal] = useState(0);
 
+  // Events run the guide lifecycle rather than the update one: written by
+  // hand, published when finished, no review queue in between. What they add
+  // is a date that expires, which makes this the only place a past event can
+  // be seen - the public listing has already dropped it by then.
+  const [draftEvents, setDraftEvents] = useState([]);
+  const [draftEventTotal, setDraftEventTotal] = useState(0);
+  const [publishedEvents, setPublishedEvents] = useState([]);
+  const [publishedEventTotal, setPublishedEventTotal] = useState(0);
+
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -109,15 +120,17 @@ export default function AdminPage() {
   async function loadData() {
     setLoading(true);
     try {
-      const [businessesData, updatesData, publishedData, draftGuideData, publishedGuideData] =
-        await Promise.all([
-          fetchPendingBusinesses(businessPage),
-          fetchDraftUpdates(draftPage),
-          fetchPublishedUpdates(publishedPage),
-          fetchDraftGuides(draftGuidePage),
-          fetchPublishedGuides(publishedGuidePage),
-        ]);
-
+      const [businessesData, updatesData, publishedData, draftGuideData, publishedGuideData,
+        draftEventData, publishedEventData] =
+   await Promise.all([
+     fetchPendingBusinesses(businessPage),
+     fetchDraftUpdates(draftPage),
+     fetchPublishedUpdates(publishedPage),
+     fetchDraftGuides(draftGuidePage),
+     fetchPublishedGuides(publishedGuidePage),
+     fetchEventsByStatus('DRAFT'),
+     fetchEventsByStatus('PUBLISHED'),
+   ]);
       setBusinesses(businessesData?.content ?? []);
       setBusinessPages(businessesData?.totalPages ?? 0);
       setBusinessTotal(businessesData?.totalElements ?? 0);
@@ -137,6 +150,11 @@ export default function AdminPage() {
       setPublishedGuides(publishedGuideData?.content ?? []);
       setPublishedGuidePages(publishedGuideData?.totalPages ?? 0);
       setPublishedGuideTotal(publishedGuideData?.totalElements ?? 0);
+
+      setDraftEvents(draftEventData?.content ?? []);
+      setDraftEventTotal(draftEventData?.totalElements ?? 0);
+      setPublishedEvents(publishedEventData?.content ?? []);
+      setPublishedEventTotal(publishedEventData?.totalElements ?? 0);
 
       setError('');
     } catch (err) {
@@ -257,6 +275,19 @@ export default function AdminPage() {
     setActionError('');
     try {
       await updateGuideStatus(guideId, status);
+      loadData();
+    } catch (err) {
+      setActionError(err.response?.data?.error?.message || 'That action failed.');
+    }
+  }
+
+  // Status travels through the general edit endpoint rather than one of its
+  // own: publishing an event is usually the last edit rather than a separate
+  // act, and a category is required for it, which the server refuses without.
+  async function handleEventAction(eventId, status) {
+    setActionError('');
+    try {
+      await updateEvent(eventId, { status });
       loadData();
     } catch (err) {
       setActionError(err.response?.data?.error?.message || 'That action failed.');
@@ -903,6 +934,110 @@ export default function AdminPage() {
           )
         )}
       </section>
-    </PageShell>
-  );
+
+{/* Events. Draft and published together, like guides - low volume, no
+    review queue. The published list here does not hide what has passed,
+    unlike the public one: an event that has finished is exactly what
+    needs archiving, so it has to be visible to be dealt with. */}
+<section className="mt-8">
+  <div className="flex items-center justify-between gap-4 mb-3">
+    <h2 className="text-lg font-semibold text-snow">
+      Events{' '}
+      <span className="text-muted font-normal">
+        ({draftEventTotal + publishedEventTotal})
+      </span>
+    </h2>
+    <Link href="/admin/events/new" className={`${secondaryBtn} shrink-0`}>
+      <Plus size={14} strokeWidth={2} />
+      New event
+    </Link>
+  </div>
+
+  {draftEventTotal > 0 && (
+    <>
+      <h3 className="text-[13px] font-medium text-muted mb-2">
+        Drafts ({draftEventTotal})
+      </h3>
+      <div className="grid gap-2.5 mb-4">
+        {draftEvents.map((event) => (
+          <div
+            key={event.id}
+            className="rounded-xl border border-border-dark bg-night p-3.5
+                       flex items-center justify-between gap-4"
+          >
+            <div className="min-w-0">
+              <p className="font-medium text-snow truncate">{event.title}</p>
+              <span className="text-[12px] text-faint">
+                {eventDateTime(event.startsAt)}
+                {/* Named here because publishing is refused without one,
+                    and the refusal arrives as an error rather than as a
+                    disabled button. */}
+                {!event.category && ' · 분류 없음'}
+              </span>
+            </div>
+            <div className="flex gap-2 shrink-0">
+                    <Link href={`/admin/events/${event.id}/edit`} className={secondaryBtn}>
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleEventAction(event.id, 'PUBLISHED')}
+                      className={secondaryBtn}
+                    >
+                      Publish
+                    </button>
+                  </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )}
+
+  <h3 className="text-[13px] font-medium text-muted mb-2">
+    Published ({publishedEventTotal})
+  </h3>
+
+  {publishedEvents.length === 0 ? (
+    <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
+      <p className="text-muted text-sm">Nothing published yet.</p>
+    </div>
+  ) : (
+    <div className="grid gap-2.5">
+      {publishedEvents.map((event) => (
+        <div
+          key={event.id}
+          className="rounded-xl border border-border-dark bg-night p-3.5
+                     flex items-center justify-between gap-4"
+        >
+          <div className="min-w-0">
+            <Link
+              href={`/events/${event.id}`}
+              className="font-medium text-snow hover:text-white transition-colors block truncate"
+            >
+              {event.title}
+            </Link>
+            <span className="text-[12px] text-faint">
+              {eventDateTime(event.startsAt)}
+              {/* The public list drops these silently, so without this
+                  the section would look full while showing nothing. */}
+              {event.hasPassed && ' · 종료됨'}
+            </span>
+          </div>
+          <div className="flex gap-2 shrink-0">
+                  <Link href={`/admin/events/${event.id}/edit`} className={secondaryBtn}>
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => handleEventAction(event.id, 'ARCHIVED')}
+                    className={secondaryBtn}
+                  >
+                    Archive
+                  </button>
+                </div>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
+</PageShell>
+);
 }

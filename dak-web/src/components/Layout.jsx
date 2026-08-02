@@ -2,13 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, LayoutGrid, BookOpen, Newspaper, User, LogOut, Scale } from 'lucide-react';
+import { Home, Search, LayoutGrid, CalendarDays, BookOpen, Newspaper, User, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Home', Icon: Home },
   { to: '/search', label: 'Search', Icon: Search },
   { to: '/directory', label: 'Businesses', Icon: LayoutGrid },
+  // Events takes the tab bar slot Businesses would have had. The directory
+  // needs other people to arrive before it has anything to show; events can be
+  // filled by transcribing what is already posted elsewhere, which is the same
+  // substitution guides and AU Updates already made.
+  { to: '/events', label: 'Events', Icon: CalendarDays },
   // Guides sits before AU Updates: reference material that stays useful, ahead
   // of time-sensitive news.
   { to: '/guides', label: 'Guides', Icon: BookOpen },
@@ -19,7 +24,12 @@ const NAV_ITEMS = [
 // Businesses is the one with the most alternative routes in: Home features
 // listings with a View all, and Search now has a Businesses tab of its own.
 // The sidebar has room, so it keeps the full set.
-const TAB_BAR_EXCLUDED = ['/directory'];
+//
+// Search follows it out to make room for Events. The other tabs are places to
+// go; search is a way of getting to them, and it is reachable from the home
+// page as well as the sidebar. Six items left every label cramped, which is
+// what removing Businesses was meant to fix.
+const TAB_BAR_EXCLUDED = ['/directory', '/search'];
 
 function Layout({ children }) {
   // usePathname and useRouter replace react-router's useLocation and
