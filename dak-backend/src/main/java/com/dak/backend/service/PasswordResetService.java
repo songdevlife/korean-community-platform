@@ -1,5 +1,6 @@
 package com.dak.backend.service;
 
+import com.dak.backend.config.TokenHasher;
 import com.dak.backend.domain.PasswordResetToken;
 import com.dak.backend.domain.User;
 import com.dak.backend.dto.ForgotPasswordRequest;
@@ -15,12 +16,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
+
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.Base64;
 import java.util.Optional;
 
 /**
@@ -45,28 +43,29 @@ public class PasswordResetService {
     // DAK's expense and to someone else's inbox.
     private static final Duration RESEND_COOLDOWN = Duration.ofSeconds(60);
 
-    private static final SecureRandom RANDOM = new SecureRandom();
-
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final TokenHasher tokenHasher;
 
     @Value("${app.site.base-url}")
     private String baseUrl;
 
     public PasswordResetService(UserRepository userRepository,
-                                 PasswordResetTokenRepository tokenRepository,
-                                 SessionRepository sessionRepository,
-                                 PasswordEncoder passwordEncoder,
-                                 EmailService emailService) {
+        PasswordResetTokenRepository tokenRepository,
+        SessionRepository sessionRepository,
+        PasswordEncoder passwordEncoder,
+        EmailService emailService,
+        TokenHasher tokenHasher) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.sessionRepository = sessionRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
-    }
+        this.tokenHasher = tokenHasher;
+        }
 
     /**
      * Always returns normally, whatever happened.
@@ -103,9 +102,9 @@ public class PasswordResetService {
         // owner has already reset.
         tokenRepository.invalidateAllForUser(user.getId(), now);
 
-        String token = generateToken();
+        String token = tokenHasher.generateRawToken();
         tokenRepository.save(PasswordResetToken.createNew(
-                user, hash(token), now.plus(TOKEN_LIFETIME)));
+                user, tokenHasher.hash(token), now.plus(TOKEN_LIFETIME)));
 
         String link = baseUrl + "/reset-password?token=" + token;
         boolean sent = emailService.send(user.getEmail(), "DAK 비밀번호 재설정", buildEmail(link));
@@ -125,7 +124,7 @@ public class PasswordResetService {
      */
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        PasswordResetToken token = tokenRepository.findByTokenHash(hash(request.token()))
+        PasswordResetToken token = tokenRepository.findByTokenHash(tokenHasher.hash(request.token()))
                 .orElseThrow(() -> ApiException.badRequest(
                         "INVALID_RESET_TOKEN", "This reset link is not valid."));
 
@@ -148,27 +147,6 @@ public class PasswordResetService {
         log.info("Password reset completed for {}", user.getId());
     }
 
-    private String generateToken() {
-        byte[] bytes = new byte[32];
-        RANDOM.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    /**
-     * SHA-256 rather than the password encoder. A reset token is 256 bits of
-     * randomness with a thirty-minute life, so it is not guessable and does not
-     * need the deliberate slowness bcrypt exists for — and it has to be looked
-     * up by hash, which bcrypt's per-row salt makes impossible.
-     */
-    private String hash(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return Base64.getEncoder().encodeToString(
-                    digest.digest(token.getBytes(StandardCharsets.UTF_8)));
-        } catch (Exception e) {
-            throw new IllegalStateException("SHA-256 is unavailable", e);
-        }
-    }
 
     private String buildEmail(String link) {
         return """

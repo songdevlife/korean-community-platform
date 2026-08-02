@@ -4,6 +4,7 @@ import com.dak.backend.common.ApiResponse;
 import com.dak.backend.dto.*;
 import com.dak.backend.exception.ApiException;
 import com.dak.backend.service.AuthService;
+import com.dak.backend.service.EmailVerificationService;
 import com.dak.backend.service.PasswordResetService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
+    private final EmailVerificationService emailVerificationService;
 
     // Registration is closed until the privacy policy it would be collected
     // under is finished and linked. Enforced here rather than only in the
@@ -25,9 +27,12 @@ public class AuthController {
     @Value("${app.registration.enabled}")
     private boolean registrationEnabled;
 
-    public AuthController(AuthService authService, PasswordResetService passwordResetService) {
+    public AuthController(AuthService authService,
+        PasswordResetService passwordResetService,
+        EmailVerificationService emailVerificationService) {
         this.authService = authService;
         this.passwordResetService = passwordResetService;
+        this.emailVerificationService = emailVerificationService;
     }
 
     @PostMapping("/register")
@@ -73,5 +78,26 @@ public class AuthController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(request);
+    }
+
+    /**
+     * Open, because the link is followed from an inbox rather than from a
+     * signed-in session. The token is the authorisation.
+     */
+    @PostMapping("/verify-email")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        emailVerificationService.verify(request.token());
+    }
+
+    /**
+     * Requires a session: this is the "didn't get it" button on the account
+     * page, so the address is whoever is signed in rather than whatever was
+     * typed into a form.
+     */
+    @PostMapping("/resend-verification")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resendVerification(@AuthenticationPrincipal com.dak.backend.domain.User user) {
+        emailVerificationService.sendVerification(user);
     }
 }

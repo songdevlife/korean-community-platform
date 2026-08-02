@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Heart, ShieldCheck, ChevronRight, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import DisplayNameEditor from '@/components/DisplayNameEditor';
+import EmailVerificationBanner from '@/components/EmailVerificationBanner';
 import { fetchSavedItems } from '@/api/savedItems';
 import { resourceLink, resourceIcon } from '@/utils/savedItems';
 import PageShell from '@/components/PageShell';
@@ -80,6 +81,11 @@ export default function DashboardPage() {
   return (
     <PageShell>
       <h1 className="text-xl font-bold text-snow mb-5">My Page</h1>
+
+      {/* Above the account card rather than below it: it is about the address
+          shown there, and something to act on rather than something to read
+          after the fact. Renders nothing once the address is confirmed. */}
+      <EmailVerificationBanner />
 
       {/* Account summary. Initial-letter avatar stands in until profile
           images exist (04 DB 8.10 media domain, not yet implemented). */}

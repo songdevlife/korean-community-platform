@@ -23,11 +23,12 @@ import java.util.stream.Collectors;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final TokenHasher tokenHasher;
+    private final EmailVerificationService emailVerificationService;
     private final RoleRepository roleRepository;
     private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final TokenHasher tokenHasher;
 
     private static final long REFRESH_TOKEN_EXPIRY_DAYS = 14;
 
@@ -38,17 +39,20 @@ public class AuthService {
     private static final List<String> ROLE_PRECEDENCE =
             List.of("ADMINISTRATOR", "MODERATOR", "BUSINESS_OWNER", "USER");
 
-    public AuthService(UserRepository userRepository, RoleRepository roleRepository,
-                        SessionRepository sessionRepository, PasswordEncoder passwordEncoder,
-                        JwtService jwtService, TokenHasher tokenHasher) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.sessionRepository = sessionRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.tokenHasher = tokenHasher;
-    }
+            public AuthService(UserRepository userRepository,
+                EmailVerificationService emailVerificationService,
+                RoleRepository roleRepository,
+                SessionRepository sessionRepository, PasswordEncoder passwordEncoder,
+                JwtService jwtService, TokenHasher tokenHasher) {
 
+            this.userRepository = userRepository;
+            this.emailVerificationService = emailVerificationService;
+            this.roleRepository = roleRepository;
+            this.sessionRepository = sessionRepository;
+            this.passwordEncoder = passwordEncoder;
+            this.jwtService = jwtService;
+            this.tokenHasher = tokenHasher;
+            }
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String normalisedEmail = request.email().trim().toLowerCase();
@@ -68,6 +72,11 @@ public class AuthService {
         user.setRoles(Set.of(userRole));
 
         userRepository.save(user);
+
+        // After the save, so the token has a persisted user to point at. Never
+        // throws: an account that exists with an unconfirmed address is a far
+        // better outcome than a registration that failed because mail was down.
+        emailVerificationService.sendVerification(user);
 
         return buildAuthResponse(user);
     }

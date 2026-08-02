@@ -48,3 +48,25 @@ export async function requestPasswordReset(email) {
 export async function resetPassword(token, newPassword) {
   await apiClient.post('/auth/reset-password', { token, newPassword });
 }
+
+/**
+ * Confirms an address from the link in a verification email.
+ *
+ * Open to anyone holding the token - the link is followed from an inbox, not
+ * from a signed-in session, and often in a different browser from the one that
+ * registered.
+ */
+export async function verifyEmail(token) {
+  await apiClient.post('/auth/verify-email', { token });
+}
+
+/**
+ * Sends another verification link to the signed-in user's address.
+ *
+ * Requires a session, unlike the two above: this is the "didn't get it" button
+ * on the account page, so the address is whoever is signed in rather than
+ * whatever was typed into a form.
+ */
+export async function resendVerification() {
+  await apiClient.post('/auth/resend-verification');
+}
