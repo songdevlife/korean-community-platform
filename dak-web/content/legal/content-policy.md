@@ -225,7 +225,25 @@ Material changes will be published on the DAK website.
 
 Continued use of DAK after changes become effective constitutes acceptance of the updated Policy.
 
-## 15. Contact
+## 15. Events
+
+DAK lists events organised by others, transcribed from posts published on social media, community boards and organisers' own pages.
+
+DAK's policy is to:
+
+-   State the facts of an event — what, when, where, how much — in DAK's own words rather than reproducing an organiser's description.
+
+-   Name the organiser and link to the original announcement where available.
+
+-   Publish an organiser's contact details only where they have been published publicly by the organiser for that purpose.
+
+-   Remove or amend a listing at the organiser's request.
+
+DAK is not the organiser of any event listed and does not verify that an event will take place as described. Details change after they are transcribed, and users should confirm them with the organiser or the linked original before attending.
+
+Organisers who wish to have an event listed, corrected or removed may contact **admin@discoveradelaidekorea.au**. Removal requests relating to an organiser's own details will be actioned without requiring a reason.
+
+## 16. Contact
 
 Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 

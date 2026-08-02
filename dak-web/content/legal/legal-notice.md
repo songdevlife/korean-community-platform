@@ -123,4 +123,4 @@ The latest version will always be published on this website.
 
 Continued use of DAK after updates become effective constitutes acceptance of the revised Legal Notice.
 
-*Last Updated: 31 July 2026*
+*Last Updated: 3 August 2026*

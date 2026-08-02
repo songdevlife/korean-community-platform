@@ -250,8 +250,22 @@ These Terms are governed by the laws of South Australia and, where applicable, t
 
 Any disputes arising from these Terms shall be subject to the jurisdiction of the competent courts of South Australia, unless otherwise required by applicable law.
 
-## 19. Contact
+## 19. Events
+
+DAK lists events organised by other people and organisations, transcribed from announcements published elsewhere.
+
+DAK is not the organiser of any event listed, does not run, sponsor or endorse it, and is not a party to any arrangement between an attendee and an organiser.
+
+DAK does not verify that an event will take place as described. Times, venues, prices and entry conditions change after they are transcribed, and an event may be postponed or cancelled without DAK being told.
+
+Before attending, users should confirm the details with the organiser or through the original announcement, which DAK links to where one is available.
+
+To the extent permitted by law, DAK is not liable for any loss arising from attending, being unable to attend, or relying on the details of a listed event.
+
+Organisers may request that a listing be corrected or removed by contacting **admin@discoveradelaidekorea.au**.
+
+## 20. Contact
 
 Questions regarding these Terms may be submitted through DAK's official support channels or by email at **admin@discoveradelaidekorea.au.**
 
-*Last Updated: 31 July 2026*
+*Last Updated: 3 August 2026*

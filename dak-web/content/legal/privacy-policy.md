@@ -253,6 +253,19 @@ We may collect information when you:
 
 -   Communicate with us through email, social media or contact forms
 
+**4.10 Event information**
+
+Where DAK lists an event organised by someone else, we may collect and publish:
+
+-   Organiser name
+
+-   Contact details the organiser has published publicly for enquiries about the event, such as a social media account, page or open chat link
+
+-   The address of the original announcement
+
+This information is collected from publicly available sources rather than from the organiser directly, and is published so that readers can reach the organiser and check the original. An organiser may ask for their details to be amended or removed at any time using the contact details in section 29, and we will action the request without requiring a reason.
+
+
 ## 5. How We Collect Personal Information
 
 We may collect personal information:
