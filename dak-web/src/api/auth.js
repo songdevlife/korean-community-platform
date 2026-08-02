@@ -26,3 +26,25 @@ export async function register(email, password, displayName) {
 export async function logout(refreshToken) {
   await apiClient.post('/auth/logout', { refreshToken });
 }
+
+/**
+ * Asks for a reset link.
+ *
+ * Returns 204 whatever happened - an unknown address, one that asked a moment
+ * ago, and a real send are indistinguishable. The caller cannot tell whether
+ * an email went out, which is the point: any other answer would make this a
+ * way to test who has an account here.
+ */
+export async function requestPasswordReset(email) {
+  await apiClient.post('/auth/forgot-password', { email });
+}
+
+/**
+ * Spends a reset token and sets the new password.
+ *
+ * Unlike the request above, this reports failure plainly: someone holding a
+ * link needs to know whether it has expired.
+ */
+export async function resetPassword(token, newPassword) {
+  await apiClient.post('/auth/reset-password', { token, newPassword });
+}

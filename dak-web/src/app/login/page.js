@@ -15,12 +15,9 @@ const REGISTRATION_OPEN =
 
 /**
  * Login and sign-up in one page, toggled by a mode switch.
-
-/**
- * Login and sign-up in one page, toggled by a mode switch.
  *
  * Entirely a client component, unlike the public pages. There is nothing here
- * for a crawler — the form is state from top to bottom, and the page is
+ * for a crawler - the form is state from top to bottom, and the page is
  * deliberately kept out of the index. Splitting a server shell around it would
  * add a file to gain nothing.
  */
@@ -162,6 +159,16 @@ export default function LoginPage() {
             {fieldErrors.email && (
               <p className="text-adelaide-red text-[12px] mt-1.5">{fieldErrors.email}</p>
             )}
+            {/* Said at the point the address is typed, not after it is wrong.
+                There is no address verification yet, so a typo here is not
+                caught by anything - and password reset is the only route back
+                into an account, which makes an unreachable address a locked
+                one. */}
+            {mode === 'signup' && !fieldErrors.email && (
+              <p className="text-faint text-[12px] mt-1.5">
+                비밀번호를 잊으셨을 때 이 주소로 재설정 링크를 보내드립니다.
+              </p>
+            )}
           </div>
 
           <div className="mb-[18px]">
@@ -188,13 +195,17 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Password reset needs email delivery, which does not exist yet.
-              Stated plainly rather than shown as an inert "Forgot password?",
-              which tells someone who cannot get in nothing at all. Restore the
-              link here when the reset endpoint and mail delivery land. */}
+          {/* Live since email delivery landed. Right-aligned and quiet: it is
+              the exit for someone who cannot get in, not something the ordinary
+              visitor needs to read past on the way to the button. */}
           {mode === 'login' && (
-            <p className="text-right text-[13px] text-faint -mt-[6px] mb-5">
-              Password reset is coming soon.
+            <p className="text-right text-[13px] -mt-[6px] mb-5">
+              <Link
+                href="/forgot-password"
+                className="text-muted underline underline-offset-2 hover:text-snow transition-colors"
+              >
+                비밀번호를 잊으셨나요?
+              </Link>
             </p>
           )}
 

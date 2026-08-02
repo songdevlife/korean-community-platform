@@ -10,6 +10,6 @@ public record ResetPasswordRequest(
         // Mirrors the constraint at registration. A reset that accepted a
         // weaker password than sign-up would be the easier way in.
         @NotBlank(message = "Enter a new password.")
-        @Size(min = 8, message = "Password must be at least 8 characters.")
+        @Size(min = 8, max = 100, message = "Password must be at least 8 characters.")
         String newPassword
 ) {}

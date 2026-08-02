@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Effective Date:** 31 July 2026\
-**Last Updated:** 31 July 2026
+**Last Updated:** 3 August 2026
 
 ## 1. About This Privacy Policy
 
@@ -486,7 +486,7 @@ We may disclose personal information to:
 
 -   Database and storage providers
 
--   Email and notification providers
+-   Email and notification providers, currently Resend, Inc. for service messages such as password resets
 
 -   Authentication providers
 
@@ -596,7 +596,9 @@ Some of the services DAK relies on store or process personal information outside
 
 -   **Content delivery network** — the web font used across the site is served from a public content delivery network. Your browser requests the font files directly, which means the network operating it receives your IP address and browser details. No account information is involved, and this happens whether or not you are signed in.
 
-DAK does not currently operate email delivery, analytics, payment processing or a customer support platform, and this section will be updated before any of them is introduced.
+-   **Japan** — transactional email is sent through Resend, a service operated by Resend, Inc. in the United States, using its Tokyo processing region. Your email address and the content of the message are sent to Resend so that it can be delivered. This applies only to service messages such as password resets, not to marketing.
+
+DAK does not currently operate payment processing or a customer support platform, and this section will be updated before either is introduced.
 
 Before disclosing personal information to an overseas recipient, we will take reasonable steps required by applicable law to ensure the recipient handles it consistently with the Australian Privacy Principles, unless an exception applies.
 
@@ -652,7 +654,7 @@ We take reasonable steps to ensure that personal information we collect, use and
 
 You are responsible for keeping your account and business information current.
 
-Users may update certain information through their account settings. You may also request correction by contacting us.
+Users may update certain information through their account settings, including their display name, which can be changed at any time from the account page. You may also request correction of anything not editable there by contacting us.
 
 DAK may request evidence before changing information where necessary to prevent fraud, impersonation or unauthorised changes.
 
