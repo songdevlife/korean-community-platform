@@ -36,7 +36,7 @@ export async function getGuideBySlug(slug) {
   return getPublic(`/guides/${encodeURIComponent(slug)}`);
 }
 
-export async function getGuides({ categoryId, keyword, page = 0, pageSize = 20 } = {}) {
+export async function getGuides({ categoryId, keyword, page = 0, pageSize = 10 } = {}) {
   const params = new URLSearchParams({ page, pageSize });
   if (categoryId) params.set('categoryId', categoryId);
   if (keyword) params.set('keyword', keyword);
@@ -58,7 +58,7 @@ export async function getUpdateById(id) {
     return getPublic('/update-categories', { revalidate: 3600 });
   }
 
-  export async function getUpdates({ category, scope, keyword, sort, page = 0, pageSize = 20 } = {}) {
+  export async function getUpdates({ category, scope, keyword, sort, page = 0, pageSize = 12 } = {}) {
     const params = new URLSearchParams({ page, pageSize });
     if (category) params.set('category', category);
     if (scope) params.set('scope', scope);
@@ -72,7 +72,7 @@ export async function getUpdateById(id) {
     return getPublic(`/businesses/${encodeURIComponent(slug)}`);
   }
   
-  export async function getBusinesses({ suburb, category, keyword, verified, sort, page = 0, pageSize = 20 } = {}) {
+  export async function getBusinesses({ suburb, category, keyword, verified, sort, page = 0, pageSize = 10 } = {}) {
     const params = new URLSearchParams({ page, pageSize });
     if (suburb) params.set('suburb', suburb);
     if (category) params.set('category', category);
@@ -88,7 +88,7 @@ export async function getUpdateById(id) {
     return getPublic('/business-categories', { revalidate: 3600 });
   }
 
-  export async function getEvents({ category, page = 0, pageSize = 20 } = {}) {
+  export async function getEvents({ category, page = 0, pageSize = 12 } = {}) {
     const params = new URLSearchParams({ page, pageSize });
     if (category) params.set('category', category);
     // Shorter than the sixty seconds elsewhere. This list drops events as they

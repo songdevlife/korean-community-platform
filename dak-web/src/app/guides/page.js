@@ -3,6 +3,7 @@ import { getGuides, getGuideCategories } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import GuideCard from '@/components/GuideCard';
 import GuideFilterChips, { ClearFilterButton } from '@/components/GuideFilterChips';
+import PageLinks from '@/components/PageLinks';
 import AdminNewGuideLink from '@/components/AdminNewGuideLink';
 
 export const metadata = {
@@ -26,10 +27,14 @@ export const metadata = {
 export default async function GuidesPage({ searchParams }) {
   const params = await searchParams;
   const activeCategoryId = params?.category ?? '';
+  const activePage = Math.max(0, Number(params?.page ?? 0));
 
   // Both are fetched server-side and in parallel — neither depends on the other.
   const [guideData, categories] = await Promise.all([
-    getGuides(activeCategoryId ? { categoryId: activeCategoryId } : {}),
+    getGuides({
+      page: activePage,
+      ...(activeCategoryId && { categoryId: activeCategoryId }),
+    }),
     getGuideCategories(),
   ]);
 
@@ -75,6 +80,13 @@ export default async function GuidesPage({ searchParams }) {
           ))}
         </div>
       )}
+
+      <PageLinks
+        page={activePage}
+        totalPages={guideData?.totalPages ?? 0}
+        basePath="/guides"
+        params={{ category: activeCategoryId }}
+      />
     </PageShell>
   );
 }

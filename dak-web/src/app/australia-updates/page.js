@@ -3,6 +3,7 @@ import { getUpdates, getUpdateCategories } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import UpdateCard from '@/components/UpdateCard';
 import UpdateFilters from '@/components/UpdateFilters';
+import PageLinks from '@/components/PageLinks';
 
 export const metadata = {
   title: 'Australia Updates',
@@ -20,6 +21,9 @@ export default async function AustraliaUpdatesPage({ searchParams }) {
   const activeCategoryId = params?.category ?? '';
   const activeScope = params?.scope ?? '';
   const activeSort = params?.sort || 'createdAt,desc';
+  // Zero-indexed to match Spring's Page, but one-indexed in the URL, where a
+  // reader who edits it by hand would expect the first page to be 1.
+  const activePage = Math.max(0, Number(params?.page ?? 0));
 
   // Parameter names must match AustraliaUpdateController. Spring silently drops
   // unrecognised query parameters, so a mismatch fails quietly — 12 Entry 7
@@ -27,6 +31,7 @@ export default async function AustraliaUpdatesPage({ searchParams }) {
   const [updateData, categories] = await Promise.all([
     getUpdates({
       sort: activeSort,
+      page: activePage,
       ...(activeCategoryId && { category: activeCategoryId }),
       ...(activeScope && { scope: activeScope }),
     }),
@@ -58,7 +63,10 @@ export default async function AustraliaUpdatesPage({ searchParams }) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3">
+        // Two columns from the small breakpoint, like guides and events. One
+        // full-width column made each card span the whole screen, so a
+        // two-line clamp still produced two very long lines.
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {updates.map((update) => (
             <Link
               key={update.id}
@@ -70,6 +78,14 @@ export default async function AustraliaUpdatesPage({ searchParams }) {
           ))}
         </div>
       )}
+
+      <PageLinks
+        page={activePage}
+        totalPages={updateData?.totalPages ?? 0}
+        basePath="/australia-updates"
+        params={{ category: activeCategoryId, scope: activeScope,
+                  sort: activeSort === 'createdAt,desc' ? '' : activeSort }}
+      />
     </PageShell>
   );
 }

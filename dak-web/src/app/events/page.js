@@ -3,6 +3,7 @@ import { CalendarDays } from 'lucide-react';
 import { getEvents, getEventCategories } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import EventCard from '@/components/EventCard';
+import PageLinks from '@/components/PageLinks';
 
 export const metadata = {
   title: 'Events',
@@ -22,9 +23,10 @@ export const metadata = {
 export default async function EventsPage({ searchParams }) {
   const params = await searchParams;
   const activeCategory = params?.category ?? '';
+  const activePage = Math.max(0, Number(params?.page ?? 0));
 
   const [data, categories] = await Promise.all([
-    getEvents({ category: activeCategory || undefined }),
+    getEvents({ category: activeCategory || undefined, page: activePage }),
     getEventCategories(),
   ]);
 
@@ -85,6 +87,13 @@ export default async function EventsPage({ searchParams }) {
           ))}
         </div>
       )}
+
+      <PageLinks
+        page={activePage}
+        totalPages={data?.totalPages ?? 0}
+        basePath="/events"
+        params={{ category: activeCategory }}
+      />
 
       {/* Below the list rather than above it, and present whether or not the
           list is empty. Submissions are by email because there is no form and
