@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 public interface EventRepository extends JpaRepository<Event, UUID> {
 
@@ -33,4 +34,17 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     Optional<Event> findByIdAndStatus(UUID id, String status);
 
     Page<Event> findByStatus(String status, Pageable pageable);
+
+    /**
+     * Published events that have not finished, for the sitemap.
+     *
+     * Separate from findUpcoming because that one takes a category filter and
+     * an ordering the sitemap has no use for. Past events are excluded on
+     * purpose: their pages still resolve, so a shared link does not break, but
+     * a search result leading to something that happened last month is worse
+     * than no search result at all.
+     */
+    @Query("SELECT e FROM Event e WHERE e.status = 'PUBLISHED' "
+         + "AND COALESCE(e.endsAt, e.startsAt) >= :now")
+    List<Event> findUpcomingForSitemap(OffsetDateTime now, Pageable pageable);
 }

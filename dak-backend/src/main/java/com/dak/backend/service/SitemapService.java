@@ -2,9 +2,11 @@ package com.dak.backend.service;
 
 import com.dak.backend.domain.AustraliaUpdate;
 import com.dak.backend.domain.Business;
+import com.dak.backend.domain.Event;
 import com.dak.backend.domain.Guide;
 import com.dak.backend.repository.AustraliaUpdateRepository;
 import com.dak.backend.repository.BusinessRepository;
+import com.dak.backend.repository.EventRepository;
 import com.dak.backend.repository.GuideRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;

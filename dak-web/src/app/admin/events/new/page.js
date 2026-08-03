@@ -1,12 +1,74 @@
 'use client';
 
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { createEvent } from '@/api/admin';
+import { createEvent, fetchEventById } from '@/api/admin';
 import { useAuth } from '@/context/AuthContext';
 import PageShell from '@/components/PageShell';
-import EventForm from '@/components/EventForm';
+import EventForm, { isoToAdelaideLocal } from '@/components/EventForm';
+
+/**
+ * Creation, optionally seeded from an existing event via ?from=<id>.
+ *
+ * Every event found so far recurs weekly, and without this each occurrence
+ * means retyping twelve fields that differ only in the date. Copying rather
+ * than editing the original keeps the past occurrence intact — an edit would
+ * move the event forward and lose the record that it happened.
+ *
+ * The start time is deliberately not carried over: it is the one field that
+ * must change, and a prefilled date that looks right is the easiest kind to
+ * publish by mistake.
+ */
+function EventCreateForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const copyFrom = searchParams.get('from');
+
+  const [initial, setInitial] = useState(copyFrom ? null : {});
+
+  useEffect(() => {
+    if (!copyFrom) return;
+    fetchEventById(copyFrom)
+      .then((e) =>
+        setInitial({
+          title: e.title ?? '',
+          description: e.description ?? '',
+          // Left blank on purpose. See above.
+          startsAt: '',
+          endsAt: '',
+          venueName: e.venueName ?? '',
+          venueAddress: e.venueAddress ?? '',
+          isFree: e.isFree ?? false,
+          priceNote: e.priceNote ?? '',
+          organiser: e.organiser ?? '',
+          organiserContact: e.organiserContact ?? '',
+          sourceUrl: e.sourceUrl ?? '',
+          categoryId: e.category?.id ?? '',
+        })
+      )
+      .catch(() => setInitial({}));
+  }, [copyFrom]);
+
+  if (!initial) {
+    return <div className="h-40 rounded-2xl bg-night border border-border-dark animate-pulse" />;
+  }
+
+  return (
+    <EventForm
+      initial={initial}
+      submitLabel="Create"
+      onCancel={() => router.back()}
+      onSubmit={async (payload) => {
+        await createEvent(payload);
+        // Created as DRAFT, so the public page would 404. The queue is where
+        // it gets published.
+        router.push('/admin');
+      }}
+    />
+  );
+}
 
 export default function EventCreatePage() {
   const router = useRouter();
@@ -51,16 +113,11 @@ export default function EventCreatePage() {
 
       <h1 className="text-2xl font-bold text-snow leading-tight mb-6">New event</h1>
 
-      <EventForm
-        submitLabel="Create"
-        onCancel={() => router.back()}
-        onSubmit={async (payload) => {
-          await createEvent(payload);
-          // Created as DRAFT, so the public page would 404. The queue is where
-          // it gets a category and a publish.
-          router.push('/admin');
-        }}
-      />
+      {/* useSearchParams opts its subtree out of server rendering, so the
+          boundary keeps that to the form. */}
+      <Suspense fallback={null}>
+        <EventCreateForm />
+      </Suspense>
     </PageShell>
   );
 }

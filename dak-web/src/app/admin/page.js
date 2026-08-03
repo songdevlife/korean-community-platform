@@ -976,6 +976,9 @@ export default function AdminPage() {
               </span>
             </div>
             <div className="flex gap-2 shrink-0">
+                    <Link href={`/admin/events/new?from=${event.id}`} className={secondaryBtn}>
+                      Copy
+                    </Link>
                     <Link href={`/admin/events/${event.id}/edit`} className={secondaryBtn}>
                       Edit
                     </Link>
@@ -1023,6 +1026,11 @@ export default function AdminPage() {
             </span>
           </div>
           <div className="flex gap-2 shrink-0">
+                  {/* Next occurrence of a weekly event, without retyping it.
+                      Copies everything but the date. */}
+                  <Link href={`/admin/events/new?from=${event.id}`} className={secondaryBtn}>
+                    Copy
+                  </Link>
                   <Link href={`/admin/events/${event.id}/edit`} className={secondaryBtn}>
                     Edit
                   </Link>
