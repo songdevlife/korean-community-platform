@@ -1,9 +1,9 @@
 ﻿import Link from 'next/link';
-import { getGuides, getBusinesses, getBusinessCategories, getUpdates } from '@/api/server';
+import { getGuides, getBusinesses, getEvents, getUpdates } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import GuideCard from '@/components/GuideCard';
 import BusinessCard from '@/components/BusinessCard';
-import CategoryChipLink from '@/components/CategoryChipLink';
+import EventCard from '@/components/EventCard';
 import HomeSearch from '@/components/HomeSearch';
 import HomeGreeting from '@/components/HomeGreeting';
 import UpdatesSidePanel from '@/components/UpdatesSidePanel';
@@ -24,15 +24,16 @@ const FEATURED_GUIDE_COUNT = 3;
 const SIDE_PANEL_COUNT = 5;
 
 export default async function HomePage() {
-  const [guideData, businessData, categories, updateData] = await Promise.all([
+  const [guideData, businessData, eventData, updateData] = await Promise.all([
     getGuides({ pageSize: FEATURED_GUIDE_COUNT }),
     getBusinesses({ pageSize: FEATURED_COUNT }),
-    getBusinessCategories(),
+    getEvents({ pageSize: FEATURED_COUNT }),
     getUpdates({ pageSize: SIDE_PANEL_COUNT }),
   ]);
 
   const guides = guideData?.content ?? [];
   const businesses = businessData?.content ?? [];
+  const events = eventData?.content ?? [];
   const updates = updateData?.content ?? [];
 
   return (
@@ -66,18 +67,35 @@ export default async function HomePage() {
         <HomeSearch />
       </section>
 
-      {/* Chips scroll horizontally on mobile, wrap onto rows on desktop. Plain
-          links rather than buttons — each is a destination, so a crawler can
-          follow them into the category listings. */}
-      {categories?.length > 0 && (
-        <div
-          className="flex gap-2 mb-6 overflow-x-auto pb-2 -mx-4 px-4
-                     md:mx-0 md:px-0 md:pb-0 md:overflow-visible md:flex-wrap"
-        >
-          {categories.map((category) => (
-            <CategoryChipLink key={category.id} name={category.name} />
-          ))}
-        </div>
+      {/* Where the directory category chips used to be. Seven links into a
+          directory with nothing approved in it meant seven routes to an empty
+          page, which is a worse first impression than no shortcuts at all.
+          Restore them when there are listings to reach.
+
+          Events take the slot for the one reason nothing else on this page
+          has: they expire. A guide read next month is the same guide; an
+          event scrolled past this week is gone. Hidden when empty, as the
+          guides are. */}
+      {events.length > 0 && (
+        <>
+          <div className="flex items-baseline justify-between gap-4 mb-3">
+            <h2 className="text-lg font-semibold text-snow">Upcoming events</h2>
+            <Link
+              href="/events"
+              className="text-sm text-muted hover:text-snow transition-colors shrink-0"
+            >
+              View all
+            </Link>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-8">
+            {events.map((event) => (
+              <Link key={event.id} href={`/events/${event.id}`} className="min-w-0">
+                <EventCard event={event} />
+              </Link>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Guides preview, above the directory. Hidden entirely when nothing is
@@ -105,32 +123,34 @@ export default async function HomePage() {
         </>
       )}
 
-      <div className="flex items-baseline justify-between gap-4 mb-3 mt-8">
-        <h2 className="text-lg font-semibold text-snow">Featured businesses</h2>
-        <Link
-          href="/directory"
-          className="text-sm text-muted hover:text-snow transition-colors shrink-0"
-        >
-          View all
-        </Link>
-      </div>
-
-      {businesses.length === 0 ? (
-        <div className="rounded-xl border border-border-dark bg-night p-8 text-center">
-          <p className="text-muted text-sm">No businesses listed yet.</p>
-        </div>
-      ) : (
-        <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
-          {businesses.map((business) => (
+      {/* Hidden when empty, matching the guides rather than the earlier
+          behaviour of announcing that nothing is listed. A visitor cannot add
+          a business from here, so the empty state was telling them about a
+          gap they have no way to fill — and doing it on the front page. */}
+      {businesses.length > 0 && (
+        <>
+          <div className="flex items-baseline justify-between gap-4 mb-3 mt-8">
+            <h2 className="text-lg font-semibold text-snow">Featured businesses</h2>
             <Link
-              key={business.id}
-              href={`/businesses/${business.slug}`}
-              className="min-w-0"
+              href="/directory"
+              className="text-sm text-muted hover:text-snow transition-colors shrink-0"
             >
-              <BusinessCard business={business} compact />
+              View all
             </Link>
-          ))}
-        </div>
+          </div>
+
+          <div className="grid gap-3 grid-cols-2 md:grid-cols-3">
+            {businesses.map((business) => (
+              <Link
+                key={business.id}
+                href={`/businesses/${business.slug}`}
+                className="min-w-0"
+              >
+                <BusinessCard business={business} compact />
+              </Link>
+            ))}
+          </div>
+        </>
       )}
     </PageShell>
   );

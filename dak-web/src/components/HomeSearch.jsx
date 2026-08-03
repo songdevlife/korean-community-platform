@@ -35,7 +35,7 @@ export default function HomeSearch() {
         {/* 16px font on mobile stops iOS Safari zooming on focus. */}
         <input
           type="text"
-          placeholder="Search businesses, guides, places"
+          placeholder="Search events, guides, updates"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           aria-label="Search"
