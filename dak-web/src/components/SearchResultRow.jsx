@@ -1,4 +1,4 @@
-import { BadgeCheck, ImageOff, BookOpen, Newspaper } from 'lucide-react';
+import { BadgeCheck, ImageOff, BookOpen, CalendarDays, Newspaper } from 'lucide-react';
 import { isNew, timeAgo } from '@/utils/date';
 import NewBadge from './NewBadge';
 
@@ -62,7 +62,10 @@ export function BusinessResultRow({ business }) {
  * kind of result they are looking at without a text label.
  */
 export function ArticleResultRow({ kind, title, summary, meta, isNewItem }) {
-  const Icon = kind === 'guide' ? BookOpen : Newspaper;
+  // The icon is what tells a reader which of three kinds of result they are
+  // looking at, so a new kind needs one of its own rather than falling through
+  // to the newspaper.
+  const Icon = kind === 'guide' ? BookOpen : kind === 'event' ? CalendarDays : Newspaper;
 
   return (
     <article

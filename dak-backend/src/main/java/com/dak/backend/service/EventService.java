@@ -37,7 +37,8 @@ public class EventService {
      * site rather than merely underserved by it.
      */
     @Transactional(readOnly = true)
-    public Page<EventSummaryResponse> listUpcoming(String categorySlug, int page, int pageSize) {
+    public Page<EventSummaryResponse> listUpcoming(String categorySlug, String keyword,
+                                                    int page, int pageSize) {
         UUID categoryId = null;
 
         if (categorySlug != null && !categorySlug.isBlank()) {
@@ -47,8 +48,14 @@ public class EventService {
                     .getId();
         }
 
+        // Blank is the same as absent. The search page sends the parameter on
+        // every request, empty when nobody has typed anything, and an empty
+        // LIKE pattern would match everything rather than nothing - which is
+        // the right answer here, but only by accident.
+        String trimmed = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
+
         return eventRepository
-                .findUpcoming(OffsetDateTime.now(), categoryId,
+                .findUpcoming(OffsetDateTime.now(), categoryId, trimmed,
                         PageRequest.of(page, Math.min(pageSize, 100)))
                 .map(this::toSummary);
     }

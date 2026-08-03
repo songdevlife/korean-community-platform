@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 
 const TYPES = [
   { value: 'all', label: 'All' },
+  { value: 'events', label: 'Events' },
   { value: 'businesses', label: 'Businesses' },
   { value: 'guides', label: 'Guides' },
   { value: 'updates', label: 'Updates' },
@@ -62,7 +63,7 @@ export default function SearchForm({ keyword, activeType }) {
           />
           <input
             type="search"
-            placeholder="Search businesses, guides, places"
+            placeholder="Search events, guides, businesses"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             aria-label="Search"

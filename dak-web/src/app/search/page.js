@@ -1,10 +1,10 @@
 import Link from 'next/link';
-import { getBusinesses, getGuides, getUpdates } from '@/api/server';
+import { getBusinesses, getEvents, getGuides, getUpdates } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import SearchForm from '@/components/SearchForm';
 import SearchLogger from '@/components/SearchLogger';
 import { BusinessResultRow, ArticleResultRow } from '@/components/SearchResultRow';
-import { timeAgo, isNew } from '@/utils/date';
+import { timeAgo, isNew, eventDate, eventTime } from '@/utils/date';
 
 export const metadata = {
   title: 'Search',
@@ -23,12 +23,16 @@ export default async function SearchPage({ searchParams }) {
   const wantBusinesses = activeType === 'all' || activeType === 'businesses';
   const wantGuides = activeType === 'all' || activeType === 'guides';
   const wantUpdates = activeType === 'all' || activeType === 'updates';
+  const wantEvents = activeType === 'all' || activeType === 'events';
 
-  // allSettled rather than all: one failing type should not blank the other two.
-  const [businessResult, guideResult, updateResult] = await Promise.allSettled([
+  // allSettled rather than all: one failing type should not blank the others.
+  const [businessResult, guideResult, updateResult, eventResult] = await Promise.allSettled([
     wantBusinesses ? getBusinesses({ keyword: keyword || undefined }) : null,
     wantGuides ? getGuides({ keyword: keyword || undefined }) : null,
     wantUpdates ? getUpdates({ keyword: keyword || undefined }) : null,
+    // Upcoming only, as the listing is. A past event is a worse search result
+    // than none: it answers the question and then wastes the trip.
+    wantEvents ? getEvents({ keyword: keyword || undefined }) : null,
   ]);
 
   function unpack(result, label) {
@@ -45,11 +49,14 @@ export default async function SearchPage({ searchParams }) {
   const businesses = unpack(businessResult, 'businesses');
   const guides = unpack(guideResult, 'guides');
   const updates = unpack(updateResult, 'updates');
+  const events = unpack(eventResult, 'events');
 
   const totalCount =
-    businesses.totalElements + guides.totalElements + updates.totalElements;
+    businesses.totalElements + guides.totalElements +
+    updates.totalElements + events.totalElements;
   const hasResults =
-    businesses.content.length > 0 || guides.content.length > 0 || updates.content.length > 0;
+    businesses.content.length > 0 || guides.content.length > 0 ||
+    updates.content.length > 0 || events.content.length > 0;
 
   return (
     <PageShell>
@@ -84,8 +91,34 @@ export default async function SearchPage({ searchParams }) {
            each row is before deciding whether it answers their question. Guides
            lead — someone searching a topic usually wants the explanation before
            the business listing. */
-        <div className="flex flex-col gap-6">
-          {guides.content.length > 0 && (
+           <div className="flex flex-col gap-6">
+           {/* Events lead when there are any. Everything else on the site keeps
+               until tomorrow; an event has a date, and one this week is the
+               only result on the page that stops being useful if it is scrolled
+               past. */}
+           {events.content.length > 0 && (
+             <section>
+               <h3 className="text-[15px] font-semibold text-snow mb-2.5">
+                 Events <span className="text-muted font-normal">({events.totalElements})</span>
+               </h3>
+               <div className="grid gap-2.5">
+                 {events.content.map((event) => (
+                   <Link key={event.id} href={`/events/${event.id}`} className="block">
+                     <ArticleResultRow
+                       kind="event"
+                       title={event.title}
+                       summary={`${eventDate(event.startsAt)} ${eventTime(event.startsAt)}${
+                         event.venueName ? ` · ${event.venueName}` : ''
+                       }`}
+                       meta={event.category?.name}
+                     />
+                   </Link>
+                 ))}
+               </div>
+             </section>
+           )}
+ 
+           {guides.content.length > 0 && (
             <section>
               <h3 className="text-[15px] font-semibold text-snow mb-2.5">
                 Guides <span className="text-muted font-normal">({guides.totalElements})</span>

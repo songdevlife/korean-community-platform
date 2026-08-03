@@ -29,10 +29,11 @@ public class EventController {
     @GetMapping
     public ApiResponse<Page<EventSummaryResponse>> list(
             @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int pageSize
     ) {
-        return ApiResponse.ok(eventService.listUpcoming(category, page, pageSize));
+        return ApiResponse.ok(eventService.listUpcoming(category, keyword, page, pageSize));
     }
 
     @GetMapping("/categories")

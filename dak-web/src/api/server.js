@@ -88,9 +88,10 @@ export async function getUpdateById(id) {
     return getPublic('/business-categories', { revalidate: 3600 });
   }
 
-  export async function getEvents({ category, page = 0, pageSize = 12 } = {}) {
+  export async function getEvents({ category, keyword, page = 0, pageSize = 12 } = {}) {
     const params = new URLSearchParams({ page, pageSize });
     if (category) params.set('category', category);
+    if (keyword) params.set('keyword', keyword);
     // Shorter than the sixty seconds elsewhere. This list drops events as they
     // finish, so a cached copy keeps showing something that has already
     // happened - which is the one kind of staleness this page cannot afford.
