@@ -1,4 +1,4 @@
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Ticket } from 'lucide-react';
 import { eventDate, eventTime, daysUntil } from '@/utils/date';
 
 /**
@@ -67,13 +67,18 @@ export default function EventCard({ event }) {
             <span className="truncate">{event.venueName}</span>
           </div>
         )}
-      </div>
 
-      {/* Only where there is something to say. A blank line where a price
-          would be reads as missing information rather than as free. */}
-      {!event.isFree && event.priceNote && (
-        <p className="text-[12px] text-faint mt-2">{event.priceNote}</p>
-      )}
+        {/* Inside the same block as the date and venue rather than below it,
+            so the three sit on one icon column. Only where there is something
+            to say: a free event already carries its own tag above, and a blank
+            line where a price would be reads as missing information. */}
+        {!event.isFree && event.priceNote && (
+          <div className="flex items-center gap-2">
+            <Ticket size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
+            <span className="truncate">{event.priceNote}</span>
+          </div>
+        )}
+      </div>
     </article>
   );
 }
