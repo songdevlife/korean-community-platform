@@ -1,3 +1,5 @@
+import SiteFooter from './SiteFooter';
+
 /**
  * Standard page frame: a lighter content column inset from the darker page
  * background, optionally flanked by a right-hand rail.
@@ -13,15 +15,22 @@
  *                                    the content.
  */
 function PageShell({ children, aside = null }) {
-    return (
-      <div className="flex gap-0 lg:gap-4 p-0 lg:p-4 min-h-screen items-stretch">
-        <main className="flex-1 min-w-0 bg-surface lg:rounded-2xl p-4 md:p-6 animate-page-enter">
-          {children}
-        </main>
-  
-        {aside && <div className="hidden lg:block">{aside}</div>}
-      </div>
-    );
-  }
+  return (
+    <div className="flex gap-0 lg:gap-4 p-0 lg:p-4 min-h-screen items-stretch">
+      {/* flex-col so the footer can be pushed to the bottom of a short page
+          rather than sitting immediately under a paragraph of content. */}
+      <main className="flex-1 min-w-0 bg-surface lg:rounded-2xl p-4 md:p-6 animate-page-enter
+                       flex flex-col">
+        <div className="flex-1">{children}</div>
+        {/* Inside the shell rather than in Layout, so it inherits the
+            content column's background and horizontal padding. Outside it
+            the footer would sit on the page background and align with
+            nothing. */}
+        <SiteFooter />
+      </main>
+      {aside && <div className="hidden lg:block">{aside}</div>}
+    </div>
+  );
+}
   
   export default PageShell;

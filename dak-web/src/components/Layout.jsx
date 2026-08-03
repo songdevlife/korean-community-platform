@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Home, Search, LayoutGrid, CalendarDays, BookOpen, Newspaper, User, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
+
 const NAV_ITEMS = [
   { to: '/', label: 'Home', Icon: Home },
   { to: '/search', label: 'Search', Icon: Search },
