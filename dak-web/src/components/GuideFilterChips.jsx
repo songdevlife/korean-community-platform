@@ -20,6 +20,9 @@ export default function GuideFilterChips({ categories, activeCategoryId }) {
     } else {
       next.delete('category');
     }
+    // Changing what is listed invalidates where you are in it: narrowing from
+    // page two lands on a page two the new list may not have.
+    next.delete('page');
     const query = next.toString();
     router.push(query ? `/guides?${query}` : '/guides');
   }

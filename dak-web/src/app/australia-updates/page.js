@@ -56,12 +56,39 @@ export default async function AustraliaUpdatesPage({ searchParams }) {
 
       {updates.length === 0 ? (
         <div className="rounded-2xl border border-border-dark bg-night p-8 text-center">
+        {/* A page beyond the end of a filtered list is empty for a different
+            reason than a filter with no matches, and saying the wrong one
+            tells a reader there is nothing here when there is — on page one.
+            Reachable by narrowing a filter while deeper in, or by a shared
+            link to a page that has since shrunk. */}
+        {activePage > 0 ? (
+          <>
+            <p className="text-muted text-sm mb-3">
+              이 페이지에는 결과가 없습니다.
+            </p>
+            <Link
+              href={
+                activeCategoryId || activeScope
+                  ? `/australia-updates?${new URLSearchParams({
+                      ...(activeCategoryId && { category: activeCategoryId }),
+                      ...(activeScope && { scope: activeScope }),
+                    })}`
+                  : '/australia-updates'
+              }
+              className="inline-block px-4 py-2 rounded-xl bg-korea-blue text-white
+                         text-sm font-medium hover:bg-korea-blue/85 transition-colors"
+            >
+              첫 페이지로
+            </Link>
+          </>
+        ) : (
           <p className="text-muted text-sm">
             {isFiltered
               ? 'No updates match these filters.'
               : 'No updates published yet.'}
           </p>
-        </div>
+        )}
+      </div>
       ) : (
         // Two columns from the small breakpoint, like guides and events. One
         // full-width column made each card span the whole screen, so a

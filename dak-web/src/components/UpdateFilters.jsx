@@ -55,6 +55,12 @@ export default function UpdateFilters({
     // The default sort is implied by its absence, keeping the common URL clean.
     if (next.get('sort') === 'createdAt,desc') next.delete('sort');
 
+    // Any change to what is being listed invalidates where you are in it.
+    // Without this, narrowing a filter from page two lands on a page two that
+    // no longer exists, and the empty result reads as "nothing matches" when
+    // the matches are on page one.
+    next.delete('page');
+
     const query = next.toString();
     router.push(query ? `/australia-updates?${query}` : '/australia-updates');
   }
