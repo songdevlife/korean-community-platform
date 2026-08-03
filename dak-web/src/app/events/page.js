@@ -95,17 +95,21 @@ export default async function EventsPage({ searchParams }) {
       <div className="mt-8 rounded-2xl border border-border-dark bg-night p-5 text-center">
         <p className="text-[14px] text-snow font-medium mb-1.5">행사를 알리고 싶으신가요?</p>
         <p className="text-[13px] text-muted leading-relaxed">
-          
-          행사 또는 모임을 무료로 게시해 드립니다.<br className="hidden sm:inline" />
-          행사 정보나 문의 사항을{' '}
-          <a
-            href="mailto:admin@discoveradelaidekorea.au?subject=행사 등록 문의"
-            className="text-korea-blue underline underline-offset-2 hover:opacity-80 break-all"
-          >
-            admin@discoveradelaidekorea.au
-          </a>
-          {' '}로 보내 주세요.
+          행사 또는 모임을 무료로 게시해 드립니다.
         </p>
+        {/* Its own paragraph rather than a line break, which the narrow layout
+            was suppressing - so the two sentences ran together on exactly the
+            screens where the address is hardest to read. */}
+        <p className="text-[13px] text-muted leading-relaxed mt-1">
+          행사 정보나 문의 사항은 아래 주소로 보내 주세요.
+        </p>
+        <a
+          href="mailto:admin@discoveradelaidekorea.au?subject=행사 등록 문의"
+          className="inline-block text-[13px] text-korea-blue underline underline-offset-2
+                     hover:opacity-80 mt-1.5 break-all"
+        >
+          admin@discoveradelaidekorea.au
+        </a>
       </div>
     </PageShell>
   );

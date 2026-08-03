@@ -17,7 +17,9 @@ const NAV_ITEMS = [
   // Guides sits before AU Updates: reference material that stays useful, ahead
   // of time-sensitive news.
   { to: '/guides', label: 'Guides', Icon: BookOpen },
-  { to: '/australia-updates', label: 'AU Updates', Icon: Newspaper },
+  // tabLabel shortens the tab bar without shortening the sidebar, where there
+  // is room for the full name and where "Updates" alone would be ambiguous.
+  { to: '/australia-updates', label: 'AU Updates', tabLabel: 'Updates', Icon: Newspaper },
 ];
 
 // The tab bar drops Businesses. Six items left every label cramped, and
@@ -153,18 +155,22 @@ function Layout({ children }) {
           indicator. Five items is the practical ceiling at this width — a
           marketplace section would need something else to move into Home or
           Search rather than being added alongside. */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border-dark flex justify-around pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] z-10">
-        {tabBarItems.map(({ to, label, Icon }) => (
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border-dark flex pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] z-10">
+        {tabBarItems.map(({ to, label, tabLabel, Icon }) => (
           <Link
             key={to}
             href={to}
             aria-current={isActive(to) ? 'page' : undefined}
-            className={`flex flex-col items-center gap-1 px-2 text-[11px] transition-colors ${
+            /* flex-1 rather than justify-around: with the latter each item is
+               only as wide as its own label, so a long one like AU Updates
+               pushes its neighbours off the rhythm and the gaps stop matching.
+               Equal columns put every icon on the same pitch regardless. */
+            className={`flex-1 min-w-0 flex flex-col items-center gap-1 text-[11px] transition-colors ${
               isActive(to) ? 'text-snow font-medium' : 'text-muted'
             }`}
           >
             <Icon size={20} strokeWidth={1.75} />
-            {label}
+            <span className="truncate max-w-full px-1">{tabLabel ?? label}</span>
           </Link>
         ))}
       </nav>
