@@ -88,7 +88,12 @@ export default async function EventPage({ params }) {
           rather than reads in sequence. */}
       <div className="flex flex-col lg:flex-row gap-6">
 
-        <article className="flex-1 min-w-0 max-w-[720px]">
+              {/* No width cap, matching the update detail. A measure limit is better
+            typography — sixty to eighty characters a line rather than the
+            hundred-plus a wide screen gives — but applying it here and not
+            there made the two pages look like different sites. Worth revisiting
+            for both together rather than fixing one of them. */}
+        <article className="flex-1 min-w-0">
           {/* Said before anything else, and in the same place the reader's eye
               already is. Someone arriving from a link shared weeks ago should
               not read the whole page before learning they missed it. */}
