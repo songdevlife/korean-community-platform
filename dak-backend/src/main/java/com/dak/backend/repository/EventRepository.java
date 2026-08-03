@@ -67,10 +67,11 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     @Query("SELECT e FROM Event e WHERE e.status = 'PUBLISHED' "
          + "AND COALESCE(e.endsAt, e.startsAt) >= :now "
          + "AND (:categoryId IS NULL OR e.category.id = :categoryId) "
-         + "AND (:keyword IS NULL OR LOWER(CONCAT("
-         + "     e.title, ' ', COALESCE(e.description, ''), ' ', "
-         + "     COALESCE(e.venueName, ''), ' ', COALESCE(e.organiser, '')"
-         + ")) LIKE LOWER(CONCAT('%', :keyword, '%'))) "
+         + "AND (:keyword IS NULL OR "
+         + "     LOWER(e.title) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR "
+         + "     LOWER(COALESCE(e.description, '')) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR "
+         + "     LOWER(COALESCE(e.venueName, '')) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR "
+         + "     LOWER(COALESCE(e.organiser, '')) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) "
          + "ORDER BY e.startsAt ASC")
     Page<Event> findUpcoming(OffsetDateTime now, UUID categoryId, String keyword, Pageable pageable);
 }
