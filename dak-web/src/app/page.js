@@ -6,6 +6,7 @@ import BusinessCard from '@/components/BusinessCard';
 import EventCard from '@/components/EventCard';
 import HomeSearch from '@/components/HomeSearch';
 import HomeGreeting from '@/components/HomeGreeting';
+import HomeNotice from '@/components/HomeNotice';
 import UpdatesSidePanel from '@/components/UpdatesSidePanel';
 
 export const metadata = {
@@ -66,6 +67,19 @@ export default async function HomePage() {
         </h1>
         <HomeSearch />
       </section>
+
+      {/* Below the hero rather than above it. Someone who came to search
+          should reach the box first; the notice is for the reader who did not
+          have a question in mind, and that reader is already scrolling.
+
+          Removed by deleting this block. There is no expiry and no admin
+          control on purpose — a notice nobody has to take down stays up. */}
+      <HomeNotice
+        title="2026 센서스 — 8월 11일 기준, 유학생과 임시비자도 대상입니다"
+        description="제출 마감은 10월 1일이고, 벌금은 서면 지시를 받은 뒤부터 발생합니다. 한국어 통역 안내까지 정리했습니다."
+        href="/guides/australia-census-2026-guide"
+        expiresAt="2026-10-02"
+      />
 
       {/* Where the directory category chips used to be. Seven links into a
           directory with nothing approved in it meant seven routes to an empty
