@@ -88,7 +88,7 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-8 items-start">
             {events.map((event) => (
               <Link key={event.id} href={`/events/${event.id}`} className="min-w-0">
                 <EventCard event={event} />

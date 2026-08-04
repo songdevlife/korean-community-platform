@@ -79,7 +79,7 @@ export default async function EventsPage({ searchParams }) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 items-start">
           {events.map((event) => (
             <Link key={event.id} href={`/events/${event.id}`}>
               <EventCard event={event} />

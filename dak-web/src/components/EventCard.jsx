@@ -89,21 +89,30 @@ export default function EventCard({ event }) {
           </span>
         </div>
 
-        {event.venueName && (
-          <div className="flex items-center gap-2">
-            <MapPin size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
-            <span className="truncate">{event.venueName}</span>
-          </div>
-        )}
+        {/* Venue and price share a line so the block is always two rows deep.
+            Given its own row, a price made cards with one taller than cards
+            without, which is a difference in layout standing for no
+            difference in the event.
 
-        {/* Inside the same block as the date and venue rather than below it,
-            so the three sit on one icon column. Only where there is something
-            to say: a free event already carries its own tag above, and a blank
-            line where a price would be reads as missing information. */}
-        {!event.isFree && event.priceNote && (
-          <div className="flex items-center gap-2">
-            <Ticket size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
-            <span className="truncate">{event.priceNote}</span>
+            The price is shrink-0 and the venue truncates: when a long price
+            note competes with a long venue for the same line, the venue is
+            what gives way. Somewhere to go matters more than what it costs,
+            and the detail page carries both in full either way. */}
+        {(event.venueName || (!event.isFree && event.priceNote)) && (
+          <div className="flex items-center gap-3 min-w-0">
+            {event.venueName && (
+              <div className="flex items-center gap-2 min-w-0">
+                <MapPin size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
+                <span className="truncate">{event.venueName}</span>
+              </div>
+            )}
+
+            {!event.isFree && event.priceNote && (
+              <div className="flex items-center gap-2 shrink-0 ml-auto max-w-[40%]">
+                <Ticket size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
+                <span>{event.priceNote}</span>
+              </div>
+            )}
           </div>
         )}
       </div>

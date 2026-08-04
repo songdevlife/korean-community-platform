@@ -95,6 +95,8 @@ export default function AdminPage() {
   const [draftEventTotal, setDraftEventTotal] = useState(0);
   const [publishedEvents, setPublishedEvents] = useState([]);
   const [publishedEventTotal, setPublishedEventTotal] = useState(0);
+  const [archivedEvents, setArchivedEvents] = useState([]);
+  const [archivedEventTotal, setArchivedEventTotal] = useState(0);
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -121,7 +123,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [businessesData, updatesData, publishedData, draftGuideData, publishedGuideData,
-        draftEventData, publishedEventData] =
+        draftEventData, publishedEventData, archivedEventData] =
    await Promise.all([
      fetchPendingBusinesses(businessPage),
      fetchDraftUpdates(draftPage),
@@ -130,6 +132,7 @@ export default function AdminPage() {
      fetchPublishedGuides(publishedGuidePage),
      fetchEventsByStatus('DRAFT'),
      fetchEventsByStatus('PUBLISHED'),
+     fetchEventsByStatus('ARCHIVED'),
    ]);
       setBusinesses(businessesData?.content ?? []);
       setBusinessPages(businessesData?.totalPages ?? 0);
@@ -155,6 +158,8 @@ export default function AdminPage() {
       setDraftEventTotal(draftEventData?.totalElements ?? 0);
       setPublishedEvents(publishedEventData?.content ?? []);
       setPublishedEventTotal(publishedEventData?.totalElements ?? 0);
+      setArchivedEvents(archivedEventData?.content ?? []);
+      setArchivedEventTotal(archivedEventData?.totalElements ?? 0);
 
       setError('');
     } catch (err) {
@@ -944,7 +949,7 @@ export default function AdminPage() {
     <h2 className="text-lg font-semibold text-snow">
       Events{' '}
       <span className="text-muted font-normal">
-        ({draftEventTotal + publishedEventTotal})
+      ({draftEventTotal + publishedEventTotal + archivedEventTotal})
       </span>
     </h2>
     <Link href="/admin/events/new" className={`${secondaryBtn} shrink-0`}>
@@ -1041,9 +1046,57 @@ export default function AdminPage() {
                     Archive
                   </button>
                 </div>
-        </div>
+                </div>
       ))}
     </div>
+  )}
+
+  {/* Only where there is something in it. Without this section an archived
+      event vanished from the admin screen entirely — the row disappeared,
+      the only route back was the database, and Archive was in practice a
+      hide button that could not be undone. */}
+  {archivedEventTotal > 0 && (
+    <>
+      <h3 className="text-[13px] font-medium text-muted mb-2 mt-4">
+        Archived ({archivedEventTotal})
+      </h3>
+      <div className="grid gap-2.5">
+        {archivedEvents.map((event) => (
+          <div
+            key={event.id}
+            className="rounded-xl border border-border-dark bg-night p-3.5
+                       flex items-center justify-between gap-4 opacity-60"
+          >
+            <div className="min-w-0">
+              <p className="font-medium text-snow truncate">{event.title}</p>
+              <span className="text-[12px] text-faint">
+                {eventDateTime(event.startsAt)}
+              </span>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              {/* Copy belongs here more than anywhere else: a weekly class is
+                  archived once it has run, and the next occurrence is made
+                  from the one that just finished. */}
+              <Link href={`/admin/events/new?from=${event.id}`} className={secondaryBtn}>
+                Copy
+              </Link>
+              <Link href={`/admin/events/${event.id}/edit`} className={secondaryBtn}>
+                Edit
+              </Link>
+              {/* Restore rather than Publish: this puts a listing back where
+                  it was, and Publish reads as sending something out for the
+                  first time. */}
+              <button
+                onClick={() => handleEventAction(event.id, 'PUBLISHED')}
+                className={secondaryBtn}
+              >
+                Restore
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   )}
 </section>
 </PageShell>
