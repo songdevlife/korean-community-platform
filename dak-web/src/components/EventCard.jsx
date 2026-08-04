@@ -1,5 +1,6 @@
 import { Calendar, MapPin, Ticket } from 'lucide-react';
 import { eventDate, eventTime, daysUntil } from '@/utils/date';
+import { sized } from '@/utils/image';
 
 /**
  * Server component, matching GuideCard's treatment.
@@ -30,6 +31,22 @@ export default function EventCard({ event }) {
                    bg-gradient-to-r from-transparent via-korea-blue to-transparent
                    group-hover:opacity-100 transition-opacity duration-300"
       />
+
+      {/* Above the tags rather than beside the text. A poster is a picture of
+          the event, not a thumbnail of a listing — cropping it into a corner
+          makes it unreadable, which is the one thing a poster has to be.
+          Fixed aspect so a mixed set of posters does not produce a ragged
+          grid. */}
+      {event.thumbnailUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={sized(event.thumbnailUrl, 600)}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          className="w-full aspect-[16/9] object-cover rounded-xl mb-3 bg-surface"
+        />
+      )}
 
       <div className="flex flex-wrap items-center gap-2 mb-2">
         {event.category && (

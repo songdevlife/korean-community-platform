@@ -8,6 +8,7 @@ import PageShell from '@/components/PageShell';
 import { eventDateTime, eventTime } from '@/utils/date';
 import { displayHost, isUrl } from '@/utils/url';
 import { googleCalendarUrl } from '@/utils/calendar';
+import Gallery from '@/components/Gallery';
 
 export async function generateMetadata({ params }) {
   const { eventId } = await params;
@@ -61,11 +62,22 @@ export default async function EventPage({ params }) {
     ...(event.isFree && {
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'AUD' },
     }),
+    // Search results show an image where one is given, which for an event is
+    // most of what makes a result worth clicking. schema.org takes an array,
+    // and the first is the one a result will use.
+    ...(event.images?.length > 0 && {
+      image: event.images.map((i) => i.imageUrl),
+    }),
   };
 
   const rowClass = 'flex items-start gap-3 text-[14px]';
   const iconClass = 'shrink-0 mt-0.5 text-faint';
   const calendarUrl = googleCalendarUrl(event);
+
+  // Three columns only where there is an image to fill the third. Most events
+  // have no poster, and an empty left column would narrow the description for
+  // nothing.
+  const hasImages = event.images?.length > 0;
 
   return (
     <PageShell>
@@ -87,6 +99,15 @@ export default async function EventPage({ params }) {
           of when and where — is what a reader checks against their own diary
           rather than reads in sequence. */}
       <div className="flex flex-col lg:flex-row gap-6">
+
+          {/* Own column above 1280px, where there is room for one beside the
+              description and the facts. Below that it sits above the writing,
+              which is where a poster belongs on a narrower screen anyway. */}
+          {hasImages && (
+            <div className="xl:w-96 xl:shrink-0">
+              <Gallery images={event.images} alt={`${event.title} 포스터`} />
+            </div>
+          )}
 
               {/* No width cap, matching the update detail. A measure limit is better
             typography — sixty to eighty characters a line rather than the
@@ -124,8 +145,12 @@ export default async function EventPage({ params }) {
             {event.title}
           </h1>
 
+          {/* break-words alongside pre-line: pre-line keeps the organiser's
+              line breaks, but a long unbroken string — a pasted URL, most
+              likely — has no break to keep and would otherwise widen the page
+              past the viewport. */}
           {event.description && (
-            <p className="text-[15px] leading-relaxed text-snow whitespace-pre-line">
+            <p className="text-[15px] leading-relaxed text-snow whitespace-pre-line break-words">
               {event.description}
             </p>
           )}
