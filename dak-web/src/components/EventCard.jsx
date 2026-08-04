@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Ticket } from 'lucide-react';
+import { Calendar, MapPin, Ticket, ImageOff } from 'lucide-react';
 import { eventDate, eventTime, daysUntil } from '@/utils/date';
 import { sized } from '@/utils/image';
 
@@ -22,7 +22,7 @@ export default function EventCard({ event }) {
 
   return (
     <article
-      className="group relative bg-night rounded-2xl p-4 border border-border-dark h-full overflow-hidden
+      className="group relative bg-night rounded-2xl p-4 border border-border-dark overflow-hidden
                  hover:border-faint hover:-translate-y-1 transition-all duration-300"
     >
       <span
@@ -32,21 +32,32 @@ export default function EventCard({ event }) {
                    group-hover:opacity-100 transition-opacity duration-300"
       />
 
-      {/* Above the tags rather than beside the text. A poster is a picture of
-          the event, not a thumbnail of a listing — cropping it into a corner
-          makes it unreadable, which is the one thing a poster has to be.
-          Fixed aspect so a mixed set of posters does not produce a ragged
-          grid. */}
-      {event.thumbnailUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={sized(event.thumbnailUrl, 600)}
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="w-full aspect-[16/9] object-cover rounded-xl mb-3 bg-surface"
-        />
-      )}
+      {/* The frame is always here, with or without a picture in it. Most
+          events will never have one: a poster needs the organiser's
+          permission, and most are transcribed from a post with nobody
+          reachable behind it. Rendering the image only where it exists made
+          the majority case look like the broken one — a short card beside a
+          tall one, with the gap reading as something that failed to load.
+
+          The icon rather than the words "이미지 없음": at eight cards in ten
+          the same sentence repeated stops being a label and starts competing
+          with the titles. It matches the empty state in Gallery, so one mark
+          means "no image" everywhere on the site. */}
+      <div className="w-full aspect-[16/9] max-h-48 rounded-xl mb-3 bg-surface
+                      overflow-hidden flex items-center justify-center">
+        {event.thumbnailUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={sized(event.thumbnailUrl, 600)}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <ImageOff size={24} strokeWidth={1.5} className="text-border-dark" aria-hidden="true" />
+        )}
+      </div>
 
       <div className="flex flex-wrap items-center gap-2 mb-2">
         {event.category && (
