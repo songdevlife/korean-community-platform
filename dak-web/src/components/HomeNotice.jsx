@@ -34,7 +34,7 @@ export default function HomeNotice({
     title,
     description,
     href,
-    linkLabel = '자세히 보기',
+    linkLabel = '더보기',
     expiresAt,
   }) {
     if (expiresAt) {
