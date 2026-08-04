@@ -237,13 +237,31 @@ DAK's policy is to:
 
 -   Publish an organiser's contact details only where they have been published publicly by the organiser for that purpose.
 
+-   Use a poster or other artwork only where the organiser has given permission, and remove it on request. The facts of an event are not subject to copyright and may be restated without permission; the artwork is, and may not.
+
+-   Not publish photographs in which attendees are identifiable. An organiser's permission covers their own material; it does not extend to the likeness of people who attended an event and did not agree to appear here. Where an organiser supplies such a photograph, it is not used.
+
 -   Remove or amend a listing at the organiser's request.
 
 DAK is not the organiser of any event listed and does not verify that an event will take place as described. Details change after they are transcribed, and users should confirm them with the organiser or the linked original before attending.
 
 Organisers who wish to have an event listed, corrected or removed may contact **admin@discoveradelaidekorea.au**. Removal requests relating to an organiser's own details will be actioned without requiring a reason.
 
-## 16. Contact
+## 16. Guides and Practical Information
+
+DAK's guides, practical information, checklists, and explanatory articles are provided for general informational purposes only.
+
+They do not constitute legal, immigration, taxation, financial, employment, or medical advice and should not be relied upon as a substitute for professional advice.
+
+Where official guidance is available, the information published by the relevant Australian Government, South Australian Government, or other competent authority takes precedence over any information published on DAK.
+
+Information such as eligibility requirements, fees, deadlines, processing times, benefits, and administrative procedures may change without notice. Unless otherwise stated, DAK content reflects information available at the time of publication.
+
+The applicability of any information depends on individual circumstances. Users are responsible for confirming current requirements with the relevant authority or seeking independent professional advice where appropriate.
+
+
+
+## 17. Contact
 
 Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 
