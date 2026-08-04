@@ -108,6 +108,13 @@ export async function fetchPublishedGuides(page = 0) {
   return response.data.data;
 }
 
+export async function fetchArchivedGuides(page = 0) {
+  const response = await apiClient.get('/admin/guides', {
+    params: { status: 'ARCHIVED', page, pageSize: QUEUE_PAGE_SIZE },
+  });
+  return response.data.data;
+}
+
 /**
  * Creates a new guide. slug is optional but should be supplied in English —
  * a Korean title cannot generate one.

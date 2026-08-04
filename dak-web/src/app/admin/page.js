@@ -18,6 +18,7 @@ import {
   triggerRssPoll,
   fetchDraftGuides,
   fetchPublishedGuides,
+  fetchArchivedGuides,
   updateGuideStatus,
   fetchEventsByStatus,
   updateEvent,
@@ -86,6 +87,18 @@ export default function AdminPage() {
   const [publishedGuidePage, setPublishedGuidePage] = useState(0);
   const [publishedGuidePages, setPublishedGuidePages] = useState(0);
   const [publishedGuideTotal, setPublishedGuideTotal] = useState(0);
+
+  // Collapsed and loaded on first open, as the update archive is. Guides
+  // accumulate rather than expire, so an always-open archive would grow to
+  // dominate the page. Prefixed because archiveOpen and its neighbours above
+  // belong to updates — the names do not say so, and a second set that also
+  // did not would be worse.
+  const [archivedGuides, setArchivedGuides] = useState([]);
+  const [archivedGuidePage, setArchivedGuidePage] = useState(0);
+  const [archivedGuidePages, setArchivedGuidePages] = useState(0);
+  const [archivedGuideTotal, setArchivedGuideTotal] = useState(0);
+  const [guideArchiveOpen, setGuideArchiveOpen] = useState(false);
+  const [guideArchiveLoading, setGuideArchiveLoading] = useState(false);
 
   // Events run the guide lifecycle rather than the update one: written by
   // hand, published when finished, no review queue in between. What they add
@@ -216,6 +229,35 @@ export default function AdminPage() {
     setArchivedPage(page);
     loadArchived(page);
   }
+
+  async function loadArchivedGuides(page) {
+    setGuideArchiveLoading(true);
+    try {
+      const data = await fetchArchivedGuides(page);
+      setArchivedGuides(data?.content ?? []);
+      setArchivedGuidePages(data?.totalPages ?? 0);
+      setArchivedGuideTotal(data?.totalElements ?? 0);
+    } catch (err) {
+      setActionError(err.response?.data?.error?.message || 'Could not load archived guides.');
+    } finally {
+      setGuideArchiveLoading(false);
+    }
+  }
+
+  async function toggleGuideArchive() {
+    const opening = !guideArchiveOpen;
+    setGuideArchiveOpen(opening);
+
+    // Fetch on first open only; reopening reuses what was loaded.
+    if (opening && archivedGuides.length === 0) {
+      await loadArchivedGuides(archivedGuidePage);
+    }
+  }
+
+  function changeArchivedGuidePage(page) {
+    setArchivedGuidePage(page);
+    loadArchivedGuides(page);
+  }
   // Reloads the draft queue from page one afterwards: new imports are the
   // newest rows, so an admin sitting on page three would see nothing change.
   // The archive is invalidated too, because rejected articles are archived
@@ -281,6 +323,15 @@ export default function AdminPage() {
     try {
       await updateGuideStatus(guideId, status);
       loadData();
+
+      // loadData refetches drafts and published only, so anything already
+      // loaded into the archive is now stale in both directions — a guide
+      // just archived is missing from it, and one just restored is still in
+      // it. Dropping the cache makes the next open refetch, as the update
+      // archive does for the same reason.
+      setArchivedGuides([]);
+      setArchivedGuidePage(0);
+      setGuideArchiveOpen(false);
     } catch (err) {
       setActionError(err.response?.data?.error?.message || 'That action failed.');
     }
@@ -871,59 +922,64 @@ export default function AdminPage() {
             />
           </>
         )}
-      </section>
 
-      {/* Archived updates. Collapsed by default: retired items are consulted
-          occasionally, not worked through, and there are enough of them to
-          bury the queues above. */}
-      <section className="mt-8">
+        {/* Without this an archived guide left the admin screen entirely: it
+            was absent from both lists, the only route back was the database,
+            and Archive was in practice a delete that left the row behind.
+            Found when a guide saved twice ended up archived and could not be
+            located from the interface. */}
         <button
           type="button"
-          onClick={toggleArchive}
-          aria-expanded={archiveOpen}
-          className="flex items-center gap-2 text-lg font-semibold text-snow
-                     hover:text-white transition-colors mb-3"
+          onClick={toggleGuideArchive}
+          aria-expanded={guideArchiveOpen}
+          className="flex items-center gap-2 text-[13px] font-medium text-muted
+                     hover:text-snow transition-colors mt-6 mb-2"
         >
           <ChevronDown
-            size={18}
+            size={14}
             strokeWidth={2}
-            className={`transition-transform duration-200 ${archiveOpen ? '' : '-rotate-90'}`}
+            className={`transition-transform duration-200 ${guideArchiveOpen ? '' : '-rotate-90'}`}
           />
-          Archived updates
-          {archiveOpen && archivedTotal > 0 && (
-            <span className="text-muted font-normal">({archivedTotal})</span>
+          Archived
+          {guideArchiveOpen && archivedGuideTotal > 0 && (
+            <span className="font-normal">({archivedGuideTotal})</span>
           )}
         </button>
 
-        {archiveOpen && (
-          archiveLoading ? (
+        {guideArchiveOpen && (
+          guideArchiveLoading ? (
             <div className="grid gap-2.5">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-14 rounded-xl bg-night border border-border-dark animate-pulse" />
+                <div
+                  key={i}
+                  className="h-16 rounded-xl bg-night border border-border-dark animate-pulse"
+                />
               ))}
             </div>
-          ) : archived.length === 0 ? (
+          ) : archivedGuides.length === 0 ? (
             <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
               <p className="text-muted text-sm">Nothing archived.</p>
             </div>
           ) : (
             <>
               <div className="grid gap-2.5">
-                {archived.map((update) => (
+                {archivedGuides.map((guide) => (
                   <div
-                    key={update.id}
+                    key={guide.id}
                     className="rounded-xl border border-border-dark bg-night p-3.5
-                               flex items-center justify-between gap-4"
+                               flex items-center justify-between gap-4 opacity-60"
                   >
                     <div className="min-w-0">
-                      <span className="text-sm text-muted block truncate">{update.title}</span>
-                      <span className="text-[12px] text-faint">{timeAgo(update.createdAt)}</span>
+                      <p className="font-medium text-snow truncate">{guide.title}</p>
+                      <span className="text-[12px] text-faint truncate block">{guide.slug}</span>
                     </div>
+                    {/* Restore rather than Publish: this puts a guide back
+                        where it was, and Publish reads as sending something
+                        out for the first time. */}
                     <button
-                      onClick={() => restoreUpdate(update.id)}
+                      onClick={() => handleGuideAction(guide.id, 'PUBLISHED')}
                       className={`${secondaryBtn} shrink-0`}
                     >
-                      <Undo2 size={14} strokeWidth={2} />
                       Restore
                     </button>
                   </div>
@@ -931,9 +987,9 @@ export default function AdminPage() {
               </div>
 
               <Pagination
-                page={archivedPage}
-                totalPages={archivedPages}
-                onChange={changeArchivedPage}
+                page={archivedGuidePage}
+                totalPages={archivedGuidePages}
+                onChange={changeArchivedGuidePage}
               />
             </>
           )
@@ -1096,9 +1152,78 @@ export default function AdminPage() {
           </div>
         ))}
       </div>
-    </>
+      </>
   )}
 </section>
+
+      {/* Archived updates. Collapsed by default: retired items are consulted
+          occasionally, not worked through, and there are enough of them to
+          bury the queues above. Last on the page because an archive is where
+          work ends rather than begins — the same order the sections above
+          keep internally, drafts before published before archived. */}
+      <section className="mt-8">
+        <button
+          type="button"
+          onClick={toggleArchive}
+          aria-expanded={archiveOpen}
+          className="flex items-center gap-2 text-lg font-semibold text-snow
+                     hover:text-white transition-colors mb-3"
+        >
+          <ChevronDown
+            size={18}
+            strokeWidth={2}
+            className={`transition-transform duration-200 ${archiveOpen ? '' : '-rotate-90'}`}
+          />
+          Archived updates
+          {archiveOpen && archivedTotal > 0 && (
+            <span className="text-muted font-normal">({archivedTotal})</span>
+          )}
+        </button>
+
+        {archiveOpen && (
+          archiveLoading ? (
+            <div className="grid gap-2.5">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-14 rounded-xl bg-night border border-border-dark animate-pulse" />
+              ))}
+            </div>
+          ) : archived.length === 0 ? (
+            <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
+              <p className="text-muted text-sm">Nothing archived.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-2.5">
+                {archived.map((update) => (
+                  <div
+                    key={update.id}
+                    className="rounded-xl border border-border-dark bg-night p-3.5
+                               flex items-center justify-between gap-4"
+                  >
+                    <div className="min-w-0">
+                      <span className="text-sm text-muted block truncate">{update.title}</span>
+                      <span className="text-[12px] text-faint">{timeAgo(update.createdAt)}</span>
+                    </div>
+                    <button
+                      onClick={() => restoreUpdate(update.id)}
+                      className={`${secondaryBtn} shrink-0`}
+                    >
+                      <Undo2 size={14} strokeWidth={2} />
+                      Restore
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <Pagination
+                page={archivedPage}
+                totalPages={archivedPages}
+                onChange={changeArchivedPage}
+              />
+            </>
+          )
+        )}
+      </section>
 </PageShell>
 );
 }
