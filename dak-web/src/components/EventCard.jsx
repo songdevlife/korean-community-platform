@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Ticket, ImageOff } from 'lucide-react';
+import { Calendar, MapPin, ImageOff } from 'lucide-react';
 import { eventDate, eventTime, daysUntil } from '@/utils/date';
 import { sized } from '@/utils/image';
 
@@ -70,9 +70,18 @@ export default function EventCard({ event }) {
             {proximity}
           </span>
         )}
-        {event.isFree && (
-          <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-border-dark text-muted">
-            무료
+        {/* Price sits with the other pills whatever its value. Free was a pill
+            and an amount was a line at the far right of the venue row, which
+            meant the same field moved depending on what it said — and a reader
+            scanning several cards had to look in two places for one thing.
+
+            Truncated rather than wrapped: a long note would push the pill row
+            onto a second line and change the card's height. The detail page
+            carries it in full. */}
+        {(event.isFree || event.priceNote) && (
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-border-dark
+                           text-muted max-w-[45%] truncate">
+            {event.isFree ? '무료' : event.priceNote}
           </span>
         )}
       </div>
@@ -98,21 +107,10 @@ export default function EventCard({ event }) {
             note competes with a long venue for the same line, the venue is
             what gives way. Somewhere to go matters more than what it costs,
             and the detail page carries both in full either way. */}
-        {(event.venueName || (!event.isFree && event.priceNote)) && (
-          <div className="flex items-center gap-3 min-w-0">
-            {event.venueName && (
-              <div className="flex items-center gap-2 min-w-0">
-                <MapPin size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
-                <span className="truncate">{event.venueName}</span>
-              </div>
-            )}
-
-            {!event.isFree && event.priceNote && (
-              <div className="flex items-center gap-2 shrink-0 ml-auto mr-3 max-w-[40%]">
-                <Ticket size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
-                <span className="text-snow">{event.priceNote}</span>
-              </div>
-            )}
+        {event.venueName && (
+          <div className="flex items-center gap-2">
+            <MapPin size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
+            <span className="truncate">{event.venueName}</span>
           </div>
         )}
       </div>
