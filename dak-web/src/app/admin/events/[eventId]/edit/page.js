@@ -34,6 +34,12 @@ export default function EventEditPage() {
           organiser: e.organiser ?? '',
           organiserContact: e.organiserContact ?? '',
           sourceUrl: e.sourceUrl ?? '',
+          // A row per existing image, in display order, and one blank row when
+          // there are none — matching what the form starts with. Getting this
+          // wrong is expensive rather than merely wrong: the form would open
+          // empty and saving would send an empty array, which the API reads as
+          // "remove every image".
+          imageUrls: e.images?.length > 0 ? e.images.map((i) => i.imageUrl) : [''],
           categoryId: e.category?.id ?? '',
         })
       )

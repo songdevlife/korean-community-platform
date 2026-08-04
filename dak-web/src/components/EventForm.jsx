@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 import { fetchEventCategories } from '@/api/events';
 
 const FIELD_IDS = {
@@ -14,7 +14,8 @@ const FIELD_IDS = {
 const EMPTY = {
   title: '', description: '', startsAt: '', endsAt: '',
   venueName: '', venueAddress: '', isFree: false, priceNote: '',
-  organiser: '', organiserContact: '', sourceUrl: '', categoryId: '',
+  organiser: '', organiserContact: '', sourceUrl: '', imageUrls: [''],
+  categoryId: '',
 };
 
 /**
@@ -87,6 +88,10 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Create', o
         organiser: draft.organiser.trim() || null,
         organiserContact: draft.organiserContact.trim() || null,
         sourceUrl: draft.sourceUrl.trim() || null,
+        // Blank rows dropped rather than sent. The backend drops them too, but
+        // an empty array here means "remove every image" on update, so what is
+        // sent has to be what was meant.
+        imageUrls: draft.imageUrls.map((u) => u.trim()).filter(Boolean),
         categoryId: draft.categoryId || null,
       });
     } catch (err) {
@@ -113,7 +118,25 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Create', o
     'border-border-dark text-muted hover:text-snow hover:border-faint transition-colors ' +
     'disabled:opacity-40 disabled:cursor-not-allowed';
 
-  const set = (patch) => setDraft({ ...draft, ...patch });
+    const set = (patch) => setDraft({ ...draft, ...patch });
+
+    const MAX_IMAGES = 10;
+  
+    const setImageUrl = (index, value) =>
+      set({ imageUrls: draft.imageUrls.map((u, i) => (i === index ? value : u)) });
+  
+    // Never removes the last row: a form with no input at all gives nothing to
+    // type into, and "add an image" as the only control reads as a feature
+    // rather than a field.
+    const removeImageUrl = (index) =>
+      set({
+        imageUrls: draft.imageUrls.length === 1
+          ? ['']
+          : draft.imageUrls.filter((_, i) => i !== index),
+      });
+  
+    const addImageUrl = () =>
+      draft.imageUrls.length < MAX_IMAGES && set({ imageUrls: [...draft.imageUrls, ''] });
 
   return (
     <>
@@ -241,6 +264,53 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Create', o
             maxLength={500} placeholder="https://www.facebook.com/events/..."
             className={`${fieldClass} placeholder:text-faint`}
           />
+        </div>
+
+        <div>
+          <label htmlFor="event-image-url-0" className={labelClass}>
+            Poster URLs — only with permission
+          </label>
+
+          <div className="flex flex-col gap-2">
+            {draft.imageUrls.map((url, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <input
+                  id={`event-image-url-${index}`} type="url" value={url}
+                  onChange={(e) => setImageUrl(index, e.target.value)}
+                  maxLength={500}
+                  placeholder={index === 0
+                    ? 'https://res.cloudinary.com/... (첫 번째가 대표 이미지)'
+                    : 'https://res.cloudinary.com/...'}
+                  className={`${fieldClass} placeholder:text-faint`}
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImageUrl(index)}
+                  aria-label={`Remove image ${index + 1}`}
+                  className="shrink-0 p-2 rounded-lg border border-border-dark text-muted
+                             hover:text-adelaide-red hover:border-adelaide-red transition-colors"
+                >
+                  <X size={14} strokeWidth={2} />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {draft.imageUrls.length < MAX_IMAGES && (
+            <button type="button" onClick={addImageUrl} className={`${secondaryBtn} mt-2`}>
+              <Plus size={14} strokeWidth={2} />
+              이미지 추가
+            </button>
+          )}
+
+          {/* The facts of an event are not copyright; the poster is. Listing
+              an event needs no permission, using its artwork does. The second
+              line is the lesson from the first photograph uploaded here, which
+              turned out to be twenty attendees rather than a poster. */}
+          <p className="text-faint text-[12px] mt-2 leading-relaxed">
+            주최자의 허락을 받은 이미지만 사용하세요. 참석자의 얼굴이 식별되는 사진은
+            주최자의 허락과 별개이므로 사용하지 않습니다.
+          </p>
         </div>
 
         <div>

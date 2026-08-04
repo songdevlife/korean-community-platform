@@ -45,6 +45,7 @@ function EventCreateForm() {
           organiser: e.organiser ?? '',
           organiserContact: e.organiserContact ?? '',
           sourceUrl: e.sourceUrl ?? '',
+          imageUrls: e.images?.length > 0 ? e.images.map((i) => i.imageUrl) : [''],
           categoryId: e.category?.id ?? '',
         })
       )
