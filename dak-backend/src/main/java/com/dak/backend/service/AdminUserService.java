@@ -7,6 +7,9 @@ import com.dak.backend.dto.UpdateUserRoleRequest;
 import com.dak.backend.exception.ApiException;
 import com.dak.backend.repository.RoleRepository;
 import com.dak.backend.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,9 +47,30 @@ public class AdminUserService {
 
         user.setRoles(Set.of(newRole));
 
+        return toResponse(user, newRole.getName());
+    }
+
+    /**
+     * Every account, newest first.
+     *
+     * Read-only and deliberately small: this exists to answer how many people
+     * have signed up and whether they verified, which is the only routine
+     * reason anyone opened a shell against production.
+     */
+    @Transactional(readOnly = true)
+    public Page<AdminUserResponse> listAll(int page, int pageSize) {
+        PageRequest pageable = PageRequest.of(page, Math.min(pageSize, 100),
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return userRepository.findAll(pageable)
+        .map(u -> toResponse(u, RolePriority.highestOf(u.getRoles())));
+    }
+
+    private AdminUserResponse toResponse(User user, String roleName) {
         return new AdminUserResponse(
                 user.getId(), user.getEmail(), user.getDisplayName(),
-                newRole.getName(), user.getAccountStatus()
+                roleName, user.getAccountStatus(),
+                user.isEmailVerified(), user.getCreatedAt()
         );
     }
 }

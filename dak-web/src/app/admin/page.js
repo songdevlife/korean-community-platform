@@ -19,13 +19,14 @@ import {
   fetchDraftGuides,
   fetchPublishedGuides,
   fetchArchivedGuides,
+  fetchUsers,
   updateGuideStatus,
   fetchEventsByStatus,
   updateEvent,
 } from '@/api/admin';
 import { fetchUpdateCategories } from '@/api/updates';
 import { useAuth } from '@/context/AuthContext';
-import { timeAgo, eventDateTime } from '@/utils/date';
+import { timeAgo, eventDateTime, eventDate } from '@/utils/date';
 import PageShell from '@/components/PageShell';
 import Pagination from '@/components/Pagination';
 
@@ -110,6 +111,17 @@ export default function AdminPage() {
   const [publishedEventTotal, setPublishedEventTotal] = useState(0);
   const [archivedEvents, setArchivedEvents] = useState([]);
   const [archivedEventTotal, setArchivedEventTotal] = useState(0);
+
+  // Read-only, collapsed, loaded on first open. This section exists to remove
+  // the only routine reason to open a shell against the production database —
+  // the credential in Entries 12 and 36 was pasted while answering exactly the
+  // question this answers.
+  const [users, setUsers] = useState([]);
+  const [userPage, setUserPage] = useState(0);
+  const [userPages, setUserPages] = useState(0);
+  const [userTotal, setUserTotal] = useState(0);
+  const [usersOpen, setUsersOpen] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -257,6 +269,34 @@ export default function AdminPage() {
   function changeArchivedGuidePage(page) {
     setArchivedGuidePage(page);
     loadArchivedGuides(page);
+  }
+
+  async function loadUsers(page) {
+    setUsersLoading(true);
+    try {
+      const data = await fetchUsers(page);
+      setUsers(data?.content ?? []);
+      setUserPages(data?.totalPages ?? 0);
+      setUserTotal(data?.totalElements ?? 0);
+    } catch (err) {
+      setActionError(err.response?.data?.error?.message || 'Could not load users.');
+    } finally {
+      setUsersLoading(false);
+    }
+  }
+
+  async function toggleUsers() {
+    const opening = !usersOpen;
+    setUsersOpen(opening);
+
+    if (opening && users.length === 0) {
+      await loadUsers(userPage);
+    }
+  }
+
+  function changeUserPage(page) {
+    setUserPage(page);
+    loadUsers(page);
   }
   // Reloads the draft queue from page one afterwards: new imports are the
   // newest rows, so an admin sitting on page three would see nothing change.
@@ -1224,6 +1264,94 @@ export default function AdminPage() {
           )
         )}
       </section>
+
+{/* Accounts. Read-only and collapsed: this is consulted occasionally,
+    not worked through. Nothing here can be changed — role changes have
+    an endpoint but no interface, and adding one to a screen whose
+    purpose is to stop people opening a database shell would be adding
+    a second thing to get wrong. */}
+<section className="mt-8">
+  <button
+    type="button"
+    onClick={toggleUsers}
+    aria-expanded={usersOpen}
+    className="flex items-center gap-2 text-lg font-semibold text-snow
+               hover:text-white transition-colors mb-3"
+  >
+    <ChevronDown
+      size={18}
+      strokeWidth={2}
+      className={`transition-transform duration-200 ${usersOpen ? '' : '-rotate-90'}`}
+    />
+    Accounts
+    {usersOpen && userTotal > 0 && (
+      <span className="text-muted font-normal">({userTotal})</span>
+    )}
+  </button>
+
+  {usersOpen && (
+    usersLoading ? (
+      <div className="grid gap-2.5">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-14 rounded-xl bg-night border border-border-dark animate-pulse" />
+        ))}
+      </div>
+    ) : users.length === 0 ? (
+      <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
+        <p className="text-muted text-sm">No accounts yet.</p>
+      </div>
+    ) : (
+      <>
+        <div className="grid gap-2.5">
+          {users.map((account) => (
+            <div
+              key={account.id}
+              className="rounded-xl border border-border-dark bg-night p-3.5
+                         flex items-center justify-between gap-4"
+            >
+              <div className="min-w-0">
+                <p className="text-sm text-snow truncate">{account.email}</p>
+                <span className="text-[12px] text-faint">
+                  {account.displayName || '이름 없음'} · {eventDate(account.createdAt)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {/* An unverified address is an attempt rather than an
+                    account, and the difference is the whole reason for
+                    looking. */}
+                {!account.emailVerified && (
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full
+                                   border border-border-dark text-muted">
+                    미인증
+                  </span>
+                )}
+                {account.role !== 'USER' && (
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full
+                                   bg-korea-blue/15 text-korea-blue font-medium">
+                    {account.role}
+                  </span>
+                )}
+                {account.accountStatus !== 'ACTIVE' && (
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full
+                                   border border-border-dark text-muted">
+                    {account.accountStatus}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Pagination
+          page={userPage}
+          totalPages={userPages}
+          onChange={changeUserPage}
+        />
+      </>
+    )
+  )}
+</section>
 </PageShell>
 );
 }
