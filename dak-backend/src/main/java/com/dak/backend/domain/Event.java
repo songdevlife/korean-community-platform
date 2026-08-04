@@ -2,11 +2,14 @@ package com.dak.backend.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import org.hibernate.annotations.BatchSize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -87,6 +90,16 @@ public class Event {
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    /**
+     * Posters and photographs, in display order. The lowest doubles as the
+     * card thumbnail, so the ordering is not cosmetic.
+     */
+    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY,
+               cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("displayOrder ASC")
+    @BatchSize(size = 50)
+    private List<EventImage> images = new ArrayList<>();
 
     public static Event createNew(String title, OffsetDateTime startsAt) {
         OffsetDateTime now = OffsetDateTime.now();
