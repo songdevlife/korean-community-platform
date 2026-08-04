@@ -19,5 +19,6 @@ public record EventSummaryResponse(
         String venueName,
         boolean isFree,
         String priceNote,
+        String thumbnailUrl,
         EventCategoryResponse category
 ) {}

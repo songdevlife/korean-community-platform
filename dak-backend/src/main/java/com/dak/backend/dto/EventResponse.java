@@ -1,8 +1,8 @@
 package com.dak.backend.dto;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
-
 /**
  * One event in full, for the detail page.
  *
@@ -13,6 +13,9 @@ import java.util.UUID;
  *
  * hasPassed is computed rather than stored: a page reached from a link shared
  * weeks ago needs to say the event is over rather than present it as upcoming.
+ * Images arrives in display order, and the lowest is what the card shows as
+ * its thumbnail. Ordering is enforced on the entity rather than left to the
+ * database, so the same image is the thumbnail on every request.
  */
 public record EventResponse(
         UUID id,
@@ -27,6 +30,7 @@ public record EventResponse(
         String organiser,
         String organiserContact,
         String sourceUrl,
+        List<EventImageResponse> images,
         EventCategoryResponse category,
         String status,
         boolean hasPassed,

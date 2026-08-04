@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,6 +36,10 @@ public record CreateEventRequest(
         @Size(max = 200) String organiser,
         @Size(max = 300) String organiserContact,
         @Size(max = 500) String sourceUrl,
+
+        // Optional. External URLs rather than uploads; see V23 migration.
+        @Size(max = 10, message = "You can add up to 10 images.")
+        List<String> imageUrls,
 
         UUID categoryId
 ) {}

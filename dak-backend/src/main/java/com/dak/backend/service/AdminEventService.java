@@ -2,6 +2,7 @@ package com.dak.backend.service;
 
 import com.dak.backend.domain.Event;
 import com.dak.backend.domain.EventCategory;
+import com.dak.backend.domain.EventImage;
 import com.dak.backend.dto.CreateEventRequest;
 import com.dak.backend.dto.EventResponse;
 import com.dak.backend.dto.UpdateEventRequest;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -73,7 +75,10 @@ public class AdminEventService {
         applyOptionalFields(event, request.description(), request.endsAt(),
                 request.venueName(), request.venueAddress(),
                 request.isFree(), request.priceNote(),
-                request.organiser(), request.organiserContact(), request.sourceUrl());
+                request.organiser(), request.organiserContact(),
+                request.sourceUrl());
+
+        replaceImages(event, request.imageUrls());
 
         if (request.categoryId() != null) {
             event.setCategory(findCategory(request.categoryId()));
@@ -115,6 +120,8 @@ public class AdminEventService {
         if (request.organiser() != null) event.setOrganiser(blankToNull(request.organiser()));
         if (request.organiserContact() != null) event.setOrganiserContact(blankToNull(request.organiserContact()));
         if (request.sourceUrl() != null) event.setSourceUrl(blankToNull(request.sourceUrl()));
+        // Null leaves the existing images alone; an empty list clears them.
+        if (request.imageUrls() != null) replaceImages(event, request.imageUrls());
 
         if (request.categoryId() != null) {
             event.setCategory(findCategory(request.categoryId()));
@@ -150,9 +157,10 @@ public class AdminEventService {
     }
 
     private void applyOptionalFields(Event event, String description, OffsetDateTime endsAt,
-                                      String venueName, String venueAddress,
-                                      boolean isFree, String priceNote,
-                                      String organiser, String organiserContact, String sourceUrl) {
+                                        String venueName, String venueAddress,
+                                        boolean isFree, String priceNote,
+                                        String organiser, String organiserContact,
+                                        String sourceUrl) {
         event.setDescription(blankToNull(description));
         event.setEndsAt(endsAt);
         event.setVenueName(blankToNull(venueName));
@@ -162,6 +170,30 @@ public class AdminEventService {
         event.setOrganiser(blankToNull(organiser));
         event.setOrganiserContact(blankToNull(organiserContact));
         event.setSourceUrl(blankToNull(sourceUrl));
+    }
+
+    /**
+     * Rebuilds the image list in place.
+     *
+     * clear() then add() rather than assigning a new list: orphanRemoval means
+     * Hibernate owns this collection, and replacing the reference throws
+     * rather than merely losing the deletions.
+     *
+     * Position in the incoming list is the display order, so reordering on the
+     * form is reordering here. Blank entries are dropped - an empty row on the
+     * form is a row nobody filled in.
+     */
+    private void replaceImages(Event event, List<String> imageUrls) {
+        event.getImages().clear();
+
+        if (imageUrls == null) return;
+
+        int order = 0;
+        for (String url : imageUrls) {
+            String trimmed = blankToNull(url);
+            if (trimmed == null) continue;
+            event.getImages().add(EventImage.createNew(event, trimmed, null, order++));
+        }
     }
 
     /**

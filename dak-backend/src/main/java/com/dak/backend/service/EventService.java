@@ -1,7 +1,9 @@
 package com.dak.backend.service;
 
 import com.dak.backend.domain.Event;
+import com.dak.backend.domain.EventImage;
 import com.dak.backend.dto.EventCategoryResponse;
+import com.dak.backend.dto.EventImageResponse;
 import com.dak.backend.dto.EventResponse;
 import com.dak.backend.dto.EventSummaryResponse;
 import com.dak.backend.exception.ApiException;
@@ -85,7 +87,7 @@ public class EventService {
         return new EventSummaryResponse(
                 e.getId(), e.getTitle(), e.getStartsAt(), e.getEndsAt(),
                 e.getVenueName(), e.isFree(), e.getPriceNote(),
-                toCategory(e));
+                thumbnailOf(e), toCategory(e));
     }
 
     EventResponse toDetail(Event e) {
@@ -99,9 +101,29 @@ public class EventService {
                 e.getVenueName(), e.getVenueAddress(),
                 e.isFree(), e.getPriceNote(),
                 e.getOrganiser(), e.getOrganiserContact(), e.getSourceUrl(),
-                toCategory(e), e.getStatus(),
+                toImages(e), toCategory(e), e.getStatus(),
                 finishesAt.isBefore(OffsetDateTime.now()),
                 e.getCreatedAt());
+    }
+
+    /**
+     * The lowest display_order, which is what a card shows.
+     *
+     * Sending the whole list on a twenty-item page would inflate the response
+     * to fill one slot per card. Ordering comes from @OrderBy on the entity,
+     * so this is the first element rather than a search for a minimum.
+     */
+    private String thumbnailOf(Event e) {
+        List<EventImage> images = e.getImages();
+        return (images == null || images.isEmpty()) ? null : images.get(0).getImageUrl();
+    }
+
+    private List<EventImageResponse> toImages(Event e) {
+        if (e.getImages() == null) return List.of();
+        return e.getImages().stream()
+                .map(i -> new EventImageResponse(
+                        i.getId(), i.getImageUrl(), i.getAltText(), i.getDisplayOrder()))
+                .toList();
     }
 
     private EventCategoryResponse toCategory(Event e) {

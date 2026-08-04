@@ -3,6 +3,7 @@ package com.dak.backend.dto;
 import jakarta.validation.constraints.Size;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,6 +23,9 @@ public record UpdateEventRequest(
         @Size(max = 200) String organiser,
         @Size(max = 300) String organiserContact,
         @Size(max = 500) String sourceUrl,
+        // Null leaves images alone; an empty list removes them all.
+        @Size(max = 10, message = "You can add up to 10 images.")
+        List<String> imageUrls,
         UUID categoryId,
         String status
 ) {}
