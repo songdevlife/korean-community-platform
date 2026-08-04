@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowLeft, BadgeCheck, Phone, Navigation, Globe, MapPin, Mail } from 'lucide-react';
 import { getBusinessBySlug } from '@/api/server';
 import PageShell from '@/components/PageShell';
-import BusinessGallery from '@/components/BusinessGallery';
+import Gallery from '@/components/Gallery';
 import CopyButton from '@/components/CopyButton';
 import SaveButton from '@/components/SaveButton';
 import BusinessAdminBar from '@/components/BusinessAdminBar';
@@ -102,7 +102,7 @@ export default async function BusinessPage({ params }) {
 
       <div className="flex flex-col lg:flex-row gap-6 lg:justify-center">
       <article className="w-full min-w-0 lg:max-w-[640px]">
-          <BusinessGallery images={business.images ?? []} />
+      <Gallery images={business.images ?? []} alt={business.name} />
 
           <BusinessAdminBar business={business}>
             <div className="flex items-start gap-2 mb-1">
@@ -175,9 +175,9 @@ export default async function BusinessPage({ params }) {
             </div>
 
             {business.description && (
-              <p className="text-[15px] leading-relaxed text-snow whitespace-pre-line">
-                {business.description}
-              </p>
+              <p className="text-[15px] leading-relaxed text-snow whitespace-pre-line break-words">
+              {business.description}
+            </p>
             )}
           </BusinessAdminBar>
 
