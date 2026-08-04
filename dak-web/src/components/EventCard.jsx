@@ -108,9 +108,9 @@ export default function EventCard({ event }) {
             )}
 
             {!event.isFree && event.priceNote && (
-              <div className="flex items-center gap-2 shrink-0 ml-auto max-w-[40%]">
+              <div className="flex items-center gap-2 shrink-0 ml-auto mr-3 max-w-[40%]">
                 <Ticket size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
-                <span>{event.priceNote}</span>
+                <span className="text-snow">{event.priceNote}</span>
               </div>
             )}
           </div>
