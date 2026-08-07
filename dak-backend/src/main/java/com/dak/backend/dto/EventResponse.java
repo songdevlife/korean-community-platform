@@ -19,6 +19,7 @@ import java.util.UUID;
  */
 public record EventResponse(
         UUID id,
+        String slug,
         String title,
         String description,
         OffsetDateTime startsAt,

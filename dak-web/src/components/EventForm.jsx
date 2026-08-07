@@ -6,13 +6,14 @@ import { fetchEventCategories } from '@/api/events';
 
 const FIELD_IDS = {
   title: 'event-title',
+  slug: 'event-slug',
   startsAt: 'event-starts-at',
   endsAt: 'event-ends-at',
   description: 'event-description',
 };
 
 const EMPTY = {
-  title: '', description: '', startsAt: '', endsAt: '',
+  title: '', slug: '', description: '', startsAt: '', endsAt: '',
   venueName: '', venueAddress: '', isFree: false, priceNote: '',
   organiser: '', organiserContact: '', sourceUrl: '', imageUrls: [''],
   categoryId: '',
@@ -58,7 +59,9 @@ export function isoToAdelaideLocal(iso) {
  * @param {function} onSubmit    Receives the payload; throws to report failure
  * @param {string}   submitLabel
  */
-export default function EventForm({ initial, onSubmit, submitLabel = 'Create', onCancel }) {
+export default function EventForm({
+  initial, onSubmit, submitLabel = 'Create', onCancel, showSlug = false,
+}) {
   const [draft, setDraft] = useState({ ...EMPTY, ...initial });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
@@ -78,6 +81,10 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Create', o
     try {
       await onSubmit({
         title: draft.title.trim(),
+        // Only where the form offered it. The update endpoint has no slug
+        // field, so sending one there would be silently discarded - and a
+        // value that appears to save but does not is worse than no field.
+        ...(showSlug && { slug: draft.slug.trim() || null }),
         description: draft.description.trim() || null,
         startsAt: adelaideToIso(draft.startsAt),
         endsAt: adelaideToIso(draft.endsAt),
@@ -152,6 +159,34 @@ export default function EventForm({ initial, onSubmit, submitLabel = 'Create', o
           />
           {fieldErrors.title && <p className={errorClass}>{fieldErrors.title}</p>}
         </div>
+
+        {/* Set once, at creation. Changing it later would break every link
+            already shared, and the update endpoint deliberately refuses one -
+            which is why this is hidden on the edit screen rather than
+            disabled there.
+
+            English, because the title almost never is: a Korean title reduces
+            to nothing under slugify and falls back to a date, which is valid
+            and says nothing to a reader or a search engine. */}
+        {showSlug && (
+          <div>
+            <label htmlFor="event-slug" className={labelClass}>
+              Slug — English, lowercase, hyphens. The start date is appended
+              automatically.
+            </label>
+            <input
+              id="event-slug" type="text" value={draft.slug}
+              onChange={(e) => set({ slug: e.target.value })}
+              maxLength={200} placeholder="free-english-conversation-class"
+              className={`${fieldClass} placeholder:text-faint`}
+            />
+            {fieldErrors.slug && <p className={errorClass}>{fieldErrors.slug}</p>}
+            <p className="text-faint text-[12px] mt-1.5 leading-relaxed">
+              비워 두면 날짜만으로 주소가 만들어집니다. 검색에 도움이 되므로
+              가능하면 채워 주세요.
+            </p>
+          </div>
+        )}
 
         <div>
           <label htmlFor="event-category" className={labelClass}>

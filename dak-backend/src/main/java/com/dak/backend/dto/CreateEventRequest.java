@@ -20,6 +20,12 @@ public record CreateEventRequest(
         @Size(max = 300, message = "Title must be 300 characters or fewer.")
         String title,
 
+        // Optional. Blank derives one from the title, which for a Korean
+        // title means a date and a random fragment - valid, but worth
+        // filling in.
+        @Size(max = 200, message = "Slug must be 200 characters or fewer.")
+        String slug,
+
         String description,
 
         @NotNull(message = "Enter a start time.")

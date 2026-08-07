@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -70,10 +71,30 @@ public class EventService {
      * dead link tells a reader nothing about what they missed.
      */
     @Transactional(readOnly = true)
-    public EventResponse getById(UUID id) {
-        Event event = eventRepository.findByIdAndStatus(id, "PUBLISHED")
+    public EventResponse getByIdentifier(String identifier) {
+        Event event = resolve(identifier)
                 .orElseThrow(() -> ApiException.notFound("Event not found."));
         return toDetail(event);
+    }
+
+    /**
+     * Accepts either form of address.
+     *
+     * Events were addressed by UUID until V25 and those links are already in
+     * KakaoTalk threads and search results, so both resolve. The response
+     * carries the canonical slug and the detail page redirects to it, which
+     * keeps one address per event without breaking the other.
+     *
+     * A slug can never look like a UUID: slugify strips everything but
+     * lowercase letters, digits and hyphens, and a bare 36-character hyphenated
+     * hex string is not a shape any title reduces to.
+     */
+    private Optional<Event> resolve(String identifier) {
+        try {
+            return eventRepository.findByIdAndStatus(UUID.fromString(identifier), "PUBLISHED");
+        } catch (IllegalArgumentException notAUuid) {
+            return eventRepository.findBySlugAndStatus(identifier, "PUBLISHED");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -85,7 +106,7 @@ public class EventService {
 
     EventSummaryResponse toSummary(Event e) {
         return new EventSummaryResponse(
-                e.getId(), e.getTitle(), e.getStartsAt(), e.getEndsAt(),
+                e.getId(), e.getSlug(), e.getTitle(), e.getStartsAt(), e.getEndsAt(),
                 e.getVenueName(), e.isFree(), e.getPriceNote(),
                 thumbnailOf(e), toCategory(e));
     }
@@ -96,7 +117,7 @@ public class EventService {
         OffsetDateTime finishesAt = e.getEndsAt() != null ? e.getEndsAt() : e.getStartsAt();
 
         return new EventResponse(
-                e.getId(), e.getTitle(), e.getDescription(),
+                e.getId(), e.getSlug(), e.getTitle(), e.getDescription(),
                 e.getStartsAt(), e.getEndsAt(),
                 e.getVenueName(), e.getVenueAddress(),
                 e.isFree(), e.getPriceNote(),

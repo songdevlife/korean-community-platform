@@ -14,26 +14,38 @@ import java.util.List;
 public interface EventRepository extends JpaRepository<Event, UUID> {
 
     /**
-     * The public listing: published, not yet finished, soonest first.
-     *
-     * Compares against endsAt where there is one, so a festival running until
-     * Sunday stays listed on Saturday rather than disappearing the moment it
-     * begins.
-     */
-    @Query("SELECT e FROM Event e WHERE e.status = 'PUBLISHED' "
-         + "AND COALESCE(e.endsAt, e.startsAt) >= :now "
-         + "AND (:categoryId IS NULL OR e.category.id = :categoryId) "
-         + "ORDER BY e.startsAt ASC")
-    Page<Event> findUpcoming(OffsetDateTime now, UUID categoryId, Pageable pageable);
-
-    /**
      * Detail lookup. Deliberately does not filter on the date: a link shared
      * before an event should still resolve afterwards rather than 404, and the
      * page can say it has passed.
      */
     Optional<Event> findByIdAndStatus(UUID id, String status);
 
+    /**
+     * The same lookup by the address readers actually use. Both forms resolve
+     * so that UUID links shared before V24 do not break; the detail page
+     * redirects one to the other.
+     */
+    Optional<Event> findBySlugAndStatus(String slug, String status);
+
     Page<Event> findByStatus(String status, Pageable pageable);
+
+    boolean existsBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, UUID id);
+
+    /**
+     * Published events that have not finished, for the sitemap.
+     *
+     * Separate from findUpcoming, which takes a category filter and a page
+     * the sitemap has no use for. Past events are excluded on purpose: their
+     * pages still resolve so a shared link does not break, but a search
+     * result leading to something that happened last month is worse than no
+     * search result at all.
+     */
+    @Query("SELECT e FROM Event e WHERE e.status = 'PUBLISHED' "
+         + "AND COALESCE(e.endsAt, e.startsAt) >= :now "
+         + "ORDER BY e.startsAt ASC")
+    List<Event> findUpcomingForSitemap(OffsetDateTime now, Pageable pageable);
 
     /**
      * Published events that have not finished, for the sitemap.
@@ -43,13 +55,6 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
      * purpose: their pages still resolve, so a shared link does not break, but
      * a search result leading to something that happened last month is worse
      * than no search result at all.
-     */
-    /**
-     * Title, description, venue and organiser, case-insensitively.
-     *
-     * Deliberately not the source URL: a reader searching for a word does not
-     * mean a URL that happens to contain it, and matching on one would return
-     * events whose visible text says nothing about the term.
      */
     /**
      * Title, description, venue and organiser, case-insensitively.

@@ -29,22 +29,25 @@ public class SitemapService {
     // deliberately: the query permutations are unbounded and each one is a
     // near-duplicate of the others.
     private static final List<String> STATIC_PATHS = List.of(
-            "/", "/directory", "/australia-updates", "/guides");
+        "/", "/directory", "/australia-updates", "/guides", "/events");
 
-    private final BusinessRepository businessRepository;
-    private final AustraliaUpdateRepository australiaUpdateRepository;
-    private final GuideRepository guideRepository;
-
-    @Value("${app.site.base-url:https://discoveradelaidekorea.au}")
-    private String baseUrl;
-
-    public SitemapService(BusinessRepository businessRepository,
-                           AustraliaUpdateRepository australiaUpdateRepository,
-                           GuideRepository guideRepository) {
-        this.businessRepository = businessRepository;
-        this.australiaUpdateRepository = australiaUpdateRepository;
-        this.guideRepository = guideRepository;
-    }
+            private final BusinessRepository businessRepository;
+            private final AustraliaUpdateRepository australiaUpdateRepository;
+            private final GuideRepository guideRepository;
+            private final EventRepository eventRepository;
+        
+            @Value("${app.site.base-url:https://discoveradelaidekorea.au}")
+            private String baseUrl;
+        
+            public SitemapService(BusinessRepository businessRepository,
+                                   AustraliaUpdateRepository australiaUpdateRepository,
+                                   GuideRepository guideRepository,
+                                   EventRepository eventRepository) {
+                this.businessRepository = businessRepository;
+                this.australiaUpdateRepository = australiaUpdateRepository;
+                this.guideRepository = guideRepository;
+                this.eventRepository = eventRepository;
+            }
 
     @Transactional(readOnly = true)
     public String generate() {
@@ -77,6 +80,16 @@ public class SitemapService {
                         baseUrl + "/guides/" + g.getSlug(),
                         lastModified(g)));
 
+        // Upcoming only, unlike every other type here. A past event's page
+        // still resolves so a shared link does not break, but sending a
+        // crawler to something that happened last month earns a search result
+        // that wastes the reader's click - which is worse than no result.
+        eventRepository.findUpcomingForSitemap(
+                        OffsetDateTime.now(), PageRequest.of(0, MAX_ENTRIES_PER_TYPE))
+                .forEach(e -> appendUrl(xml,
+                        baseUrl + "/events/" + e.getSlug(),
+                        lastModified(e)));
+
         xml.append("</urlset>\n");
         return xml.toString();
     }
@@ -98,6 +111,10 @@ public class SitemapService {
 
     private OffsetDateTime lastModified(Guide g) {
         return g.getUpdatedAt() != null ? g.getUpdatedAt() : g.getPublishedAt();
+    }
+
+    private OffsetDateTime lastModified(Event e) {
+        return e.getUpdatedAt() != null ? e.getUpdatedAt() : e.getCreatedAt();
     }
 
     /**

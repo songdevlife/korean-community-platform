@@ -58,6 +58,7 @@ function EventCreateForm() {
 
   return (
     <EventForm
+        showSlug
       initial={initial}
       submitLabel="Create"
       onCancel={() => router.back()}

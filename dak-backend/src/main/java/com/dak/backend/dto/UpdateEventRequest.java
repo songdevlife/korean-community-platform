@@ -13,6 +13,9 @@ import java.util.UUID;
  */
 public record UpdateEventRequest(
         @Size(max = 300) String title,
+        // Deliberately absent from the update path: changing a published slug
+        // breaks every link already shared under it, and the UUID fallback
+        // does not save an old slug. Same hazard AdminGuideService records.
         String description,
         OffsetDateTime startsAt,
         OffsetDateTime endsAt,

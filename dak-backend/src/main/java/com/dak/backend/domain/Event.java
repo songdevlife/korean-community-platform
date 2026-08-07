@@ -34,6 +34,16 @@ public class Event {
     @Column(nullable = false, length = 300)
     private String title;
 
+    /**
+     * The public address. Matches guides at 320 characters so the two can
+     * share validation, and unique so a link resolves to one event.
+     *
+     * Set once, at creation, and not derived from startsAt afterwards: an
+     * event whose date is corrected keeps the URL it was shared under.
+     */
+    @Column(nullable = false, unique = true, length = 320)
+    private String slug;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 

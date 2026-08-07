@@ -14,11 +14,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
-
 @Service
 public class AdminEventService {
 
@@ -71,6 +74,7 @@ public class AdminEventService {
     @Transactional
     public EventResponse create(CreateEventRequest request) {
         Event event = Event.createNew(request.title().trim(), request.startsAt());
+        event.setSlug(resolveSlug(request.slug(), request.title(), request.startsAt()));
 
         applyOptionalFields(event, request.description(), request.endsAt(),
                 request.venueName(), request.venueAddress(),
@@ -213,6 +217,59 @@ public class AdminEventService {
         return categoryRepository.findById(categoryId)
                 .orElseThrow(() -> ApiException.badRequest(
                         "INVALID_CATEGORY", "Category not found."));
+    }
+
+    /**
+     * Always date-suffixed, which is what makes this different from guides.
+     *
+     * Every event found so far recurs weekly, so the same admin-supplied stem
+     * arrives again every seven days. Guides resolve a collision with -2, which
+     * would give speak-easy-2 and speak-easy-3 - numbers that say nothing about
+     * which week they are. The start date says exactly that, and it makes the
+     * copy button (Entry 29) work without thinking: duplicate an event, change
+     * the date, and the slug is already distinct.
+     *
+     * Adelaide time rather than UTC, because a 7pm event would otherwise carry
+     * the previous day's date for half the year.
+     *
+     * Numeric suffixes remain for the genuine case of two events with the same
+     * stem on the same day.
+     */
+    private String resolveSlug(String requestedSlug, String title, OffsetDateTime startsAt) {
+        String stem = (requestedSlug != null && !requestedSlug.isBlank())
+                ? slugify(requestedSlug)
+                : slugify(title);
+
+        // A Korean title reduces to nothing, which is the usual case here.
+        if (stem.isBlank()) {
+            stem = "event";
+        }
+
+        String date = startsAt.atZoneSameInstant(ZoneId.of("Australia/Adelaide"))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        String base = stem + "-" + date;
+        String candidate = base;
+        int suffix = 2;
+        while (eventRepository.existsBySlug(candidate)) {
+            candidate = base + "-" + suffix++;
+        }
+        return candidate;
+    }
+
+    /**
+     * Same rules as AdminGuideService, so an admin who has written one slug
+     * has written both. Worth extracting once a third caller appears.
+     */
+    private static String slugify(String input) {
+        if (input == null) {
+            return "";
+        }
+        return Normalizer.normalize(input, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ENGLISH)
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("(^-|-$)", "");
     }
 
     private String blankToNull(String value) {

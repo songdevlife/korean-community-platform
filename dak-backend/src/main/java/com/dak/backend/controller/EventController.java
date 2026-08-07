@@ -41,8 +41,13 @@ public class EventController {
         return ApiResponse.ok(eventService.listCategories());
     }
 
-    @GetMapping("/{eventId}")
-    public ApiResponse<EventResponse> detail(@PathVariable UUID eventId) {
-        return ApiResponse.ok(eventService.getById(eventId));
+    /**
+     * String rather than UUID: Spring converts the path variable before the
+     * method runs, so a UUID parameter would reject every slug with a 400
+     * before the service saw it.
+     */
+    @GetMapping("/{identifier}")
+    public ApiResponse<EventResponse> detail(@PathVariable String identifier) {
+        return ApiResponse.ok(eventService.getByIdentifier(identifier));
     }
 }

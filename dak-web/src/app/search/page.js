@@ -103,7 +103,7 @@ export default async function SearchPage({ searchParams }) {
                </h3>
                <div className="grid gap-2.5">
                  {events.content.map((event) => (
-                   <Link key={event.id} href={`/events/${event.id}`} className="block">
+                   <Link key={event.id} href={`/events/${event.slug}`} className="block">
                      <ArticleResultRow
                        kind="event"
                        title={event.title}

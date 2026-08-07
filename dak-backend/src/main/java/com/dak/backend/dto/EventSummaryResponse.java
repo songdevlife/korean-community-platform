@@ -13,6 +13,7 @@ import java.util.UUID;
  */
 public record EventSummaryResponse(
         UUID id,
+        String slug,
         String title,
         OffsetDateTime startsAt,
         OffsetDateTime endsAt,

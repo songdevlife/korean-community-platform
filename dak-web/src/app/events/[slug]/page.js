@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Calendar, MapPin, Ticket, User, ExternalLink, CalendarPlus,
@@ -11,8 +11,8 @@ import { googleCalendarUrl } from '@/utils/calendar';
 import Gallery from '@/components/Gallery';
 
 export async function generateMetadata({ params }) {
-  const { eventId } = await params;
-  const event = await getEventById(eventId);
+  const { slug } = await params;
+  const event = await getEventById(slug);
 
   if (!event) return { title: 'Event not found' };
 
@@ -25,16 +25,26 @@ export async function generateMetadata({ params }) {
   return {
     title: event.title,
     description,
-    alternates: { canonical: `/events/${event.id}` },
+    // The slug, not the id. Both addresses resolve so that links shared before
+    // the change keep working, and this is what says which of them is the page.
+    alternates: { canonical: `/events/${event.slug}` },
     openGraph: { title: event.title, description, type: 'article' },
   };
 }
 
 export default async function EventPage({ params }) {
-  const { eventId } = await params;
-  const event = await getEventById(eventId);
+  const { slug } = await params;
+  const event = await getEventById(slug);
 
   if (!event) notFound();
+
+  // Events were addressed by UUID until the slug migration, and those links
+  // are in KakaoTalk threads and search results already. The backend resolves
+  // either form; this sends the old one to the new one permanently, so a
+  // crawler updates its record rather than indexing the same event twice.
+  if (event.slug && slug !== event.slug) {
+    permanentRedirect(`/events/${event.slug}`);
+  }
 
   // Event rather than Article: this is a thing happening at a time and place,
   // and the structured data is what lets a search result say so.
