@@ -1264,6 +1264,94 @@ export default function AdminPage() {
           )
         )}
       </section>
+
+{/* Accounts. Read-only and collapsed: this is consulted occasionally,
+    not worked through. Nothing here can be changed — role changes have
+    an endpoint but no interface, and adding one to a screen whose
+    purpose is to stop people opening a database shell would be adding
+    a second thing to get wrong. */}
+<section className="mt-8">
+  <button
+    type="button"
+    onClick={toggleUsers}
+    aria-expanded={usersOpen}
+    className="flex items-center gap-2 text-lg font-semibold text-snow
+               hover:text-white transition-colors mb-3"
+  >
+    <ChevronDown
+      size={18}
+      strokeWidth={2}
+      className={`transition-transform duration-200 ${usersOpen ? '' : '-rotate-90'}`}
+    />
+    Accounts
+    {usersOpen && userTotal > 0 && (
+      <span className="text-muted font-normal">({userTotal})</span>
+    )}
+  </button>
+
+  {usersOpen && (
+    usersLoading ? (
+      <div className="grid gap-2.5">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-14 rounded-xl bg-night border border-border-dark animate-pulse" />
+        ))}
+      </div>
+    ) : users.length === 0 ? (
+      <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
+        <p className="text-muted text-sm">No accounts yet.</p>
+      </div>
+    ) : (
+      <>
+        <div className="grid gap-2.5">
+          {users.map((account) => (
+            <div
+              key={account.id}
+              className="rounded-xl border border-border-dark bg-night p-3.5
+                         flex items-center justify-between gap-4"
+            >
+              <div className="min-w-0">
+                <p className="text-sm text-snow truncate">{account.email}</p>
+                <span className="text-[12px] text-faint">
+                  {account.displayName || '이름 없음'} · {eventDate(account.createdAt)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                {/* An unverified address is an attempt rather than an
+                    account, and the difference is the whole reason for
+                    looking. */}
+                {!account.emailVerified && (
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full
+                                   border border-border-dark text-muted">
+                    미인증
+                  </span>
+                )}
+                {account.role !== 'USER' && (
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full
+                                   bg-korea-blue/15 text-korea-blue font-medium">
+                    {account.role}
+                  </span>
+                )}
+                {account.accountStatus !== 'ACTIVE' && (
+                  <span className="text-[11px] px-2.5 py-0.5 rounded-full
+                                   border border-border-dark text-muted">
+                    {account.accountStatus}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Pagination
+          page={userPage}
+          totalPages={userPages}
+          onChange={changeUserPage}
+        />
+      </>
+    )
+  )}
+</section>
 </PageShell>
 );
 }
