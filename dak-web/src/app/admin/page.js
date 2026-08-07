@@ -131,7 +131,7 @@ export default function AdminPage() {
   // Id of the row currently open for editing, plus its working copy. Only one
   // row edits at a time — a review queue is worked through sequentially.
   const [editingId, setEditingId] = useState(null);
-  const [draft, setDraft] = useState({ title: '', koreanSummary: '' });
+  const [draft, setDraft] = useState({ title: '', slug: '', koreanSummary: '' });
   const [saving, setSaving] = useState(false);
 
   // A poll runs for minutes and reports no progress, so the only honest
@@ -141,7 +141,7 @@ export default function AdminPage() {
 
   function cancelEditing() {
     setEditingId(null);
-    setDraft({ title: '', koreanSummary: '' });
+    setDraft({ title: '', slug: '', koreanSummary: '' });
   }
 
   async function loadData() {
@@ -439,6 +439,7 @@ export default function AdminPage() {
     setEditingId(update.id);
     setDraft({
       title: update.title ?? '',
+      slug: update.slug ?? '',
       koreanSummary: update.koreanSummary ?? '',
     });
     setActionError('');
@@ -450,13 +451,14 @@ export default function AdminPage() {
     try {
       await updateUpdateMetadata(updateId, {
         title: draft.title,
+        slug: draft.slug,
         koreanSummary: draft.koreanSummary,
       });
       setUpdates((rows) =>
         rows.map((row) =>
           row.id !== updateId
             ? row
-            : { ...row, title: draft.title, koreanSummary: draft.koreanSummary }
+            : { ...row, title: draft.title, slug: draft.slug, koreanSummary: draft.koreanSummary }
         )
       );
       cancelEditing();
@@ -649,6 +651,25 @@ export default function AdminPage() {
                           />
                         </div>
 
+                        {/* The summariser writes this in English from the same
+                            facts as the Korean headline. Editable here and
+                            nowhere else: a draft has no links to break, and a
+                            published one has every link already shared under
+                            it — the server refuses the field once the status
+                            moves. */}
+                        <div>
+                          <label className="block text-[12px] font-medium text-muted mb-1.5">
+                            Slug — the address this will publish at
+                          </label>
+                          <input
+                            type="text"
+                            value={draft.slug}
+                            onChange={(e) => setDraft({ ...draft, slug: e.target.value })}
+                            maxLength={200}
+                            className={fieldClass}
+                          />
+                        </div>
+
                         {/* Source text, read-only. This is the publisher's own
                             article and is never published — it is here to write
                             the summary from. Kept in a scroll box so a long
@@ -830,7 +851,7 @@ export default function AdminPage() {
                 >
                   <div className="min-w-0">
                     <Link
-                      href={`/australia-updates/${update.id}`}
+                      href={`/australia-updates/${update.slug}`}
                       className="font-medium text-snow hover:text-white transition-colors block truncate"
                     >
                       {update.title}

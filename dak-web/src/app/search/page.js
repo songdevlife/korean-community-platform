@@ -169,7 +169,7 @@ export default async function SearchPage({ searchParams }) {
                 {updates.content.map((update) => (
                   <Link
                     key={update.id}
-                    href={`/australia-updates/${update.id}`}
+                    href={`/australia-updates/${update.slug}`}
                     className="block"
                   >
                     <ArticleResultRow

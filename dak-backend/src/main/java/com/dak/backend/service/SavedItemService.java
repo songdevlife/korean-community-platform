@@ -111,7 +111,7 @@ public class SavedItemService {
             var update = australiaUpdateRepository.findById(item.getResourceId()).orElse(null);
             if (update != null) {
                 title = update.getTitle();
-                slugOrId = update.getId().toString();
+                slugOrId = update.getSlug();
                 available = "PUBLISHED".equals(update.getStatus());
             }
         } else if ("GUIDE".equals(item.getResourceType())) {

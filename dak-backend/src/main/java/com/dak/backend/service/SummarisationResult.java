@@ -18,11 +18,12 @@ public record SummarisationResult(
     boolean relevant,
     String reason,
     String koreanTitle,
+    String slug,
     String koreanDraft
 ) {
 
 public static SummarisationResult irrelevant(String reason) {
-    return new SummarisationResult(false, reason, null, null);
+    return new SummarisationResult(false, reason, null, null, null);
 }
 
 /**
@@ -31,8 +32,9 @@ public static SummarisationResult irrelevant(String reason) {
  * that the words a Korean reader would search for appear in the one field
  * that weighs most in a search result.
  */
-public static SummarisationResult relevant(String koreanTitle, String koreanDraft, String reason) {
-    return new SummarisationResult(true, reason, koreanTitle, koreanDraft);
+public static SummarisationResult relevant(String koreanTitle, String slug,
+    String koreanDraft, String reason) {
+return new SummarisationResult(true, reason, koreanTitle, slug, koreanDraft);
 }
 
 /**
@@ -42,6 +44,6 @@ public static SummarisationResult relevant(String koreanTitle, String koreanDraf
  * the source's.
  */
 public static SummarisationResult relevant(String koreanDraft, String reason) {
-    return new SummarisationResult(true, reason, null, koreanDraft);
+    return new SummarisationResult(true, reason, null, null, koreanDraft);
 }
 }

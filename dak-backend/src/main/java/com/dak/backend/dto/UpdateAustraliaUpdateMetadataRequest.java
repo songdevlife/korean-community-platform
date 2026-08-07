@@ -13,5 +13,9 @@ public record UpdateAustraliaUpdateMetadataRequest(
         UUID categoryId,
         String geographicScope,
         @Size(max = 300) String title,
+        // Refused once the item is published — see AdminAustraliaUpdateService.
+        // 200 rather than the column's 320, leaving room for a numeric suffix
+        // when the stem collides.
+        @Size(max = 200) String slug,
         String koreanSummary
 ) {}

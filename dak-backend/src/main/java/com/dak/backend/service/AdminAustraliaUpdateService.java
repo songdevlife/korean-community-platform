@@ -56,8 +56,8 @@ public class AdminAustraliaUpdateService {
                 ? australiaUpdateRepository.findByStatus(status, pageable)
                 : australiaUpdateRepository.findAll(pageable);
 
-        return updates.map(u -> new AdminUpdateSummaryResponse(
-                u.getId(), u.getTitle(), u.getStatus(), u.isAiGenerated(),
+                return updates.map(u -> new AdminUpdateSummaryResponse(
+                        u.getId(), u.getSlug(), u.getTitle(), u.getStatus(), u.isAiGenerated(),
                 u.getCategory() != null, !u.getSources().isEmpty(),
                 u.getGeographicScope() != null && !u.getGeographicScope().isBlank(),
                 u.getCategory() == null ? null : u.getCategory().getId(),
@@ -100,9 +100,11 @@ public class AdminAustraliaUpdateService {
                 ? result.koreanTitle()
                 : sourceTitle;
 
-        AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
-                displayTitle, content.bodyText(), result.koreanDraft());
-        // Scope tracks the source rather than the article: an Adelaide feed
+                AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
+                        displayTitle, content.bodyText(), result.koreanDraft());
+                update.setSlug(AustraliaUpdateService.resolveSlug(
+                        result.slug(), displayTitle, australiaUpdateRepository::existsBySlug));
+                // Scope tracks the source rather than the article: an Adelaide feed
         // produces Adelaide news. An admin can still override it.
         update.setGeographicScope(source.getDefaultGeographicScope());
         australiaUpdateRepository.save(update);
@@ -149,12 +151,28 @@ public class AdminAustraliaUpdateService {
         }
 
         if (request.title() != null) {
-            String title = request.title().trim();
-            if (title.isEmpty()) {
-                throw ApiException.badRequest("INVALID_TITLE", "Title cannot be empty.");
+                String title = request.title().trim();
+                if (title.isEmpty()) {
+                    throw ApiException.badRequest("INVALID_TITLE", "Title cannot be empty.");
+                }
+                update.setTitle(title);
             }
-            update.setTitle(title);
-        }
+    
+            // Editable while it is a draft and not afterwards. The summariser's slug
+            // is usually good and sometimes is not, and a draft has no links to
+            // break; a published one has every link already shared under it, which
+            // the UUID fallback does not cover. Same rule events enforce by
+            // omitting the field entirely - here the field has to exist for drafts,
+            // so the guard is a status check rather than a missing parameter.
+            if (request.slug() != null) {
+                if ("PUBLISHED".equals(update.getStatus())) {
+                    throw ApiException.badRequest("SLUG_LOCKED",
+                            "The address of a published update cannot be changed.");
+                }
+                update.setSlug(AustraliaUpdateService.resolveSlug(
+                        request.slug(), update.getTitle(),
+                        s -> australiaUpdateRepository.existsBySlugAndIdNot(s, updateId)));
+            }
 
         if (request.koreanSummary() != null) {
             String summary = request.koreanSummary().trim();
@@ -216,7 +234,7 @@ public class AdminAustraliaUpdateService {
         // Deliberately omits extractedText: this response serves the public
         // detail endpoint as well as the admin one.
         return new AustraliaUpdateDetailResponse(
-                u.getId(), u.getTitle(), u.getKoreanSummary(), category,
+                u.getId(), u.getSlug(), u.getTitle(), u.getKoreanSummary(), category,
                 u.getGeographicScope(), u.getStatus(), u.isAiGenerated(), sources, u.getCreatedAt()
         );
     }

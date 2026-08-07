@@ -4,6 +4,10 @@ import java.util.UUID;
 
 public record AdminUpdateSummaryResponse(
         UUID id,
+        // Shown in the queue and editable while the item is a draft: the
+        // summariser's slug is usually good and sometimes is not, and a draft
+        // is the only point at which it can still be changed.
+        String slug,
         String title,
         String status,
         boolean aiGenerated,

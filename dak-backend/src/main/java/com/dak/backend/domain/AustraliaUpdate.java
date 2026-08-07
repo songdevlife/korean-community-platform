@@ -26,6 +26,17 @@ public class AustraliaUpdate {
     private String title;
 
     /**
+     * The public address. Matches guides and events at 320 characters so the
+     * three can share validation, and unique so a link resolves to one article.
+     *
+     * Set once, when the draft is created, and not revised when the title is:
+     * an administrator rewrites a headline routinely, and a URL that followed
+     * it would break every link already shared.
+     */
+    @Column(nullable = false, unique = true, length = 320)
+    private String slug;
+
+    /**
      * What DAK publishes: a Korean-language summary written by an administrator.
      *
      * Nullable as of V14. An import arrives with nothing here, and publication is

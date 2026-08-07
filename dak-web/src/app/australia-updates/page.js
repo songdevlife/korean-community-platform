@@ -97,7 +97,7 @@ export default async function AustraliaUpdatesPage({ searchParams }) {
           {updates.map((update) => (
             <Link
               key={update.id}
-              href={`/australia-updates/${update.id}`}
+              href={`/australia-updates/${update.slug}`}
               className="block"
             >
               <UpdateCard update={update} />

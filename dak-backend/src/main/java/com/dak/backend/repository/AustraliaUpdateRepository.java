@@ -7,11 +7,24 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface AustraliaUpdateRepository extends JpaRepository<AustraliaUpdate, UUID> {
 
-    Page<AustraliaUpdate> findByStatus(String status, Pageable pageable);
+        Page<AustraliaUpdate> findByStatus(String status, Pageable pageable);
+    
+        /**
+         * Detail lookup by the address readers actually use. Both forms resolve so
+         * that UUID links shared before V26 do not break; the detail page redirects
+         * one to the other.
+         */
+        Optional<AustraliaUpdate> findBySlugAndStatus(String slug, String status);
+    
+        boolean existsBySlug(String slug);
+
+    /** On edit, the update's own slug must not count as a collision. */
+    boolean existsBySlugAndIdNot(String slug, UUID id);
 
     /**
      * Category and scope are independent axes: a reader may want immigration

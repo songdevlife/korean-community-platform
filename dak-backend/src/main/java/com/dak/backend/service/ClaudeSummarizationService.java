@@ -113,9 +113,23 @@ public class ClaudeSummarizationService implements AiSummarizationService {
             markdown. If action is needed, say so explicitly. Close by noting \
             that details are in the linked original.
 
+            FOURTH, if relevant, write an English URL slug for the briefing.
+
+            This is the web address the article will live at, so it is read by \
+            search engines and by anyone glancing at a shared link. Lowercase \
+            English words separated by hyphens, no other characters. Three to \
+            six words.
+
+            Take the same concrete nouns you put in the Korean headline — the \
+            suburb, the organisation, the thing recalled — and give their \
+            English equivalents. Do not transliterate Korean. Do not include \
+            the date, the source name, or filler words like "news" or \
+            "update".
+
             Reply with JSON only, no other text, in exactly this shape:
             {"relevant": true or false, "reason": "one short line in English", \
             "koreanTitle": "the Korean headline, or null if not relevant", \
+            "slug": "the English slug, or null if not relevant", \
             "koreanDraft": "the Korean briefing, or null if not relevant"}
             """;
 
@@ -241,6 +255,18 @@ public class ClaudeSummarizationService implements AiSummarizationService {
             }
         }
 
-        return SummarisationResult.relevant(koreanTitle, draft, reason);
+        // Same treatment as the headline, and for the same reason. The caller
+        // generates a dated fallback when this is null, so a malformed slug
+        // costs a readable URL rather than the whole import.
+        JsonNode slugNode = node.path("slug");
+        String slug = slugNode.isNull() ? null : slugNode.asText(null);
+        if (slug != null) {
+            slug = slug.trim();
+            if (slug.isEmpty()) {
+                slug = null;
+            }
+        }
+
+        return SummarisationResult.relevant(koreanTitle, slug, draft, reason);
     }
 }

@@ -33,7 +33,7 @@ export default function UpdatesSidePanel({ updates = [] }) {
           {updates.map((update) => (
             <li key={update.id}>
               <Link
-                href={`/australia-updates/${update.id}`}
+                href={`/australia-updates/${update.slug}`}
                 className="flex gap-3 p-2 -mx-2 rounded-lg hover:bg-surface transition-colors group"
               >
                 {/* Icon tile, matching the wireframe's two-column row */}

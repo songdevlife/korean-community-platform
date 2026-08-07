@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, Calendar } from 'lucide-react';
 import { getUpdateById } from '@/api/server';
@@ -18,8 +18,8 @@ import UpdateAdminBar from '@/components/UpdateAdminBar';
  * this page even by mistake.
  */
 export async function generateMetadata({ params }) {
-  const { updateId } = await params;
-  const update = await getUpdateById(updateId);
+  const { slug } = await params;
+  const update = await getUpdateById(slug);
 
   if (!update) {
     return { title: 'Update not found' };
@@ -36,7 +36,9 @@ export async function generateMetadata({ params }) {
   return {
     title: update.title,
     description,
-    alternates: { canonical: `/australia-updates/${update.id}` },
+    // The slug, not the id. Both addresses resolve so that links shared before
+    // the change keep working, and this is what says which of them is the page.
+    alternates: { canonical: `/australia-updates/${update.slug}` },
     openGraph: {
       title: update.title,
       description,
@@ -47,12 +49,20 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function AustraliaUpdatePage({ params }) {
-  const { updateId } = await params;
-  const update = await getUpdateById(updateId);
+  const { slug } = await params;
+  const update = await getUpdateById(slug);
 
   // Covers both an unknown id and one that is DRAFT or ARCHIVED — the public
   // endpoint returns 404 for all three.
   if (!update) notFound();
+
+  // Updates were addressed by UUID until the slug migration, and thirty-odd of
+  // those are in Google's index. The backend resolves either form; this sends
+  // the old one to the new one permanently, so a crawler updates its record
+  // rather than indexing the same article twice.
+  if (update.slug && slug !== update.slug) {
+    permanentRedirect(`/australia-updates/${update.slug}`);
+  }
 
   const sources = update.sources ?? [];
 

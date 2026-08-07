@@ -66,10 +66,10 @@ public class SitemapService {
                         baseUrl + "/businesses/" + b.getSlug(),
                         lastModified(b)));
 
-        australiaUpdateRepository.findByStatus("PUBLISHED", PageRequest.of(0, MAX_ENTRIES_PER_TYPE))
-                .forEach(u -> appendUrl(xml,
-                        baseUrl + "/australia-updates/" + u.getId(),
-                        u.getCreatedAt()));
+                        australiaUpdateRepository.findByStatus("PUBLISHED", PageRequest.of(0, MAX_ENTRIES_PER_TYPE))
+                        .forEach(u -> appendUrl(xml,
+                                baseUrl + "/australia-updates/" + u.getSlug(),
+                                u.getCreatedAt()));
 
         // Guides carry a real updatedAt: unlike a business listing, a guide is
         // revised when the rules it describes change, and the revision is the

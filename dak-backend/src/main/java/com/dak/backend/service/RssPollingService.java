@@ -127,8 +127,14 @@ public class RssPollingService {
                 }
 
                 AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
-                        displayTitle, content.bodyText(), result.koreanDraft());
-                // Geographic scope is a property of the feed far more often than
+                    displayTitle, content.bodyText(), result.koreanDraft());
+            // The model's English slug where it gave one, a dated fallback
+            // where it did not. Set before save because the column is NOT
+            // NULL: omitting it would fail every article in the loop, one
+            // caught exception at a time, and report a successful poll.
+            update.setSlug(AustraliaUpdateService.resolveSlug(
+                    result.slug(), displayTitle, australiaUpdateRepository::existsBySlug));
+            // Geographic scope is a property of the feed far more often than
                 // of the individual article: an Adelaide feed produces Adelaide
                 // news. Seeding it here leaves the admin only the category to
                 // decide. Null where the source covers no single area.

@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record AustraliaUpdateSummaryResponse(
         UUID id,
+        String slug,
         String title,
         // The administrator-written Korean summary. Carried in full rather than
         // truncated server-side: the list is small, and the card decides its own

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record AustraliaUpdateDetailResponse(
         UUID id,
+        String slug,
         String title,
         String koreanSummary,
         UpdateCategoryResponse category,
