@@ -998,7 +998,23 @@ DAK records the words entered into its search box, together with the number of r
 
 It exists so that DAK can see what readers are looking for and, in particular, what they look for and do not find.
 
-## 29. Contact Us
+## 29. Information About People Who Are Not DAK Users
+
+Some content DAK publishes contains personal information about people who do not hold a DAK account and have not dealt with DAK directly. This includes the contact details of event organisers and of people advertising rental accommodation.
+
+Where DAK publishes such information:
+
+-   Contact details are published only where the person has given DAK permission, or where they have themselves published those details for the purpose of being contacted about that event or property.
+
+-   DAK keeps a record of the permission given, including the date and the channel through which it was given, so that a later question about consent can be answered.
+
+-   Photographs are used only where the person has supplied them or agreed to their use.
+
+-   The information is removed on request, without requiring a reason, by contacting **admin@discoveradelaidekorea.au**.
+
+Where a listing is removed or expires, the personal information in it is removed from the published page. Records kept for the purpose of demonstrating consent, or as required by law, may be retained separately.
+
+## 30. Contact Us
 
 For privacy enquiries, access requests, correction requests or complaints:
 

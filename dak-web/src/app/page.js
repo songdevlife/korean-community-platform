@@ -1,9 +1,10 @@
 ﻿import Link from 'next/link';
-import { getGuides, getBusinesses, getEvents, getUpdates } from '@/api/server';
+import { getGuides, getBusinesses, getEvents, getUpdates, getRentals } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import GuideCard from '@/components/GuideCard';
 import BusinessCard from '@/components/BusinessCard';
 import EventCard from '@/components/EventCard';
+import RentalCard from '@/components/RentalCard';
 import HomeSearch from '@/components/HomeSearch';
 import HomeGreeting from '@/components/HomeGreeting';
 import HomeNotice from '@/components/HomeNotice';
@@ -25,17 +26,19 @@ const FEATURED_GUIDE_COUNT = 3;
 const SIDE_PANEL_COUNT = 5;
 
 export default async function HomePage() {
-  const [guideData, businessData, eventData, updateData] = await Promise.all([
+  const [guideData, businessData, eventData, updateData, rentalData] = await Promise.all([
     getGuides({ pageSize: FEATURED_GUIDE_COUNT }),
     getBusinesses({ pageSize: FEATURED_COUNT }),
     getEvents({ pageSize: FEATURED_COUNT }),
     getUpdates({ pageSize: SIDE_PANEL_COUNT }),
+    getRentals({ pageSize: FEATURED_COUNT }),
   ]);
 
   const guides = guideData?.content ?? [];
   const businesses = businessData?.content ?? [];
   const events = eventData?.content ?? [];
   const updates = updateData?.content ?? [];
+  const rentals = rentalData?.content ?? [];
 
   return (
     <PageShell aside={<UpdatesSidePanel updates={updates} />}>
@@ -106,6 +109,33 @@ export default async function HomePage() {
           {events.map((event) => (
               <Link key={event.id} href={`/events/${event.slug}`} className="min-w-0">
                 <EventCard event={event} />
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Rentals, directly below events and above guides. Housing is the
+          first problem for most people arriving in Adelaide, and unlike a
+          guide a listing is a reason to come back next week - it changes
+          while the guides stay the same. Hidden when empty, as the others
+          are. */}
+      {rentals.length > 0 && (
+        <>
+          <div className="flex items-baseline justify-between gap-4 mb-3">
+            <h2 className="text-lg font-semibold text-snow">Rentals</h2>
+            <Link
+              href="/rentals"
+              className="text-sm text-muted hover:text-snow transition-colors shrink-0"
+            >
+              View all
+            </Link>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mb-8 items-start">
+            {rentals.map((rental) => (
+              <Link key={rental.id} href={`/rentals/${rental.slug}`} className="min-w-0">
+                <RentalCard rental={rental} />
               </Link>
             ))}
           </div>

@@ -259,9 +259,33 @@ Information such as eligibility requirements, fees, deadlines, processing times,
 
 The applicability of any information depends on individual circumstances. Users are responsible for confirming current requirements with the relevant authority or seeking independent professional advice where appropriate.
 
+## 17. Rental Listings
 
+DAK lists rental accommodation advertised by others, recorded from advertisements published on classified sites, social media groups and agents' own pages, or supplied directly by the advertiser.
 
-## 17. Contact
+DAK's policy is to:
+
+-   State the facts of a listing — location, rent, room type, bond, availability, conditions — in DAK's own words rather than reproducing an advertiser's description.
+
+-   Link to the original advertisement where one is available.
+
+-   Publish an advertiser's contact details **only where the advertiser has given DAK permission to do so**. Where permission has not been given, no contact details are published and the listing carries a link to the original advertisement instead. This is a stricter rule than the one applied to events, because a rental advertiser's contact is usually a private individual's own number rather than a published business line.
+
+-   Use photographs **only where the advertiser has supplied them to DAK or has given permission for their use**, and remove them on request. The facts of a listing are not subject to copyright and may be restated without permission; photographs are, and may not.
+
+-   Not publish photographs in which any person is identifiable, or which show the personal belongings or private living space of an existing occupant who has not agreed to appear here. An advertiser's permission covers their own material; it does not extend to people who live in the property.
+
+-   Record conditions set by an advertiser — such as a preference as to gender, or a restriction on couples, pets or smoking — as stated, without endorsing them. Publication of a condition is not an assessment of its lawfulness.
+
+-   Remove or amend a listing at the advertiser's request, without requiring a reason.
+
+-   Remove listings that are no longer current. Rental listings expire automatically after a set period, because a listing for a property already let misleads a reader at their own cost.
+
+DAK does not verify listings and is not a party to any tenancy. See section 20 of the Terms of Service.
+
+Advertisers and any person whose information appears in a listing may contact **admin@discoveradelaidekorea.au** to have it corrected or removed.
+
+## 18. Contact
 
 Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 

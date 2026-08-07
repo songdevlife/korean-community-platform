@@ -4,10 +4,13 @@ import com.dak.backend.domain.AustraliaUpdate;
 import com.dak.backend.domain.Business;
 import com.dak.backend.domain.Event;
 import com.dak.backend.domain.Guide;
+import com.dak.backend.domain.Rental;
 import com.dak.backend.repository.AustraliaUpdateRepository;
 import com.dak.backend.repository.BusinessRepository;
 import com.dak.backend.repository.EventRepository;
 import com.dak.backend.repository.GuideRepository;
+import com.dak.backend.repository.RentalRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -29,24 +32,27 @@ public class SitemapService {
     // deliberately: the query permutations are unbounded and each one is a
     // near-duplicate of the others.
     private static final List<String> STATIC_PATHS = List.of(
-        "/", "/directory", "/australia-updates", "/guides", "/events");
+        "/", "/directory", "/australia-updates", "/guides", "/events", "/rentals");
 
             private final BusinessRepository businessRepository;
             private final AustraliaUpdateRepository australiaUpdateRepository;
             private final GuideRepository guideRepository;
             private final EventRepository eventRepository;
+            private final RentalRepository rentalRepository;
         
             @Value("${app.site.base-url:https://discoveradelaidekorea.au}")
             private String baseUrl;
         
             public SitemapService(BusinessRepository businessRepository,
-                                   AustraliaUpdateRepository australiaUpdateRepository,
-                                   GuideRepository guideRepository,
-                                   EventRepository eventRepository) {
-                this.businessRepository = businessRepository;
-                this.australiaUpdateRepository = australiaUpdateRepository;
-                this.guideRepository = guideRepository;
-                this.eventRepository = eventRepository;
+                AustraliaUpdateRepository australiaUpdateRepository,
+                GuideRepository guideRepository,
+                EventRepository eventRepository,
+                RentalRepository rentalRepository) {
+            this.businessRepository = businessRepository;
+            this.australiaUpdateRepository = australiaUpdateRepository;
+            this.guideRepository = guideRepository;
+            this.eventRepository = eventRepository;
+            this.rentalRepository = rentalRepository;
             }
 
     @Transactional(readOnly = true)
@@ -90,7 +96,17 @@ public class SitemapService {
                         baseUrl + "/events/" + e.getSlug(),
                         lastModified(e)));
 
-        xml.append("</urlset>\n");
+        // Current only, as events are. A listing that has expired still
+        // resolves so a shared link does not break, but sending a crawler to a
+        // room that was taken a month ago earns a search result that wastes
+        // the reader's click.
+        rentalRepository.findCurrentForSitemap(
+            OffsetDateTime.now(), PageRequest.of(0, MAX_ENTRIES_PER_TYPE))
+    .forEach(r -> appendUrl(xml,
+            baseUrl + "/rentals/" + r.getSlug(),
+            lastModified(r)));
+
+xml.append("</urlset>\n");
         return xml.toString();
     }
 
@@ -115,6 +131,10 @@ public class SitemapService {
 
     private OffsetDateTime lastModified(Event e) {
         return e.getUpdatedAt() != null ? e.getUpdatedAt() : e.getCreatedAt();
+    }
+
+    private OffsetDateTime lastModified(Rental r) {
+        return r.getUpdatedAt() != null ? r.getUpdatedAt() : r.getCreatedAt();
     }
 
     /**

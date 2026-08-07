@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/guides", "/api/v1/guides/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/guide-categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/events", "/api/v1/events/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/rentals", "/api/v1/rentals/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

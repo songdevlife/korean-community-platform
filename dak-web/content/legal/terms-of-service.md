@@ -264,7 +264,25 @@ To the extent permitted by law, DAK is not liable for any loss arising from atte
 
 Organisers may request that a listing be corrected or removed by contacting **admin@discoveradelaidekorea.au**.
 
-## 20. Contact
+## 20. Rental Listings
+
+DAK publishes rental listings — rooms, share houses, whole properties and lease transfers — advertised by landlords, tenants, agents and accommodation operators. Some are transcribed from advertisements published elsewhere; others are supplied directly by the advertiser.
+
+DAK is not a landlord, a tenant, a real estate agent, a property manager or a letting agent. DAK does not hold a licence under the *Land Agents Act 1994* (SA), does not act for any party to a tenancy, and is not a party to any arrangement between an advertiser and a person responding to a listing.
+
+DAK does not inspect properties, verify that a property exists, verify that an advertiser has the right to let it, or verify that any detail of a listing is accurate. Rent, availability, conditions and inclusions change after they are recorded, and a property may be let or withdrawn without DAK being told.
+
+**Users must not send money before independently satisfying themselves that a property and an advertiser are genuine.** Advance-payment fraud is a known risk in rental advertising. In South Australia a bond must be lodged with Consumer and Business Services, not held by a landlord, and no payment beyond a bond and up to two weeks' rent in advance may lawfully be required at the start of a tenancy. A request that departs from this is a reason to stop and seek advice.
+
+Free advice is available from RentRight SA on 1800 060 462 and from Consumer and Business Services on 131 882.
+
+Nothing published by DAK constitutes legal, financial or tenancy advice, or a recommendation of any property, advertiser or arrangement.
+
+To the extent permitted by law, DAK is not liable for any loss arising from responding to a listing, entering into or failing to enter into a tenancy, or relying on the details of a listing.
+
+Advertisers may request that a listing be corrected or removed by contacting **admin@discoveradelaidekorea.au**. Requests relating to an advertiser's own listing or details will be actioned without requiring a reason.
+
+## 21. Contact
 
 Questions regarding these Terms may be submitted through DAK's official support channels or by email at **admin@discoveradelaidekorea.au.**
 

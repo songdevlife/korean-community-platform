@@ -170,3 +170,41 @@ export async function updateEvent(eventId, changes) {
 export async function deleteEvent(eventId) {
   await apiClient.delete(`/admin/events/${eventId}`);
 }
+
+// --- Rentals ---
+
+export async function fetchRentalsByStatus(status, page = 0) {
+  const response = await apiClient.get('/admin/rentals', {
+    params: { status, page },
+  });
+  return response.data.data;
+}
+
+export async function fetchRental(rentalId) {
+  const response = await apiClient.get(`/admin/rentals/${rentalId}`);
+  return response.data.data;
+}
+
+export async function createRental(payload) {
+  const response = await apiClient.post('/admin/rentals', payload);
+  return response.data.data;
+}
+
+export async function updateRental(rentalId, changes) {
+  const response = await apiClient.patch(`/admin/rentals/${rentalId}`, changes);
+  return response.data.data;
+}
+
+/**
+ * Another twenty-one days from now. Separate from update because it is a
+ * decision rather than an edit: an advertiser said they are still looking,
+ * and nothing else about the listing changed.
+ */
+export async function extendRental(rentalId) {
+  const response = await apiClient.post(`/admin/rentals/${rentalId}/extend`);
+  return response.data.data;
+}
+
+export async function deleteRental(rentalId) {
+  await apiClient.delete(`/admin/rentals/${rentalId}`);
+}

@@ -2,7 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Search, LayoutGrid, CalendarDays, BookOpen, Newspaper, User, LogOut, Scale } from 'lucide-react';
+import {
+  Home, Search, LayoutGrid, CalendarDays, BookOpen, Newspaper, BedDouble,
+  User, LogOut, Scale,
+} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 
@@ -21,6 +24,7 @@ const NAV_ITEMS = [
   // tabLabel shortens the tab bar without shortening the sidebar, where there
   // is room for the full name and where "Updates" alone would be ambiguous.
   { to: '/australia-updates', label: 'AU Updates', tabLabel: 'Updates', Icon: Newspaper },
+  { to: '/rentals', label: 'Rentals', tabLabel: 'Rent', Icon: BedDouble },
 ];
 
 // The tab bar drops Businesses. Six items left every label cramped, and

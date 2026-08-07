@@ -23,6 +23,9 @@ import {
   updateGuideStatus,
   fetchEventsByStatus,
   updateEvent,
+  fetchRentalsByStatus,
+  updateRental,
+  extendRental,
 } from '@/api/admin';
 import { fetchUpdateCategories } from '@/api/updates';
 import { useAuth } from '@/context/AuthContext';
@@ -38,6 +41,13 @@ const SCOPES = [
   { value: 'COUNCIL_AREA', label: 'Council area' },
   { value: 'SUBURB', label: 'Suburb' },
 ];
+
+/** Whole days until a listing lapses. Negative values never reach this - the
+    row shows "만료" instead. */
+    function daysLeft(expiresAt) {
+      const ms = new Date(expiresAt) - new Date();
+      return Math.max(0, Math.ceil(ms / 86400000));
+    }
 
 /**
  * Admin review queues. A client component in full — every list here is
@@ -112,6 +122,17 @@ export default function AdminPage() {
   const [archivedEvents, setArchivedEvents] = useState([]);
   const [archivedEventTotal, setArchivedEventTotal] = useState(0);
 
+  // Rentals expire after twenty-one days whether or not anyone says the room
+  // has gone, so the queue has to show what is about to lapse as well as what
+  // is live - an expired listing is the one thing here that goes wrong by
+  // itself.
+  const [draftRentals, setDraftRentals] = useState([]);
+  const [draftRentalTotal, setDraftRentalTotal] = useState(0);
+  const [publishedRentals, setPublishedRentals] = useState([]);
+  const [publishedRentalTotal, setPublishedRentalTotal] = useState(0);
+  const [archivedRentals, setArchivedRentals] = useState([]);
+  const [archivedRentalTotal, setArchivedRentalTotal] = useState(0);
+
   // Read-only, collapsed, loaded on first open. This section exists to remove
   // the only routine reason to open a shell against the production database —
   // the credential in Entries 12 and 36 was pasted while answering exactly the
@@ -148,7 +169,8 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [businessesData, updatesData, publishedData, draftGuideData, publishedGuideData,
-        draftEventData, publishedEventData, archivedEventData] =
+        draftEventData, publishedEventData, archivedEventData,
+        draftRentalData, publishedRentalData, archivedRentalData] =
    await Promise.all([
      fetchPendingBusinesses(businessPage),
      fetchDraftUpdates(draftPage),
@@ -158,6 +180,9 @@ export default function AdminPage() {
      fetchEventsByStatus('DRAFT'),
      fetchEventsByStatus('PUBLISHED'),
      fetchEventsByStatus('ARCHIVED'),
+     fetchRentalsByStatus('DRAFT'),
+     fetchRentalsByStatus('PUBLISHED'),
+     fetchRentalsByStatus('ARCHIVED'),
    ]);
       setBusinesses(businessesData?.content ?? []);
       setBusinessPages(businessesData?.totalPages ?? 0);
@@ -185,6 +210,13 @@ export default function AdminPage() {
       setPublishedEventTotal(publishedEventData?.totalElements ?? 0);
       setArchivedEvents(archivedEventData?.content ?? []);
       setArchivedEventTotal(archivedEventData?.totalElements ?? 0);
+
+      setDraftRentals(draftRentalData?.content ?? []);
+      setDraftRentalTotal(draftRentalData?.totalElements ?? 0);
+      setPublishedRentals(publishedRentalData?.content ?? []);
+      setPublishedRentalTotal(publishedRentalData?.totalElements ?? 0);
+      setArchivedRentals(archivedRentalData?.content ?? []);
+      setArchivedRentalTotal(archivedRentalData?.totalElements ?? 0);
 
       setError('');
     } catch (err) {
@@ -387,6 +419,32 @@ export default function AdminPage() {
       loadData();
     } catch (err) {
       setActionError(err.response?.data?.error?.message || 'That action failed.');
+    }
+  }
+
+  // Publishing is what starts the twenty-one day clock, which the server sets
+  // rather than the form - a draft that sat for a week still gets its full
+  // period once it goes up.
+  async function handleRentalAction(rentalId, status) {
+    setActionError('');
+    try {
+      await updateRental(rentalId, { status });
+      loadData();
+    } catch (err) {
+      setActionError(err.response?.data?.error?.message || 'That action failed.');
+    }
+  }
+
+  // Another twenty-one days, for an advertiser who replied to say they are
+  // still looking. Separate from an edit because nothing about the listing
+  // changed.
+  async function handleExtend(rentalId) {
+    setActionError('');
+    try {
+      await extendRental(rentalId);
+      loadData();
+    } catch (err) {
+      setActionError(err.response?.data?.error?.message || 'Could not extend that listing.');
     }
   }
 
@@ -1216,7 +1274,151 @@ export default function AdminPage() {
       </>
   )}
 </section>
+{/* Rentals. Same shape as events, with one addition: a listing lapses on
+    its own after three weeks, so the queue shows how long each has left
+    and offers an extension rather than only a publish and an archive. */}
+<section className="mt-8">
+  <div className="flex items-center justify-between gap-4 mb-3">
+    <h2 className="text-lg font-semibold text-snow">
+      Rentals{' '}
+      <span className="text-muted font-normal">
+        ({draftRentalTotal + publishedRentalTotal + archivedRentalTotal})
+      </span>
+    </h2>
+    <Link href="/admin/rentals/new" className={`${secondaryBtn} shrink-0`}>
+      <Plus size={14} strokeWidth={2} />
+      New rental
+    </Link>
+  </div>
 
+  {draftRentalTotal > 0 && (
+    <>
+      <h3 className="text-[13px] font-medium text-muted mb-2">
+        Drafts ({draftRentalTotal})
+      </h3>
+      <div className="grid gap-2.5 mb-4">
+        {draftRentals.map((rental) => (
+          <div
+            key={rental.id}
+            className="rounded-xl border border-border-dark bg-night p-3.5
+                       flex items-center justify-between gap-4"
+          >
+            <div className="min-w-0">
+              <p className="font-medium text-snow truncate">{rental.title}</p>
+              <span className="text-[12px] text-faint">
+                {rental.suburb} · ${rental.rentMin}/주 · {rental.consentStatus}
+                {rental.hasContact && ' · 연락처'}
+                {rental.imageCount > 0 && ` · 사진 ${rental.imageCount}`}
+              </span>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Link href={`/admin/rentals/${rental.id}/edit`} className={secondaryBtn}>
+                Edit
+              </Link>
+              <button
+                onClick={() => handleRentalAction(rental.id, 'PUBLISHED')}
+                className={secondaryBtn}
+              >
+                Publish
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )}
+
+  <h3 className="text-[13px] font-medium text-muted mb-2">
+    Published ({publishedRentalTotal})
+  </h3>
+
+  {publishedRentals.length === 0 ? (
+    <div className="rounded-xl border border-border-dark bg-night p-6 text-center">
+      <p className="text-muted text-sm">Nothing published yet.</p>
+    </div>
+  ) : (
+    <div className="grid gap-2.5">
+      {publishedRentals.map((rental) => (
+        <div
+          key={rental.id}
+          className={`rounded-xl border border-border-dark bg-night p-3.5
+                     flex items-center justify-between gap-4 ${
+                       rental.hasExpired ? 'opacity-60' : ''
+                     }`}
+        >
+          <div className="min-w-0">
+            <Link
+              href={`/rentals/${rental.slug}`}
+              className="font-medium text-snow hover:text-white transition-colors block truncate"
+            >
+              {rental.title}
+            </Link>
+            <span className="text-[12px] text-faint">
+              {rental.suburb} · ${rental.rentMin}/주
+              {/* The public list drops these silently, so without this the
+                  section would look full while showing nothing. */}
+              {rental.hasExpired
+                ? ' · 게시 기간 만료'
+                : rental.expiresAt && ` · ${daysLeft(rental.expiresAt)}일 남음`}
+            </span>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <button onClick={() => handleExtend(rental.id)} className={secondaryBtn}>
+              +21일
+            </button>
+            <Link href={`/admin/rentals/${rental.id}/edit`} className={secondaryBtn}>
+              Edit
+            </Link>
+            <button
+              onClick={() => handleRentalAction(rental.id, 'ARCHIVED')}
+              className={secondaryBtn}
+            >
+              Archive
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {archivedRentalTotal > 0 && (
+    <>
+      <h3 className="text-[13px] font-medium text-muted mb-2 mt-4">
+        Archived ({archivedRentalTotal})
+      </h3>
+      <div className="grid gap-2.5">
+        {archivedRentals.map((rental) => (
+          <div
+            key={rental.id}
+            className="rounded-xl border border-border-dark bg-night p-3.5
+                       flex items-center justify-between gap-4 opacity-60"
+          >
+            <div className="min-w-0">
+              <p className="font-medium text-snow truncate">{rental.title}</p>
+              <span className="text-[12px] text-faint">
+                {rental.suburb} · ${rental.rentMin}/주
+              </span>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Link href={`/admin/rentals/${rental.id}/edit`} className={secondaryBtn}>
+                Edit
+              </Link>
+              {/* Restore grants a fresh period as well as republishing:
+                  a listing brought back has usually been re-advertised. */}
+              <button
+                onClick={() => handleExtend(rental.id).then(() =>
+                  handleRentalAction(rental.id, 'PUBLISHED'))}
+                className={secondaryBtn}
+              >
+                Restore
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  )}
+</section>
       {/* Archived updates. Collapsed by default: retired items are consulted
           occasionally, not worked through, and there are enough of them to
           bury the queues above. Last on the page because an archive is where

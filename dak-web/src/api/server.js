@@ -105,3 +105,18 @@ export async function getUpdateById(id) {
   export async function getEventCategories() {
     return getPublic('/events/categories', { revalidate: 3600 });
   }
+
+  export async function getRentals({ suburb, type, maxRent, page = 0, pageSize = 12 } = {}) {
+    const params = new URLSearchParams({ page, pageSize });
+    if (suburb) params.set('suburb', suburb);
+    if (type) params.set('type', type);
+    if (maxRent) params.set('maxRent', maxRent);
+    // Thirty seconds, matching events and for the same reason: a listing drops
+    // out when it expires, and a cached copy of a room already taken is the
+    // one kind of staleness this page cannot afford.
+    return getPublic(`/rentals?${params}`, { revalidate: 30 });
+  }
+
+  export async function getRentalById(id) {
+    return getPublic(`/rentals/${encodeURIComponent(id)}`, { revalidate: 30 });
+  }
