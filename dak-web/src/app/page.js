@@ -26,7 +26,12 @@ const FEATURED_GUIDE_COUNT = 3;
 const SIDE_PANEL_COUNT = 5;
 
 export default async function HomePage() {
-  const [guideData, businessData, eventData, updateData, rentalData] = await Promise.all([
+  // allSettled rather than all. This page is five previews of other pages, and
+  // a preview that cannot be fetched should cost its own section rather than
+  // the whole front page. Promise.all made the home page depend on every
+  // endpoint at once - which took the production build down when the frontend
+  // deployed a few minutes ahead of the backend and /rentals was still a 403.
+  const results = await Promise.allSettled([
     getGuides({ pageSize: FEATURED_GUIDE_COUNT }),
     getBusinesses({ pageSize: FEATURED_COUNT }),
     getEvents({ pageSize: FEATURED_COUNT }),
@@ -34,11 +39,15 @@ export default async function HomePage() {
     getRentals({ pageSize: FEATURED_COUNT }),
   ]);
 
-  const guides = guideData?.content ?? [];
-  const businesses = businessData?.content ?? [];
-  const events = eventData?.content ?? [];
-  const updates = updateData?.content ?? [];
-  const rentals = rentalData?.content ?? [];
+  const contentOf = (result) =>
+    result.status === 'fulfilled' ? (result.value?.content ?? []) : [];
+
+  const guides = contentOf(results[0]);
+  const businesses = contentOf(results[1]);
+  const events = contentOf(results[2]);
+  const updates = contentOf(results[3]);
+  const rentals = contentOf(results[4]);
+
 
   return (
     <PageShell aside={<UpdatesSidePanel updates={updates} />}>
