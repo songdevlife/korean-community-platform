@@ -2,7 +2,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Wallet, CalendarCheck, Clock, Sofa,
-  ExternalLink, Phone, ShieldCheck, ShieldAlert, ShieldQuestion, Eye,
+  ExternalLink, Phone, ShieldCheck, ShieldAlert, ShieldQuestion, Eye, Link2,
 } from 'lucide-react';
 import { getRentalById } from '@/api/server';
 import PageShell from '@/components/PageShell';
@@ -140,6 +140,30 @@ export default async function RentalPage({ params }) {
               <p className="text-[13px] text-muted">
                 게시 기간이 지난 매물입니다. 이미 나갔을 가능성이 높습니다.
               </p>
+            </div>
+          )}
+
+          {/* Above the title, because it changes how everything below it
+              should be read. DAK undertakes in content-policy.md section 18
+              to make this distinction visible rather than leave a reader to
+              assume the advertiser has been spoken to. */}
+          {rental.consentStatus !== 'FULL' && (
+            <div className="rounded-xl border border-border-dark bg-night px-4 py-3 mb-5">
+              <div className="flex items-start gap-2.5">
+                <Link2 size={16} strokeWidth={2} className="shrink-0 mt-0.5 text-faint" />
+                <div className="min-w-0">
+                  <p className="text-[14px] text-snow font-medium mb-1">
+                    다른 곳에 올라온 매물을 정리한 것입니다
+                  </p>
+                  <p className="text-[13px] text-muted leading-relaxed">
+                    DAK가 게시자와 연락한 적이 없고, 매물이 아직 나와 있는지 확인할 수
+                    없습니다. 아래 원문에서 직접 확인하고 문의해 주세요.
+                    {rental.lastCheckedAt && (
+                      <> 마지막으로 확인한 날짜는 {rental.lastCheckedAt.slice(0, 10)}입니다.</>
+                    )}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

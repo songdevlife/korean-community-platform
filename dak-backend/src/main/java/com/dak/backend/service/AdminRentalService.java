@@ -43,6 +43,21 @@ public class AdminRentalService {
     private static final int LISTING_DAYS = 21;
 
     /**
+     * External listings expire sooner, because nothing tells DAK they have
+     * gone. A consented advertiser can be asked and usually answers; an
+     * advertisement recorded from elsewhere has to be re-read by hand, and
+     * twenty of those is a schedule that fails inside a fortnight. Fourteen
+     * days is short enough that the board is honest when the checking stops,
+     * which matters more than looking well stocked.
+     */
+    private static final int EXTERNAL_LISTING_DAYS = 14;
+
+    private static int listingDaysFor(Rental rental) {
+        return "FULL".equals(rental.getConsentStatus())
+                ? LISTING_DAYS : EXTERNAL_LISTING_DAYS;
+    }
+
+    /**
      * Beyond this a bond is unlawful: four weeks at or below $800 a week, six
      * above it. Not refused, because DAK records what an advertisement says
      * rather than correcting it - but flagged, so an administrator sees it
@@ -192,7 +207,12 @@ public class AdminRentalService {
             // create means a draft that sits for a week still gets its full
             // twenty-one days once it goes up.
             if ("PUBLISHED".equals(status) && !"PUBLISHED".equals(rental.getStatus())) {
-                rental.setExpiresAt(OffsetDateTime.now().plusDays(LISTING_DAYS));
+                rental.setExpiresAt(OffsetDateTime.now().plusDays(listingDaysFor(rental)));
+                // An external listing goes up having just been read, which is
+                // the check its date refers to.
+                if (!"FULL".equals(rental.getConsentStatus())) {
+                    rental.setLastCheckedAt(OffsetDateTime.now());
+                }
             }
             rental.setStatus(status);
         }
@@ -217,12 +237,22 @@ public class AdminRentalService {
     }
 
     /** Grants another full listing period from now. */
+    /**
+     * Grants another listing period and records the check that justified it.
+     *
+     * For an external listing the two are the same act: the only reason to
+     * extend one is that it was read again and the room is still going.
+     */
     @Transactional
     public RentalResponse extend(UUID rentalId) {
         Rental rental = rentalRepository.findById(rentalId)
                 .orElseThrow(() -> ApiException.notFound("Rental not found."));
-        rental.setExpiresAt(OffsetDateTime.now().plusDays(LISTING_DAYS));
-        rental.setUpdatedAt(OffsetDateTime.now());
+        OffsetDateTime now = OffsetDateTime.now();
+        rental.setExpiresAt(now.plusDays(listingDaysFor(rental)));
+        if (!"FULL".equals(rental.getConsentStatus())) {
+            rental.setLastCheckedAt(now);
+        }
+        rental.setUpdatedAt(now);
         return rentalService.toDetail(rental);
     }
 

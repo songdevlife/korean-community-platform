@@ -1,4 +1,4 @@
-import { MapPin, BedDouble, ImageOff, CalendarCheck } from 'lucide-react';
+import { MapPin, ImageOff, CalendarCheck, Link2 } from 'lucide-react';
 import { sized } from '@/utils/image';
 
 const TYPE_LABELS = {
@@ -61,6 +61,16 @@ export default function RentalCard({ rental }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mb-2">
+        {/* Said on the card rather than only on the page. A reader scanning a
+            list is deciding which one to open, and whether DAK has spoken to
+            the advertiser changes what opening it will get them. */}
+        {rental.consentStatus !== 'FULL' && (
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-border-dark
+                           text-muted inline-flex items-center gap-1">
+            <Link2 size={11} strokeWidth={2} />
+            외부 매물
+          </span>
+        )}
         <span className="text-[11px] border border-border-dark px-2.5 py-0.5 rounded-full text-snow">
           {TYPE_LABELS[rental.listingType] ?? rental.listingType}
         </span>

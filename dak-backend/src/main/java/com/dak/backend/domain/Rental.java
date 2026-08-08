@@ -143,6 +143,21 @@ public class Rental {
     @Column(name = "expires_at")
     private OffsetDateTime expiresAt;
 
+    /**
+     * When an external listing was last verified against its source.
+     *
+     * Only meaningful where consentStatus is NOT FULL: those are the listings
+     * DAK recorded from someone else's advertisement, with no way of learning
+     * that the room has gone. Printed on the page because a reader deciding
+     * whether to send a message deserves to know whether the information is
+     * from this morning or from a fortnight ago.
+     *
+     * Not updatedAt, which moves whenever anything is edited and would claim a
+     * check that never happened.
+     */
+    @Column(name = "last_checked_at")
+    private OffsetDateTime lastCheckedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

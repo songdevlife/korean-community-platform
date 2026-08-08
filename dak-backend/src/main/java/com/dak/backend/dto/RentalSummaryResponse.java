@@ -24,5 +24,9 @@ public record RentalSummaryResponse(
         String billsIncluded,
         LocalDate availableFrom,
         Boolean furnished,
-        String thumbnailUrl
+        String thumbnailUrl,
+        // Carried so a card can say which kind of listing it is. Anything
+        // other than FULL was recorded from someone else's advertisement,
+        // and a reader should not have to open the page to find that out.
+        String consentStatus
 ) {}

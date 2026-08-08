@@ -1355,8 +1355,7 @@ export default function AdminPage() {
             </Link>
             <span className="text-[12px] text-faint">
               {rental.suburb} · ${rental.rentMin}/주
-              {/* The public list drops these silently, so without this the
-                  section would look full while showing nothing. */}
+              {rental.consentStatus !== 'FULL' && ' · 외부'}
               {rental.hasExpired
                 ? ' · 게시 기간 만료'
                 : rental.expiresAt && ` · ${daysLeft(rental.expiresAt)}일 남음`}

@@ -80,7 +80,7 @@ public class RentalService {
                 r.getListingType(), r.getRoomTypes(),
                 r.getRentMin(), r.getRentMax(),
                 r.getBillsIncluded(), r.getAvailableFrom(), r.getFurnished(),
-                thumbnailOf(r));
+                thumbnailOf(r), r.getConsentStatus());
     }
 
     RentalResponse toDetail(Rental r) {
@@ -96,7 +96,7 @@ public class RentalService {
                 r.getGenderPreference(), r.getCouplesAllowed(),
                 r.getPetsAllowed(), r.getSmokingAllowed(),
                 r.getInspectionNote(),
-                r.getConsentStatus(), r.getSourceUrl(),
+                r.getConsentStatus(), r.getSourceUrl(), r.getLastCheckedAt(),
                 // Belt as well as braces: the column has a check constraint
                 // and the write path refuses it, and this makes a row that
                 // somehow acquired one anyway harmless to a reader.

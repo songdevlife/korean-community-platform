@@ -47,6 +47,9 @@ public record RentalResponse(
         String inspectionNote,
         String consentStatus,
         String sourceUrl,
+        // Null for consented listings. Printed on external ones, where a
+        // reader has no other way to judge how old the information is.
+        OffsetDateTime lastCheckedAt,
         String contact,
         List<RentalImageResponse> images,
         String status,
