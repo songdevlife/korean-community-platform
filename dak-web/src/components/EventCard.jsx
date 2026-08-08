@@ -55,7 +55,7 @@ export default function EventCard({ event }) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <ImageOff size={24} strokeWidth={1.5} className="text-border-dark" aria-hidden="true" />
+          <Calendar size={24} strokeWidth={1.5} className="text-border-dark" aria-hidden="true" />
         )}
       </div>
 
