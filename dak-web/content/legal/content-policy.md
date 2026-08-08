@@ -285,7 +285,33 @@ DAK does not verify listings and is not a party to any tenancy. See section 20 o
 
 Advertisers and any person whose information appears in a listing may contact **admin@discoveradelaidekorea.au** to have it corrected or removed.
 
-## 18. Contact
+## 18. External Rental Listings
+
+DAK records some rental listings from advertisements published elsewhere — public social media groups and pages, classified sites, and marketplaces — where the advertiser has not been asked and has not agreed. These are marked as external and are treated differently from listings supplied to DAK directly.
+
+DAK's policy for external listings is to:
+
+-   Record only the objective facts of a listing — suburb, weekly rent, room type, availability, stated conditions — in DAK's own words. The advertisement's wording is not reproduced.
+
+-   **Not publish contact details.** Enquiries go to the original advertisement, which is linked from every external listing.
+
+-   **Not publish photographs.** No image from an external advertisement is used.
+
+-   **Not publish the advertiser's name, exact street address, or any other detail that identifies them**, beyond the suburb.
+
+-   Name the source platform and link to the original, so a reader can see where the information came from and check whether it is current.
+
+-   Record and display the date DAK last checked the listing, and remove it automatically after fourteen days whether or not it has been re-checked. A listing for a property already let misleads a reader at their own cost, and DAK cannot verify the status of an advertisement it did not receive.
+
+-   Distinguish external listings from consented ones in the interface, so a reader is never left to assume DAK has spoken to the advertiser.
+
+DAK does not verify external listings and is not a party to any tenancy. Readers must confirm every detail with the original advertiser before acting on it.
+
+**Removal.** Anyone who placed an advertisement that DAK has recorded may have it removed by contacting **admin@discoveradelaidekorea.au**. No reason is required and none will be asked for. DAK aims to action such requests within 24 hours. The same applies to any person whose information appears in an external listing, whether or not they placed the advertisement.
+
+DAK does not record listings from private or members-only groups, or from any source a reader cannot open without an account.
+
+## 19. Contact
 
 Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 

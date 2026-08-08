@@ -491,6 +491,24 @@ DAK does not intend to use solely automated AI processing to make decisions that
 
 Where AI assists moderation or ranking, final decisions may be subject to human review where appropriate.
 
+### Information recorded without the person's agreement
+
+DAK also records some rental listings from advertisements published in public places, where the advertiser has not been asked. What DAK records in these cases is limited to the objective facts of the advertisement — suburb, weekly rent, room type, availability and stated conditions — together with a link to the original.
+
+For these listings DAK does not collect, store or publish:
+
+-   contact details of any kind
+-   photographs
+-   the advertiser's name
+-   the exact address of the property
+-   any other detail that would identify the advertiser
+
+DAK records the source and the date the listing was last checked, and deletes the record automatically fourteen days after it is created.
+
+**Right to removal.** Anyone whose advertisement DAK has recorded may have the record deleted by contacting **admin@discoveradelaidekorea.au**. No reason is required. DAK aims to action such requests within 24 hours, and the record is deleted rather than hidden.
+
+DAK does not record listings from private or members-only groups.
+
 ## 12. Disclosure of Personal Information
 
 We may disclose personal information to:
@@ -1002,7 +1020,7 @@ It exists so that DAK can see what readers are looking for and, in particular, w
 
 Some content DAK publishes contains personal information about people who do not hold a DAK account and have not dealt with DAK directly. This includes the contact details of event organisers and of people advertising rental accommodation.
 
-Where DAK publishes such information:
+Where DAK publishes such information **with the person's agreement**:
 
 -   Contact details are published only where the person has given DAK permission, or where they have themselves published those details for the purpose of being contacted about that event or property.
 

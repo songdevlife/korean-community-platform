@@ -282,7 +282,21 @@ To the extent permitted by law, DAK is not liable for any loss arising from resp
 
 Advertisers may request that a listing be corrected or removed by contacting **admin@discoveradelaidekorea.au**. Requests relating to an advertiser's own listing or details will be actioned without requiring a reason.
 
-## 21. Contact
+## 21. External Rental Listings
+
+Some rental listings on DAK are recorded from advertisements published elsewhere and are marked as external. For these, DAK has had no contact with the advertiser.
+
+DAK has not spoken to the advertiser, has not verified that the property exists or is still available, and has no means of knowing whether an advertisement has been withdrawn or its terms changed. An external listing records what an advertisement said on the date DAK checked it, and nothing more.
+
+External listings carry no contact details. Enquiries must go through the original advertisement, which is linked from the listing.
+
+External listings are removed automatically fourteen days after they are recorded. A listing that has not expired is not, for that reason, current.
+
+To the extent permitted by law, DAK is not liable for any loss arising from relying on an external listing, from contacting an advertiser found through one, or from a listing being inaccurate, out of date or withdrawn.
+
+Anyone who placed an advertisement recorded by DAK may have it removed by contacting **admin@discoveradelaidekorea.au**. No reason is required.
+
+## 22. Contact
 
 Questions regarding these Terms may be submitted through DAK's official support channels or by email at **admin@discoveradelaidekorea.au.**
 
