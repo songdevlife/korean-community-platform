@@ -55,6 +55,20 @@ export default function RentalCard({ rental }) {
             loading="lazy"
             className="w-full h-full object-cover"
           />
+        ) : rental.consentStatus !== 'FULL' ? (
+          // An external listing has no photograph by policy rather than by
+          // omission, and the difference has to be said. Rental fraud guidance
+          // teaches renters to treat a listing with no photos, no address and
+          // no contact as a warning sign - which is every field an external
+          // listing is missing. A broken-image icon leaves that reading
+          // standing; naming the reason removes it, and points at where the
+          // photographs actually are.
+          <div className="flex flex-col items-center gap-1.5 text-center px-4">
+            <Link2 size={18} strokeWidth={1.5} className="text-faint" aria-hidden="true" />
+            <span className="text-[12px] text-faint leading-relaxed">
+              사진은 원문에서<br />확인할 수 있습니다
+            </span>
+          </div>
         ) : (
           <ImageOff size={24} strokeWidth={1.5} className="text-border-dark" aria-hidden="true" />
         )}
@@ -108,7 +122,6 @@ export default function RentalCard({ rental }) {
             shorter than the ones beside it, and the gap read as something that
             failed to load rather than as a fact about the listing. The same
             reasoning EventCard applies to its image frame.
-
             External listings often have no date because the advertisement did
             not give one, and inventing today's date would be DAK asserting
             something it has not checked. */}
