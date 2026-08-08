@@ -103,12 +103,23 @@ export default function RentalCard({ rental }) {
           <span className="truncate">{rental.suburb}</span>
         </div>
 
-        {rental.availableFrom && (
-          <div className="flex items-center gap-2">
-            <CalendarCheck size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
-            <span className="truncate">{rental.availableFrom} 입주 가능</span>
-          </div>
-        )}
+        {/* The row is always here, with or without a date in it. Rendering it
+            only where one exists made a card without an availability date sit
+            shorter than the ones beside it, and the gap read as something that
+            failed to load rather than as a fact about the listing. The same
+            reasoning EventCard applies to its image frame.
+
+            External listings often have no date because the advertisement did
+            not give one, and inventing today's date would be DAK asserting
+            something it has not checked. */}
+        <div className="flex items-center gap-2">
+          <CalendarCheck size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
+          <span className={`truncate ${rental.availableFrom ? '' : 'text-faint'}`}>
+            {rental.availableFrom
+              ? `${rental.availableFrom} 입주 가능`
+              : '입주일 문의'}
+          </span>
+        </div>
       </div>
     </article>
   );
