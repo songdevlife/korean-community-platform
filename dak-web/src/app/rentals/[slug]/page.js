@@ -339,6 +339,16 @@ export default async function RentalPage({ params }) {
                   {displayHost(rental.sourceUrl)}
                 </span>
               )}
+              {/* Facebook shows the linked post with the rest of the group's
+                  feed underneath it, so a reader arriving from here meets
+                  several listings rather than the one they clicked. Said only
+                  for Facebook: a Gumtree or Flatmates link opens on the
+                  listing itself, and the same note there would be wrong. */}
+              {displayHost(rental.sourceUrl)?.includes('facebook.com') && (
+                <p className="text-[12px] text-faint mt-2 leading-relaxed">
+                  페이스북 그룹으로 연결됩니다. 맨 위에 있는 글이 이 매물입니다.
+                </p>
+              )}
               <p className="text-[12px] text-faint mt-2 leading-relaxed">
                 게시자의 동의를 받지 못해 연락처를 싣지 않았습니다. 원문에서 확인해 주세요.
               </p>
