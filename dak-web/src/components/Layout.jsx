@@ -12,7 +12,12 @@ import { useAuth } from '@/context/AuthContext';
 const NAV_ITEMS = [
   { to: '/', label: 'Home', Icon: Home },
   { to: '/search', label: 'Search', Icon: Search },
-  { to: '/directory', label: 'Businesses', Icon: LayoutGrid },
+  // Businesses removed. Nothing was ever approved into it, and Google Maps
+  // answers most of what it would have held better than DAK can - hours,
+  // reviews, directions, and no staleness, where a business listing never
+  // expires and a wrong opening time stays wrong. The one thing Maps does not
+  // say is whether Korean is spoken, and that is a guide rather than a
+  // directory. The route and the data remain; only the way in is gone.
   // Events takes the tab bar slot Businesses would have had. The directory
   // needs other people to arrive before it has anything to show; events can be
   // filled by transcribing what is already posted elsewhere, which is the same
