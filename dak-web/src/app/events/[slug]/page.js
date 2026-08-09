@@ -5,10 +5,21 @@ import {
 } from 'lucide-react';
 import { getEventById } from '@/api/server';
 import PageShell from '@/components/PageShell';
-import { eventDateTime, eventTime } from '@/utils/date';
+import { eventDate, eventDateTime, eventTime } from '@/utils/date';
 import { displayHost, isUrl } from '@/utils/url';
 import { googleCalendarUrl } from '@/utils/calendar';
 import Gallery from '@/components/Gallery';
+
+/**
+ * The category that changes how a listing is read.
+ *
+ * A promotion is stored as an event because the lifecycle is identical - a
+ * window that ends, a listing that drops out, a page that survives - but it
+ * is not one. It has no time of day, no venue, and nothing to diarise, and
+ * saying otherwise reads as a defect: a voucher sheet showed a start time of
+ * 12:00am and offered to add itself to a calendar.
+ */
+const PROMOTION_SLUG = 'promotions';
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -82,6 +93,7 @@ export default async function EventPage({ params }) {
 
   const rowClass = 'flex items-start gap-3 text-[14px]';
   const iconClass = 'shrink-0 mt-0.5 text-faint';
+  const isPromotion = event.category?.slug === PROMOTION_SLUG;
   const calendarUrl = googleCalendarUrl(event);
 
   // Three columns only where there is an image to fill the third. Most events
@@ -165,9 +177,18 @@ export default async function EventPage({ params }) {
             </p>
           )}
 
-          <p className="text-[12px] text-faint leading-relaxed mt-8 pt-5 border-t border-border-dark">
-            DAK는 행사 주최자가 아니며 행사의 진행이나 내용을 보증하지 않습니다.
-            참가 전 원문과 주최자를 통해 세부 사항을 확인해 주세요.
+<p className="text-[12px] text-faint leading-relaxed mt-8 pt-5 border-t border-border-dark">
+            {isPromotion ? (
+              <>
+                DAK는 판매자가 아니며 가격이나 조건을 보증하지 않습니다.
+                조건은 예고 없이 바뀔 수 있으니 매장에서 확인해 주세요.
+              </>
+            ) : (
+              <>
+                DAK는 행사 주최자가 아니며 행사의 진행이나 내용을 보증하지 않습니다.
+                참가 전 원문과 주최자를 통해 세부 사항을 확인해 주세요.
+              </>
+            )}
           </p>
         </article>
 
@@ -180,16 +201,28 @@ export default async function EventPage({ params }) {
             <div className={rowClass}>
               <Calendar size={16} strokeWidth={1.75} className={iconClass} />
               <div className="min-w-0">
-                <p className="text-snow">{eventDateTime(event.startsAt)}</p>
-                {event.endsAt && (
-                  <p className="text-[13px] text-muted mt-0.5">
-                    종료 {eventTime(event.endsAt)}
+                {isPromotion ? (
+                  /* A window rather than a moment. The times are midnight and
+                     one minute to midnight, which are storage artefacts rather
+                     than facts about the offer. */
+                  <p className="text-snow">
+                    {eventDate(event.startsAt)}
+                    {event.endsAt && ` ~ ${eventDate(event.endsAt)}`}
                   </p>
+                ) : (
+                  <>
+                    <p className="text-snow">{eventDateTime(event.startsAt)}</p>
+                    {event.endsAt && (
+                      <p className="text-[13px] text-muted mt-0.5">
+                        종료 {eventTime(event.endsAt)}
+                      </p>
+                    )}
+                    {/* The events are in Adelaide; the readers are not all in
+                        Adelaide, and some are reading from Korea before they
+                        arrive. */}
+                    <p className="text-[12px] text-faint mt-0.5">애들레이드 시간 기준</p>
+                  </>
                 )}
-                {/* The events are in Adelaide; the readers are not all in
-                    Adelaide, and some are reading from Korea before they
-                    arrive. */}
-                <p className="text-[12px] text-faint mt-0.5">애들레이드 시간 기준</p>
               </div>
             </div>
 
@@ -244,7 +277,9 @@ export default async function EventPage({ params }) {
 
           {/* Not offered once the date has passed: adding a finished event to
               a diary is a control that does nothing. */}
-          {!event.hasPassed && calendarUrl && (
+          {/* Not for a promotion: a voucher valid for eleven weeks is not an
+              appointment, and offering to diarise it suggests it is. */}
+          {!event.hasPassed && !isPromotion && calendarUrl && (
             <a
               href={calendarUrl}
               target="_blank"

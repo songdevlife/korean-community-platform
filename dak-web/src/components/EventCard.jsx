@@ -10,7 +10,11 @@ import { sized } from '@/utils/image';
  * someone finds them; an event is a decision about a particular evening, and
  * the first thing a reader needs is whether they are free then.
  */
+/** See the events detail page: a promotion is stored as an event but is not one. */
+const PROMOTION_SLUG = 'promotions';
+
 export default function EventCard({ event }) {
+  const isPromotion = event.category?.slug === PROMOTION_SLUG;
   const days = daysUntil(event.startsAt);
 
   // Only for the next week. Beyond that "23일 뒤" is arithmetic rather than
@@ -65,7 +69,9 @@ export default function EventCard({ event }) {
             {event.category.name}
           </span>
         )}
-        {proximity && (
+        {/* Not for a promotion. A voucher that started six weeks ago has no
+            "3일 뒤" to show, and its start date is not what a reader needs. */}
+        {!isPromotion && proximity && (
           <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-korea-blue/15 text-korea-blue font-medium">
             {proximity}
           </span>
@@ -91,10 +97,12 @@ export default function EventCard({ event }) {
       </h3>
 
       <div className="flex flex-col gap-1.5 text-[13px] text-muted">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
           <Calendar size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
           <span className="truncate">
-            {eventDate(event.startsAt)} {eventTime(event.startsAt)}
+            {isPromotion
+              ? `${eventDate(event.endsAt ?? event.startsAt)}까지`
+              : `${eventDate(event.startsAt)} ${eventTime(event.startsAt)}`}
           </span>
         </div>
 
@@ -107,12 +115,21 @@ export default function EventCard({ event }) {
             note competes with a long venue for the same line, the venue is
             what gives way. Somewhere to go matters more than what it costs,
             and the detail page carries both in full either way. */}
-        {event.venueName && (
-          <div className="flex items-center gap-2">
-            <MapPin size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
-            <span className="truncate">{event.venueName}</span>
-          </div>
-        )}
+        {/* The row is always here, with or without a venue in it. Rendering it
+            only where one exists made a card without a venue sit shorter than
+            the ones beside it, and the gap read as something that failed to
+            load rather than as a fact about the listing. Same treatment the
+            image frame above already gets, and the same one RentalCard applies
+            to its availability date.
+
+            A promotion has no venue at all - a voucher is valid wherever the
+            brand trades - so it says so rather than leaving the line blank. */}
+        <div className="flex items-center gap-2">
+          <MapPin size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
+          <span className={`truncate ${event.venueName ? '' : 'text-faint'}`}>
+            {event.venueName ?? (isPromotion ? '참여 매장' : '장소 미정')}
+          </span>
+        </div>
       </div>
     </article>
   );

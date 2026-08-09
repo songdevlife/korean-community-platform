@@ -10,6 +10,14 @@ export const metadata = {
   description:
     'Browse Korean-speaking businesses and services across Adelaide — restaurants, healthcare, groceries, education and more.',
   alternates: { canonical: '/directory' },
+  // Nothing has been approved into this section, and Google Maps answers most
+  // of what it would hold better than DAK can - hours, reviews, directions,
+  // and no staleness, where a business listing never expires and a wrong
+  // opening time stays wrong until someone notices. Left in place rather than
+  // deleted because the one thing Maps does not say is whether Korean is
+  // spoken, and that may yet be worth a section. Until then an empty page in
+  // the index is a search result that wastes a reader's click.
+  robots: { index: false, follow: false },
 };
 
 export default async function DirectoryPage({ searchParams }) {

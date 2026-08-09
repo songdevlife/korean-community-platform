@@ -28,11 +28,17 @@ public class SitemapService {
     // unusable document.
     private static final int MAX_ENTRIES_PER_TYPE = 5000;
 
+
     // Only pages with stable, meaningful content. Search results are excluded
     // deliberately: the query permutations are unbounded and each one is a
     // near-duplicate of the others.
+    //
+    // /directory is absent for a different reason: nothing has been approved
+    // into it, and an empty section in the sitemap invites a crawl that finds
+    // nothing. The page carries noindex to match. Individual businesses still
+    // appear below if any are ever published.
     private static final List<String> STATIC_PATHS = List.of(
-        "/", "/directory", "/australia-updates", "/guides", "/events", "/rentals");
+        "/", "/australia-updates", "/guides", "/events", "/rentals");
 
             private final BusinessRepository businessRepository;
             private final AustraliaUpdateRepository australiaUpdateRepository;
