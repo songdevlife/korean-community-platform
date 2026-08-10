@@ -44,6 +44,12 @@
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- Cloudinary -->
+        <dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http5</artifactId>
+			<version>2.0.0</version>
+		</dependency>
 
         <!-- DB migrations (04 Database Design is the source of truth for schema) -->
         <dependency>

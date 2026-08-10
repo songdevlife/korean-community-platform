@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Effective Date:** 31 July 2026\
-**Last Updated:** 3 August 2026
+**Last Updated:** 11 August 2026
 
 ## 1. About This Privacy Policy
 
@@ -479,6 +479,8 @@ DAK may use artificial intelligence systems to assist with:
 
 -   Australia Updates
 
+-   Illustrations for shareable image cards
+
 -   User support
 
 Information submitted to an AI feature may be sent to an external AI service provider.
@@ -519,13 +521,15 @@ We may disclose personal information to:
 
 -   Email and notification providers, currently Resend, Inc. for service messages such as password resets
 
+-   Image hosting providers, currently Cloudinary Ltd, which stores the photographs and generated artwork shown on the site
+
 -   Authentication providers
 
 -   Analytics and performance providers
 
 -   Map and location service providers
 
--   AI service providers
+-   AI service providers, currently Anthropic PBC for text and OpenAI, L.L.C. for images
 
 -   Payment processors
 
@@ -623,7 +627,7 @@ Some of the services DAK relies on store or process personal information outside
 
 -   **Singapore** — application hosting and the database in which accounts, saved items and published content are stored.
 
--   **United States** — the provider used to draft Korean-language summaries of Australian news articles. Only the text of the source article is sent; no personal information is included in these requests.
+-   **United States** — two AI providers and one image host. Anthropic drafts Korean-language summaries of Australian news articles; only the text of the source article is sent. OpenAI generates the illustration for a social card; what is sent is a description of the picture to be drawn, written from DAK's own published summary. Cloudinary stores the images shown on the site, including rental photographs supplied by advertisers with their agreement and the artwork generated for cards. No account information, and no personal information beyond what an advertiser has agreed to publish, is sent to any of the three.
 
 -   **Content delivery network** — the web font used across the site is served from a public content delivery network. Your browser requests the font files directly, which means the network operating it receives your IP address and browser details. No account information is involved, and this happens whether or not you are signed in.
 

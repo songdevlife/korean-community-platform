@@ -55,3 +55,20 @@ app:
     # link rather than throwing, so the flow degrades to unusable rather than
     # to broken if the provider is unreachable.
     enabled: true
+  image:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      model: gpt-image-1.5
+      # false serves a stored hero from /dev-heroes instead of generating one.
+      # Layout work restarts the backend often, and every restart otherwise
+      # paid for artwork that was not the thing being changed.
+      enabled: ${OPENAI_IMAGE_ENABLED:true}
+  cloudinary:
+    # Absent credentials disable storage rather than failing startup, so a
+    # local checkout runs without them. Rendering still works; nothing is kept.
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+    api-key: ${CLOUDINARY_API_KEY:}
+    api-secret: ${CLOUDINARY_API_SECRET:}
+    hero-folder: dak/heroes
+    card-folder: dak/cards
+    

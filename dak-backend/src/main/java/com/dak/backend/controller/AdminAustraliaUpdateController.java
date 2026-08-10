@@ -3,12 +3,17 @@ package com.dak.backend.controller;
 import com.dak.backend.common.ApiResponse;
 import com.dak.backend.dto.*;
 import com.dak.backend.service.AdminAustraliaUpdateService;
+import com.dak.backend.service.CardRendererService;
+import com.dak.backend.service.HeroImageGenerationService;
+
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api/v1/admin/australia-updates")
@@ -47,4 +52,73 @@ public class AdminAustraliaUpdateController {
                                                                      @Valid @RequestBody UpdateAustraliaUpdateStatusRequest request) {
         return ApiResponse.ok(adminAustraliaUpdateService.updateStatus(updateId, request));
     }
+
+        @PostMapping("/{updateId}/card-preview")
+    public ApiResponse<CardSpec> generateCardPreview(
+            @PathVariable UUID updateId
+    ) {
+        return ApiResponse.ok(
+                adminAustraliaUpdateService.generateCardSpec(updateId)
+        );
+    }
+
+    /**
+     * Renders and stores the card, returning where it now lives.
+     */
+    @PostMapping("/{updateId}/card")
+    public ApiResponse<CardAssetResponse> saveCard(
+            @PathVariable UUID updateId
+    ) {
+        com.dak.backend.domain.CardAsset asset =
+                adminAustraliaUpdateService.saveCard(updateId);
+
+        return ApiResponse.ok(
+                new CardAssetResponse(
+                        asset.getImageUrl(),
+                        asset.getLayoutType(),
+                        asset.getCreatedAt()
+                )
+        );
+    }
+
+    public record CardAssetResponse(
+            String imageUrl,
+            String layoutType,
+            java.time.OffsetDateTime createdAt
+    ) {}
+
+    @PostMapping("/{updateId}/hero-preview")
+    public ApiResponse<HeroImageGenerationService.HeroImageResult> generateHeroPreview(
+            @PathVariable UUID updateId
+    ) {
+        return ApiResponse.ok(
+                adminAustraliaUpdateService.generateHeroPreview(updateId)
+        );
+    }
+
+    /**
+     * Renders the final card.
+     *
+     * The hero illustration is reused between requests where the inputs have
+     * not changed, because generating one is a paid call. Pass regenerate=true
+     * to discard it and produce new artwork.
+     */
+    @PostMapping(
+        value = "/{updateId}/card-render-preview",
+        produces = MediaType.IMAGE_PNG_VALUE
+)
+public ResponseEntity<byte[]> generateFinalCardPreview(
+        @PathVariable UUID updateId,
+        @RequestParam(defaultValue = "false") boolean regenerate
+) {
+    CardRendererService.RenderedCard rendered =
+            adminAustraliaUpdateService.generateFinalCardPreview(
+                    updateId,
+                    regenerate
+            );
+
+    return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_PNG)
+            .body(rendered.imageBytes());
+}
 }

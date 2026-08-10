@@ -171,6 +171,39 @@ export async function deleteEvent(eventId) {
   await apiClient.delete(`/admin/events/${eventId}`);
 }
 
+// --- Cards ---
+
+/**
+ * Renders the social card for an update and returns it as a PNG blob.
+ *
+ * Slow on a first run: the text and the illustration are both generated, and
+ * the image generation is a paid call. The backend keeps the artwork so a
+ * repeat request returns immediately. Pass regenerate to discard it and pay
+ * for new artwork — which is the only way to change the illustration.
+ */
+export async function renderUpdateCard(updateId, { regenerate = false } = {}) {
+  const response = await apiClient.post(
+    `/admin/australia-updates/${updateId}/card-render-preview`,
+    null,
+    {
+      params: regenerate ? { regenerate: true } : undefined,
+      responseType: 'blob',
+    }
+  );
+  return response.data;
+}
+
+/**
+ * The text and layout decisions behind the card, without rendering it.
+ * Cheap compared with rendering, since no illustration is generated.
+ */
+export async function fetchUpdateCardSpec(updateId) {
+  const response = await apiClient.post(
+    `/admin/australia-updates/${updateId}/card-preview`
+  );
+  return response.data.data;
+}
+
 // --- Rentals ---
 
 export async function fetchRentalsByStatus(status, page = 0) {

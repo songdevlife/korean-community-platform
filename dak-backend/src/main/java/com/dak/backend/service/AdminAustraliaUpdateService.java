@@ -16,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,14 +36,43 @@ public class AdminAustraliaUpdateService {
     private final UpdateSourceReferenceRepository updateSourceReferenceRepository;
     private final UrlContentFetcher urlContentFetcher;
     private final AiSummarizationService aiSummarizationService;
+    private final CardGenerationService cardGenerationService;
+    private final HeroImageGenerationService heroImageGenerationService;
+    private final CardRendererService cardRendererService;
+    private final HeroImageCache heroImageCache;
+    private final CardSpecCache cardSpecCache;
+    private final CardSpecStore cardSpecStore;
+    private final CardAssetService cardAssetService;
+
+    // Stub artwork is a placeholder rather than the illustration for this
+    // story, so it is never stored.
+    @org.springframework.beans.factory.annotation.Value(
+            "${app.image.openai.enabled:true}"
+    )
+    private boolean imageGenerationEnabled;
 
     public AdminAustraliaUpdateService(AustraliaUpdateRepository australiaUpdateRepository,
-                                        UpdateCategoryRepository updateCategoryRepository,
-                                        UpdateSourceRepository updateSourceRepository,
-                                        UpdateSourceReferenceRepository updateSourceReferenceRepository,
-                                        UrlContentFetcher urlContentFetcher,
-                                        AiSummarizationService aiSummarizationService) {
-        this.australiaUpdateRepository = australiaUpdateRepository;
+        UpdateCategoryRepository updateCategoryRepository,
+        UpdateSourceRepository updateSourceRepository,
+        UpdateSourceReferenceRepository updateSourceReferenceRepository,
+        UrlContentFetcher urlContentFetcher,
+        AiSummarizationService aiSummarizationService,
+        CardGenerationService cardGenerationService,
+        HeroImageGenerationService heroImageGenerationService,
+        CardRendererService cardRendererService,
+        HeroImageCache heroImageCache,
+        CardSpecCache cardSpecCache,
+        CardAssetService cardAssetService,
+        CardSpecStore cardSpecStore) {
+        
+        this.cardGenerationService = cardGenerationService;
+        this.heroImageGenerationService = heroImageGenerationService;
+        this.cardRendererService = cardRendererService;
+        this.heroImageCache = heroImageCache;
+        this.cardSpecCache = cardSpecCache;
+        this.cardAssetService = cardAssetService;
+        this.cardSpecStore = cardSpecStore;
+        this.australiaUpdateRepository = australiaUpdateRepository;;
         this.updateCategoryRepository = updateCategoryRepository;
         this.updateSourceRepository = updateSourceRepository;
         this.updateSourceReferenceRepository = updateSourceReferenceRepository;
@@ -217,7 +248,207 @@ public class AdminAustraliaUpdateService {
         update.setStatus(request.status());
 
         return toDetail(update);
-    }
+        }
+        
+        @Transactional(readOnly = true)
+        public CardSpec generateCardSpec(UUID updateId) {
+            return generateCardSpec(updateId, false);
+        }
+
+        /**
+         * Produces the card spec, reusing the previous one where available.
+         *
+         * The model rewords its output on every call, so regenerating a spec
+         * for an unchanged update would also change the visual description and
+         * force new paid artwork.
+         */
+        @Transactional(readOnly = true)
+        public CardSpec generateCardSpec(
+                UUID updateId,
+                boolean regenerate
+        ) {
+                if (regenerate) {
+                        cardSpecCache.evict(updateId);
+                        cardSpecStore.evict(updateId);
+                    } else {
+                        // The store survives a restart; the map does not, and a
+                        // restart is what every code change costs.
+                        Optional<CardSpec> stored = cardSpecStore.find(updateId);
+        
+                        if (stored.isPresent()) {
+                            return stored.get();
+                        }
+        
+                        CardSpec cached = cardSpecCache.get(updateId);
+        
+                        if (cached != null) {
+                            return cached;
+                        }
+                    }
+
+            AustraliaUpdate update = australiaUpdateRepository.findById(updateId)
+                    .orElseThrow(() ->
+                            ApiException.notFound("Australia Update not found."));
+        
+            if (update.getKoreanSummary() == null
+                    || update.getKoreanSummary().isBlank()) {
+                throw ApiException.badRequest(
+                        "MISSING_SUMMARY",
+                        "An Australia Update needs a Korean summary before a card can be generated."
+                );
+            }
+        
+            CardSpec cardSpec =
+                    cardGenerationService.generateForAustraliaUpdate(
+                            update.getTitle(),
+                            update.getKoreanSummary()
+                    );
+
+                    cardSpecCache.put(updateId, cardSpec);
+                    cardSpecStore.save(updateId, cardSpec);
+        
+                    return cardSpec;
+                }
+
+        @Transactional(readOnly = true)
+        public HeroImageGenerationService.HeroImageResult generateHeroPreview(UUID updateId) {
+        CardSpec cardSpec = generateCardSpec(updateId);
+
+                if (cardSpec.visual() == null) {
+                  throw ApiException.badRequest(
+                        "MISSING_VISUAL_SPEC",
+                        "A visual specification is required before a hero image can be generated."
+                );
+        }
+
+        return heroImageGenerationService.generate(
+                cardSpec.visual(),
+                cardSpec.effectiveLayoutType()
+        );
+        }
+
+        @Transactional(readOnly = true)
+        public CardRendererService.RenderedCard generateFinalCardPreview(UUID updateId) {
+
+        return generateFinalCardPreview(updateId, false);
+        }
+
+        /**
+         * Renders the final card, reusing a previously generated hero image
+         * where possible.
+         *
+         * Image generation is billed per request, so a layout adjustment must
+         * not silently pay for artwork that has not changed. Passing
+         * regenerate discards the stored image and produces a new one.
+         */
+        @Transactional(readOnly = true)
+        public CardRendererService.RenderedCard generateFinalCardPreview(
+                UUID updateId,
+                boolean regenerate
+        ) {
+
+                CardSpec cardSpec = generateCardSpec(updateId, regenerate);
+
+                // INFOGRAPHIC draws blocks rather than artwork, so generating an
+        // illustration for one would be paying for an image the card never
+        // shows.
+        boolean needsHero =
+        cardSpec.effectiveLayoutType()
+                != CardSpec.LayoutType.INFOGRAPHIC;
+
+if (needsHero && cardSpec.visual() == null) {
+        throw ApiException.badRequest(
+                "MISSING_VISUAL_SPEC",
+                "A visual specification is required before a card can be rendered."
+        );
+}
+
+        if (regenerate) {
+                heroImageCache.evict(updateId);
+                cardAssetService.evictHeroes(updateId);
+        }
+
+        byte[] heroBytes = null;
+
+        if (needsHero) {
+
+                // Stored artwork first, then the in-memory copy. The store
+                // survives a restart; the map does not, and a restart is what
+                // every code change costs.
+                heroBytes = cardAssetService
+                        .findHero(updateId, cardSpec)
+                        .orElseGet(() -> heroImageCache.get(updateId, cardSpec));
+
+                if (heroBytes == null) {
+
+                        HeroImageGenerationService.HeroImageResult heroResult =
+                                heroImageGenerationService.generate(
+                                        cardSpec.visual(),
+                                        cardSpec.effectiveLayoutType()
+                                );
+
+                        heroBytes = decodeHeroImage(heroResult.imageUrl());
+
+                        heroImageCache.put(updateId, cardSpec, heroBytes);
+
+                        if (imageGenerationEnabled) {
+                                cardAssetService.storeHero(
+                                        updateId,
+                                        cardSpec,
+                                        heroBytes
+                                );
+                        }
+                }
+        }
+
+        return cardRendererService.renderSingle(
+                cardSpec,
+                heroBytes
+        );
+        }
+
+        /**
+         * Renders the card and stores it, replacing any earlier one.
+         *
+         * Separate from preview because publishing is a decision. A preview
+         * is discarded; this is the image that gets used.
+         */
+        @Transactional
+        public com.dak.backend.domain.CardAsset saveCard(UUID updateId) {
+
+        CardSpec cardSpec = generateCardSpec(updateId);
+
+        CardRendererService.RenderedCard rendered =
+                generateFinalCardPreview(updateId, false);
+
+        return cardAssetService.storeCard(
+                updateId,
+                cardSpec,
+                rendered.imageBytes()
+        );
+        }
+
+        private byte[] decodeHeroImage(String imageUrl) {
+
+        String prefix = "data:image/png;base64,";
+
+        if (imageUrl == null || !imageUrl.startsWith(prefix)) {
+                throw new IllegalStateException(
+                        "Hero image result did not contain a PNG data URL."
+                );
+        }
+
+        try {
+                return java.util.Base64.getDecoder().decode(
+                        imageUrl.substring(prefix.length())
+                );
+        } catch (IllegalArgumentException e) {
+                throw new IllegalStateException(
+                        "Hero image base64 data could not be decoded.",
+                        e
+                );
+        }
+        }
 
     private AustraliaUpdateDetailResponse toDetail(AustraliaUpdate u) {
         List<SourceReferenceResponse> sources = u.getSources().stream()

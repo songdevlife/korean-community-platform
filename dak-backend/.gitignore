@@ -5,3 +5,9 @@ target/
 .vscode/
 .env
 application-local.yml
+
+# Local development artefacts
+backend.log
+dev-env.ps1
+final-card.png
+sample-hero.png
