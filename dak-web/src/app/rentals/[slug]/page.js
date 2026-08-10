@@ -88,7 +88,26 @@ export async function generateMetadata({ params }) {
     title: rental.title,
     description,
     alternates: { canonical: `/rentals/${rental.slug}` },
-    openGraph: { title: rental.title, description, type: 'article' },
+    openGraph: {
+      title: rental.title,
+      description,
+      type: 'article',
+      images: rental.images?.length > 0
+        ? [
+            {
+              url: rental.images[0],
+              alt: rental.title,
+            },
+          ]
+        : [
+            {
+              url: '/og-image.png',
+              width: 1200,
+              height: 630,
+              alt: 'Discover Adelaide Korea',
+            },
+          ],
+    },
   };
 }
 
