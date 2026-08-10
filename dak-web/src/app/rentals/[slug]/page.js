@@ -7,8 +7,8 @@ import {
 import { getRentalById } from '@/api/server';
 import PageShell from '@/components/PageShell';
 import { displayHost, isUrl } from '@/utils/url';
+import { DEFAULT_OG_IMAGE } from '@/utils/og';
 import Gallery from '@/components/Gallery';
-
 const TYPE_LABELS = {
   SHARE_ROOM: '방 임대',
   WHOLE_PROPERTY: '집 전체',
@@ -84,17 +84,21 @@ export async function generateMetadata({ params }) {
   const description = `${rental.suburb} · 주 ${rent} · `
     + `${TYPE_LABELS[rental.listingType] ?? rental.listingType}`;
 
-  return {
-    title: rental.title,
-    description,
-    alternates: { canonical: `/rentals/${rental.slug}` },
-    openGraph: {
+    return {
       title: rental.title,
       description,
-      type: 'article',
-      images: ['/og-image.png'],
-    },
-  };
+      alternates: { canonical: `/rentals/${rental.slug}` },
+      openGraph: {
+        title: rental.title,
+        description,
+        type: 'article',
+        // 부모의 openGraph가 통째로 교체되므로 여기서 다시 지목한다.
+        // 빠지면 카카오가 페이지 안의 헤더 로고 img를 대신 긁어간다.
+        images: [DEFAULT_OG_IMAGE],
+        siteName: 'Discover Adelaide Korea',
+        locale: 'ko_KR',
+      },
+    };
 }
 
 export default async function RentalPage({ params }) {
