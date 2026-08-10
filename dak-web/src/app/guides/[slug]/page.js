@@ -7,6 +7,7 @@ import Markdown from '@/components/Markdown';
 import SaveButton from '@/components/SaveButton';
 import GuideAdminBar from '@/components/GuideAdminBar';
 import { timeAgo } from '@/utils/date';
+import { DEFAULT_OG_IMAGE } from '@/utils/og';
 
 /**
  * Guide detail. The page this rebuild exists for: a stranger arriving from a
@@ -40,6 +41,11 @@ export async function generateMetadata({ params }) {
       type: 'article',
       publishedTime: guide.publishedAt,
       modifiedTime: guide.updatedAt,
+      // Named again because the parent's openGraph is replaced wholesale.
+      // Without it KakaoTalk scrapes the header logo img from the page body.
+      images: [DEFAULT_OG_IMAGE],
+      siteName: 'Discover Adelaide Korea',
+      locale: 'ko_KR',
     },
   };
 }

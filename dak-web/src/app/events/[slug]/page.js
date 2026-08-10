@@ -8,6 +8,7 @@ import PageShell from '@/components/PageShell';
 import { eventDate, eventDateTime, eventTime } from '@/utils/date';
 import { displayHost, isUrl } from '@/utils/url';
 import { googleCalendarUrl } from '@/utils/calendar';
+import { DEFAULT_OG_IMAGE } from '@/utils/og';
 import Gallery from '@/components/Gallery';
 
 /**
@@ -39,7 +40,16 @@ export async function generateMetadata({ params }) {
     // The slug, not the id. Both addresses resolve so that links shared before
     // the change keep working, and this is what says which of them is the page.
     alternates: { canonical: `/events/${event.slug}` },
-    openGraph: { title: event.title, description, type: 'article' },
+    openGraph: {
+      title: event.title,
+      description,
+      type: 'article',
+      // Named again because the parent's openGraph is replaced wholesale.
+      // Without it KakaoTalk scrapes the header logo img from the page body.
+      images: [DEFAULT_OG_IMAGE],
+      siteName: 'Discover Adelaide Korea',
+      locale: 'ko_KR',
+    },
   };
 }
 

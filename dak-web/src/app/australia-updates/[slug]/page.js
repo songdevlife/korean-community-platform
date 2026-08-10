@@ -6,6 +6,7 @@ import PageShell from '@/components/PageShell';
 import SaveButton from '@/components/SaveButton';
 import SourceList from '@/components/SourceList';
 import { timeAgo } from '@/utils/date';
+import { DEFAULT_OG_IMAGE } from '@/utils/og';
 import UpdateAdminBar from '@/components/UpdateAdminBar';
 
 /**
@@ -44,6 +45,11 @@ export async function generateMetadata({ params }) {
       description,
       type: 'article',
       publishedTime: update.createdAt,
+      // Named again because the parent's openGraph is replaced wholesale.
+      // Without it KakaoTalk scrapes the header logo img from the page body.
+      images: [DEFAULT_OG_IMAGE],
+      siteName: 'Discover Adelaide Korea',
+      locale: 'ko_KR',
     },
   };
 }
