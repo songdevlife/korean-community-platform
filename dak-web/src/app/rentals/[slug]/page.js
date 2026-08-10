@@ -92,14 +92,7 @@ export async function generateMetadata({ params }) {
       title: rental.title,
       description,
       type: 'article',
-      images: [
-        {
-          url: '/og-image.png',
-          width: 1200,
-          height: 630,
-          alt: 'Discover Adelaide Korea',
-        },
-      ],
+      images: ['/og-image.png'],
     },
   };
 }
