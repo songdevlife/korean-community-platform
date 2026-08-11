@@ -42,6 +42,17 @@ public class Java2DCardRendererService implements CardRendererService {
     private static final String BADGE_TEXT_AU_UPDATE = "AUSTRALIA UPDATE";
     private static final String BADGE_TEXT_GUIDE = "DAK GUIDE";
 
+    // Updates and guides are different kinds of thing and now say so. Red
+    // reads as news — something that happened and may not be true next month.
+    // A guide stays useful, so it takes the blue already used by the divider
+    // and the key fact box. With one colour for both, the badge only labelled
+    // the card for someone reading it, which is not what a badge is for.
+    private static final Color BADGE_AU_UPDATE =
+            new Color(255, 63, 54);
+
+    private static final Color BADGE_GUIDE =
+            new Color(22, 125, 70);
+
     // DAK mascot
     // Drawn at an exact width with the original aspect ratio preserved,
     // anchored at the top-left corner of (MASCOT_X, MASCOT_Y).
@@ -155,7 +166,7 @@ public class Java2DCardRendererService implements CardRendererService {
     private static final int URGENT_VALUE_MIN_FONT_SIZE = 60;
 
     private static final Color URGENT_BADGE =
-            new Color(13, 38, 82);
+            new Color(72, 72, 70);
 
     // INFOGRAPHIC layout
     // No AI hero: the blocks need the height, and a decorative image on a card
@@ -615,7 +626,7 @@ boolean urgent = layout == CardSpec.LayoutType.URGENT;
 drawBadge(
         g,
         cardSpec,
-        urgent ? URGENT_BADGE : new Color(255, 63, 54)
+        urgent ? URGENT_BADGE : badgeColour(cardSpec)
 );
 
 drawContainedImage(
@@ -1887,7 +1898,19 @@ g.drawImage(badge, x, y, null);
 
     private void drawBadge(Graphics2D g, CardSpec cardSpec) {
 
-        drawBadge(g, cardSpec, new Color(255, 63, 54));
+        drawBadge(g, cardSpec, badgeColour(cardSpec));
+    }
+
+    /**
+     * Matches the badge fill to the label. The URGENT layout passes its own
+     * colour instead, which is deliberate: a grave event is a grave event
+     * whether it arrived as an update or inside a guide.
+     */
+    private Color badgeColour(CardSpec cardSpec) {
+
+        return "GUIDE".equals(cardSpec.contentType())
+                ? BADGE_GUIDE
+                : BADGE_AU_UPDATE;
     }
 
     private void drawBadge(
