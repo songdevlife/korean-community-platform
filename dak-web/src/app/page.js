@@ -88,7 +88,7 @@ export default async function HomePage() {
           control on purpose — a notice nobody has to take down stays up. */}
       <HomeNotice
         title="2026 센서스 — 8월 11일 기준, 유학생과 임시비자도 대상입니다"
-        description="제출 마감은 10월 1일이고, 벌금은 서면 지시를 받은 뒤부터 발생합니다. 자세한 내용은 더보기를 클릭해주세요."
+        description="8월 11일은 마감이 아니라 기준일이라 지금도 제출할 수 있고, 벌금은 서면 지시를 받은 뒤부터 발생합니다. 자세한 내용은 더보기를 클릭해주세요."
         href="/guides/australia-census-2026-guide"
         expiresAt="2026-10-02"
       />

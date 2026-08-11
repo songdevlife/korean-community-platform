@@ -277,6 +277,8 @@ DAK's policy is to:
 
 -   Record conditions set by an advertiser — such as a preference as to gender, or a restriction on couples, pets or smoking — as stated, without endorsing them. Publication of a condition is not an assessment of its lawfulness.
 
+-   State which language an advertiser can be contacted in **only where the advertiser has told DAK, or where the original advertisement makes it plain**. Where neither applies, nothing is shown rather than a guess. Most of DAK's readers write in Korean, and a message sent to an advertiser who does not read it produces silence rather than a refusal — which is why this is stated at all. It is a fact about how to make contact and nothing else: DAK does not record or infer an advertiser's nationality, ethnicity or origin, and the field carries a language rather than a person.
+
 -   Remove or amend a listing at the advertiser's request, without requiring a reason.
 
 -   Remove listings that are no longer current. Rental listings expire automatically after a set period, because a listing for a property already let misleads a reader at their own cost.
@@ -318,6 +320,8 @@ DAK's policy for external listings is to:
 -   **Not publish the advertiser's name, exact street address, or any other detail that identifies them**, beyond the suburb.
 
 -   Name the source platform and link to the original, so a reader can see where the information came from and check whether it is current.
+
+-   **Not state which language the advertiser can be contacted in**, unless the original advertisement itself makes it plain. DAK has not spoken to an external advertiser and cannot ask. Inferring the answer from a name, a photograph or the language an advertisement happens to be written in would be a guess about a person, and a listing wrongly marked as English-only stops a Korean speaker writing to someone who would have replied.
 
 -   Record and display the date DAK last checked the listing, and remove it automatically after fourteen days whether or not it has been re-checked. A listing for a property already let misleads a reader at their own cost, and DAK cannot verify the status of an advertisement it did not receive.
 
