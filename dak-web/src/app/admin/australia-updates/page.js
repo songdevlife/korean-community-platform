@@ -598,7 +598,7 @@ export default function AdminUpdatesPage() {
                             {update.title}
                           </Link>
                           <span className="text-[12px] text-faint">
-                            {timeAgo(update.createdAt)}
+                            {timeAgo(update.publishedAt ?? update.createdAt)}
                           </span>
                         </div>
                         <div className="flex gap-2 shrink-0">

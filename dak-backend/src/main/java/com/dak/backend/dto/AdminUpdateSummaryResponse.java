@@ -22,5 +22,6 @@ public record AdminUpdateSummaryResponse(
         // administrator DTO only — the public response has no equivalent field,
         // so extracted text cannot reach a reader through the API at all.
         String extractedText,
-        String sourceUrl
+        String sourceUrl,
+        java.time.OffsetDateTime publishedAt
 ) {}

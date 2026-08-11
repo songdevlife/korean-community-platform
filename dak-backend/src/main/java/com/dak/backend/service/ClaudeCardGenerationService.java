@@ -93,6 +93,34 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Example shape: a number of affected customers, an amount, a
               percentage, a deadline.
 
+            A figure being present does not make it the point of the story.
+            Before choosing FACT_HOOK, test the figure you would show:
+
+            1. Is it what this report newly establishes, or is it a running
+               total, a background statistic, or context carried over from
+               earlier coverage? A cumulative national tally that was already
+               true yesterday is not what the story says.
+            2. Does it concern the reader? DAK readers are in Adelaide and
+               South Australia. A South Australian figure outranks a national
+               one, and a national one outranks a figure about another state.
+               New South Wales is not closer to a DAK reader than Australia
+               is — it is somewhere else. Prefer the South Australian figure
+               whenever the content contains one.
+            3. Would the story still stand without it? If removing the figure
+               leaves the report intact, the figure is supporting detail and
+               the layout is STANDARD.
+
+            Where two figures compete, prefer the one that is newly reported
+            and concerns the reader, not the largest.
+
+            A figure too small to convey scale does not carry a card. "4마리"
+            printed at the size of a headline makes a story look smaller than
+            it is. If the honest figure is small, the story is STANDARD and
+            the figure belongs in the keyFact box.
+
+            If no figure passes all three, choose STANDARD even when the
+            content contains numbers.
+
             URGENT
             - Use for deaths, serious injury, disaster, emergency warnings and
               similarly grave events.
@@ -125,7 +153,12 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - For FACT_HOOK and URGENT the keyFact becomes the visual subject
               of the card, so its value must be short and read clearly at a
               glance. Prefer "480만 명 이상" over a long descriptive phrase.
-            - The keyFact label explains what the value counts. Keep it short.
+            - The keyFact label explains what the value counts, and must say
+              what it is a count of and where. "남호주 확인 사례" and
+              "호주 전체 누적" are different facts and the label must not blur
+              them.
+            - A figure that will be out of date within days is a poor choice
+              for a card that stays online.
             - Do not write explanatory paragraphs.
             - Do not include a URL, source citation, hashtags or social-media CTA.
               Those are added later by the renderer.

@@ -13,6 +13,23 @@ import java.util.UUID;
 public interface AustraliaUpdateRepository extends JpaRepository<AustraliaUpdate, UUID> {
 
         Page<AustraliaUpdate> findByStatus(String status, Pageable pageable);
+
+        /**
+         * The admin queue, ordered by when each item went out.
+         *
+         * Nulls last rather than first: rows published before publishedAt
+         * existed were backfilled from createdAt, so a null here means a row
+         * that has never been published, and those belong at the bottom.
+         */
+        @Query("""
+                SELECT u FROM AustraliaUpdate u
+                WHERE u.status = :status
+                ORDER BY u.publishedAt DESC NULLS LAST, u.createdAt DESC
+                """)
+        Page<AustraliaUpdate> findByStatusOrderByPublished(
+                @Param("status") String status,
+                Pageable pageable
+        );
     
         /**
          * Detail lookup by the address readers actually use. Both forms resolve so

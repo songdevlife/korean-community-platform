@@ -76,6 +76,19 @@ public class AustraliaUpdate {
     @Column(name = "ai_generated", nullable = false)
     private boolean aiGenerated = false;
 
+    /**
+     * When the update went public, as distinct from when it was imported.
+     *
+     * An article is fetched, waits in the queue until an administrator has
+     * written a Korean summary for it, and goes out some days later. Ordering
+     * by createdAt puts it below one imported afterwards and published sooner,
+     * which is not the order anything happened in.
+     *
+     * Null until the first time the status becomes PUBLISHED.
+     */
+    @Column(name = "published_at")
+    private OffsetDateTime publishedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -127,4 +140,21 @@ public class AustraliaUpdate {
         update.updatedAt = now;
         return update;
         }
+
+    /**
+     * Overrides the generated setter so publication is recorded when it
+     * happens.
+     *
+     * Set once. Restoring something from the archive puts it back where it
+     * was rather than presenting it as new, so a second PUBLISHED does not
+     * move the date.
+     */
+    public void setStatus(String status) {
+
+        if ("PUBLISHED".equals(status) && publishedAt == null) {
+            publishedAt = OffsetDateTime.now();
+        }
+
+        this.status = status;
+    }
 }

@@ -83,8 +83,12 @@ public class AdminAustraliaUpdateService {
     @Transactional(readOnly = true)
     public Page<AdminUpdateSummaryResponse> listAll(String status, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page, Math.min(pageSize, 100));
+
+        // Drafts are worked through in the order they arrived; published items
+        // are read newest first, which is when they went out rather than when
+        // they were imported.
         Page<AustraliaUpdate> updates = (status != null)
-                ? australiaUpdateRepository.findByStatus(status, pageable)
+                ? australiaUpdateRepository.findByStatusOrderByPublished(status, pageable)
                 : australiaUpdateRepository.findAll(pageable);
 
                 return updates.map(u -> new AdminUpdateSummaryResponse(
@@ -96,9 +100,10 @@ public class AdminAustraliaUpdateService {
                 // The reviewer needs their own draft, the raw source text to
                 // write it from, and a link to the original.
                 u.getKoreanSummary(),
-                u.getExtractedText(),
-                u.getSources().stream().findFirst()
-                        .map(s -> s.getSourceUrl()).orElse(null)
+                        u.getExtractedText(),
+                        u.getSources().stream().findFirst()
+                                .map(s -> s.getSourceUrl()).orElse(null),
+                        u.getPublishedAt()
         ));
     }
 

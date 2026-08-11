@@ -281,6 +281,24 @@ DAK's policy is to:
 
 -   Remove listings that are no longer current. Rental listings expire automatically after a set period, because a listing for a property already let misleads a reader at their own cost.
 
+### Advertisers who let rooms on an ongoing basis
+
+Some advertisers manage several rooms across one or more properties and let them continuously, placing an enquirer in whichever room is free rather than in the particular room advertised. A listing naming one room would then be inaccurate in the ordinary case rather than the exceptional one.
+
+For these advertisers DAK's policy is to:
+
+-   List **room types rather than individual rooms**, where the rooms of a type are materially the same. What differs between them — a colour scheme, a position in the house — is not what a reader is deciding on; the rent, the size, the inclusions and the conditions are, and those are stated.
+
+-   Mark the listing as **ongoing availability** rather than as a room that is free on the date shown, and state that current availability is confirmed with the advertiser directly.
+
+-   Describe photographs as **representative of the room type**, not of the room a reader would be given.
+
+-   Require the advertiser to tell DAK when the rent, the inclusions or the conditions change, and when rooms of a type stop being available at all. A listing that quietly stops being true is the failure this section exists to prevent, and an advertiser letting continuously is the only person who knows.
+
+-   Apply the same expiry as any other listing. Expiry here asks whether the advertisement is still current rather than whether one room is still free.
+
+Where an advertiser manages a property they do not own, DAK asks them to confirm in writing that they have the owner's authority to advertise it, and records that confirmation as it records any other permission.
+
 DAK does not verify listings and is not a party to any tenancy. See section 20 of the Terms of Service.
 
 Advertisers and any person whose information appears in a listing may contact **admin@discoveradelaidekorea.au** to have it corrected or removed.
@@ -315,4 +333,4 @@ DAK does not record listings from private or members-only groups, or from any so
 
 Questions regarding this Policy or copyright concerns may be submitted through DAK's official support channels or by contacting **admin@discoveradelaidekorea.au.**
 
-*Last Updated: 31 July 2026*
+*Last Updated: 11 August 2026*
