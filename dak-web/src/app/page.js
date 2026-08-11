@@ -16,6 +16,15 @@ export const metadata = {
   alternates: { canonical: '/' },
 };
 
+// Without this the page is generated once at build time and never again, so
+// an event published on Tuesday was still absent from the front page on
+// Thursday while /events showed it immediately. The fetch layer in
+// api/server.js already revalidates at 30 to 60 seconds, but that has no
+// effect while the page itself is never rebuilt — a page-level value is what
+// gives those fetches a reason to run again. Sixty matches the fetch default
+// so the two layers do not disagree.
+export const revalidate = 60;
+
 // Home is a preview, not a listing: a handful of cards to show what the site
 // holds, with everything else behind View all.
 const FEATURED_COUNT = 3;

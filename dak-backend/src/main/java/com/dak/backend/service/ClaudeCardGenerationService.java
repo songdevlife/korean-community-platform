@@ -242,13 +242,24 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
             - heading is a short Korean line naming what this card covers.
               Roughly six to sixteen characters. Not a sentence.
+            - A card has either a body or blocks, never both. Decide which
+              before writing either.
+            - Use blocks whenever the card is a list of things rather than
+              an explanation of one thing. Phone numbers, addresses, dates,
+              amounts, websites, opening hours, eligibility conditions,
+              steps. If you would separate the items with commas or full
+              stops and the reader would need to find one of them again,
+              they are blocks.
+            - A card of contact details is always blocks. Written as prose it
+              becomes a paragraph a reader has to search through for the
+              number they want, which is the opposite of what a card is for.
+            - Use body only where the card explains one thing that does not
+              come apart into items — why a rule exists, what a term means,
+              what a reader should expect.
             - body is two to four short Korean sentences. This is the only
               place on a card where continuous prose belongs, and it still has
               to be readable on a phone at arm's length.
-            - blocks is optional and follows the infoBlocks rules below. Use
-              it where the card carries separate facts rather than an
-              explanation — dates, amounts, contacts. A card has either a body
-              or blocks, not both.
+            - blocks follows the infoBlocks rules below.
             - Never repeat a sentence from the first card.
             - Every statement must come from the supplied content, exactly as
               on the first card. A carousel is more room, not more licence.
