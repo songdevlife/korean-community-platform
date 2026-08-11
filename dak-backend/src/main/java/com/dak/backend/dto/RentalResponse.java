@@ -45,6 +45,10 @@ public record RentalResponse(
         Boolean petsAllowed,
         Boolean smokingAllowed,
         String inspectionNote,
+        // KOREAN, ENGLISH, BOTH or UNKNOWN. The page shows nothing for
+        // UNKNOWN: a reader is better served by silence than by a badge
+        // saying DAK does not know.
+        String contactLanguage,
         String consentStatus,
         String sourceUrl,
         // Null for consented listings. Printed on external ones, where a

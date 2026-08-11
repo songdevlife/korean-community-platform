@@ -38,6 +38,7 @@ public record UpdateRentalRequest(
         Boolean petsAllowed,
         Boolean smokingAllowed,
         @Size(max = 300) String inspectionNote,
+        @Size(max = 20) String contactLanguage,
         String consentStatus,
         String consentNote,
         @Size(max = 500) String sourceUrl,

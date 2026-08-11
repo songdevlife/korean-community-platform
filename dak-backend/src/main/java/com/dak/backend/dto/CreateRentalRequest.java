@@ -62,6 +62,8 @@ public record CreateRentalRequest(
 
         @Size(max = 300) String inspectionNote,
 
+        @Size(max = 20) String contactLanguage,
+
         @NotBlank(message = "Record what permission was given.")
         String consentStatus,
         String consentNote,

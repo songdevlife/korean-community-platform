@@ -24,6 +24,10 @@ public record RentalSummaryResponse(
         String billsIncluded,
         LocalDate availableFrom,
         Boolean furnished,
+        // On the card as well as the page. Whether the advertiser can be
+        // written to in Korean decides which listings a reader opens, and
+        // finding out only after opening one wastes the trip.
+        String contactLanguage,
         String thumbnailUrl,
         // Carried so a card can say which kind of listing it is. Anything
         // other than FULL was recorded from someone else's advertisement,

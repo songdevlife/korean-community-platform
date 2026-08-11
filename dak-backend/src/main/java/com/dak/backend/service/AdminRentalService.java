@@ -27,7 +27,9 @@ public class AdminRentalService {
             "SHARE_ROOM", "WHOLE_PROPERTY", "LEASE_TRANSFER", "STUDENT_ACCOMMODATION");
     private static final Set<String> VALID_BILLS = Set.of(
             "INCLUDED", "EXCLUDED", "OPTIONAL", "UNKNOWN");
-    private static final Set<String> VALID_CONSENT = Set.of("NONE", "LINK_ONLY", "FULL");
+            private static final Set<String> VALID_CONSENT = Set.of("NONE", "LINK_ONLY", "FULL");
+            private static final Set<String> VALID_CONTACT_LANGUAGE = Set.of(
+                    "KOREAN", "ENGLISH", "BOTH", "UNKNOWN");
 
     /**
      * Twenty-one days from publication.
@@ -125,7 +127,7 @@ public class AdminRentalService {
                 request.availableFrom(), request.minTermMonths(), request.furnished(),
                 request.roomsLet(), request.genderPreference(), request.couplesAllowed(),
                 request.petsAllowed(), request.smokingAllowed(), request.inspectionNote(),
-                request.sourceUrl());
+                request.contactLanguage(), request.sourceUrl());
 
         // Refused rather than dropped. A listing that quietly lost a number
         // would look like a defect; one that quietly kept it would be a breach
@@ -189,7 +191,7 @@ public class AdminRentalService {
                 request.availableFrom(), request.minTermMonths(), request.furnished(),
                 request.roomsLet(), request.genderPreference(), request.couplesAllowed(),
                 request.petsAllowed(), request.smokingAllowed(), request.inspectionNote(),
-                request.sourceUrl());
+                request.contactLanguage(), request.sourceUrl());
 
         if (request.contact() != null || request.imageUrls() != null) {
             applyConsentGatedFields(rental,
@@ -257,12 +259,13 @@ public class AdminRentalService {
     }
 
     private void applyFields(Rental rental, String description, String roomTypes,
-                              Integer rentMax, BigDecimal bondWeeks, String billsIncluded,
-                              String billsNote, java.time.LocalDate availableFrom,
-                              Integer minTermMonths, Boolean furnished, Integer roomsLet,
-                              String genderPreference, Boolean couplesAllowed,
-                              Boolean petsAllowed, Boolean smokingAllowed,
-                              String inspectionNote, String sourceUrl) {
+        Integer rentMax, BigDecimal bondWeeks, String billsIncluded,
+        String billsNote, java.time.LocalDate availableFrom,
+        Integer minTermMonths, Boolean furnished, Integer roomsLet,
+        String genderPreference, Boolean couplesAllowed,
+        Boolean petsAllowed, Boolean smokingAllowed,
+        String inspectionNote, String contactLanguage,
+        String sourceUrl) {
         if (description != null) rental.setDescription(blankToNull(description));
         if (roomTypes != null) rental.setRoomTypes(blankToNull(roomTypes));
         if (rentMax != null) rental.setRentMax(rentMax);
@@ -278,6 +281,9 @@ public class AdminRentalService {
         if (petsAllowed != null) rental.setPetsAllowed(petsAllowed);
         if (smokingAllowed != null) rental.setSmokingAllowed(smokingAllowed);
         if (inspectionNote != null) rental.setInspectionNote(blankToNull(inspectionNote));
+        if (contactLanguage != null) {
+            rental.setContactLanguage(normaliseContactLanguage(contactLanguage));
+        }
         if (sourceUrl != null) rental.setSourceUrl(blankToNull(sourceUrl));
     }
 
@@ -383,6 +389,26 @@ public class AdminRentalService {
         }
         return upper;
     }
+
+    /**
+     * Blank falls to UNKNOWN rather than being rejected.
+     *
+     * The form does not force a choice, because forcing one on an external
+     * listing would mean guessing — and a listing wrongly marked English-only
+     * stops a Korean speaker writing to someone who would have replied.
+     */
+    private String normaliseContactLanguage(String value) {
+        String upper = value == null ? "" : value.trim().toUpperCase();
+        if (upper.isEmpty()) return "UNKNOWN";
+        if (!VALID_CONTACT_LANGUAGE.contains(upper)) {
+            throw ApiException.badRequest("INVALID_CONTACT_LANGUAGE",
+                    "Contact language must be one of: "
+                    + String.join(", ", VALID_CONTACT_LANGUAGE));
+        }
+        return upper;
+    }
+
+
 
     private String blankToNull(String value) {
         if (value == null) return null;

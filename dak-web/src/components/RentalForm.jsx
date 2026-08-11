@@ -19,7 +19,7 @@ const EMPTY = {
   billsIncluded: 'UNKNOWN', billsNote: '',
   availableFrom: '', minTermMonths: '', furnished: false, roomsLet: '',
   genderPreference: '', couplesAllowed: '', petsAllowed: '', smokingAllowed: '',
-  inspectionNote: '',
+  inspectionNote: '', contactLanguage: 'UNKNOWN',
   consentStatus: 'NONE', consentNote: '', sourceUrl: '',
   contact: '', imageUrls: [''],
 };
@@ -42,6 +42,17 @@ const BILLS = [
   { value: 'INCLUDED', label: '포함' },
   { value: 'EXCLUDED', label: '별도' },
   { value: 'OPTIONAL', label: '선택 가능' },
+];
+
+// UNKNOWN is the default and stays selectable, because an external listing
+// has never been spoken to and choosing one of the other three would be a
+// guess. A listing wrongly marked English-only stops a Korean speaker
+// writing to someone who would have answered.
+const CONTACT_LANGUAGES = [
+  { value: 'UNKNOWN', label: '확인 안 됨 — 표시하지 않음' },
+  { value: 'KOREAN', label: '한국어 가능' },
+  { value: 'ENGLISH', label: '영어만' },
+  { value: 'BOTH', label: '한국어·영어' },
 ];
 
 const CONSENT = [
@@ -141,6 +152,7 @@ export default function RentalForm({
         petsAllowed: triState(draft.petsAllowed),
         smokingAllowed: triState(draft.smokingAllowed),
         inspectionNote: draft.inspectionNote.trim() || null,
+        contactLanguage: draft.contactLanguage,
         consentStatus: draft.consentStatus,
         consentNote: draft.consentNote.trim() || null,
         sourceUrl: draft.sourceUrl.trim() || null,
@@ -431,6 +443,25 @@ export default function RentalForm({
             maxLength={300} placeholder="1월 19일 (월) 오전 9시"
             className={`${fieldClass} placeholder:text-faint`}
           />
+        </div>
+
+        <div>
+          <label htmlFor="rental-contact-language" className={labelClass}>
+            문의 가능 언어
+          </label>
+          <select
+            id="rental-contact-language" value={draft.contactLanguage}
+            onChange={(e) => set({ contactLanguage: e.target.value })}
+            className={fieldClass}
+          >
+            {CONTACT_LANGUAGES.map((l) => (
+              <option key={l.value} value={l.value} className="bg-surface">{l.label}</option>
+            ))}
+          </select>
+          <p className={hintClass}>
+            게시자가 직접 알려주었거나 원문에서 확인된 경우에만 고르세요.
+            추측해서 표시하면 연락할 수 있는 사람을 막게 됩니다.
+          </p>
         </div>
 
         <div>

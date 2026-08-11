@@ -51,8 +51,12 @@ export default function RentalEditPage() {
             ? '' : String(r.petsAllowed),
           smokingAllowed: r.smokingAllowed === null || r.smokingAllowed === undefined
             ? '' : String(r.smokingAllowed),
-          inspectionNote: r.inspectionNote ?? '',
-          consentStatus: r.consentStatus ?? 'NONE',
+            inspectionNote: r.inspectionNote ?? '',
+            // Falls to UNKNOWN rather than blank: the select has no empty
+            // option, and an unmatched value would leave it showing the first
+            // entry while holding something else.
+            contactLanguage: r.contactLanguage ?? 'UNKNOWN',
+            consentStatus: r.consentStatus ?? 'NONE',
           // Not on the public response, so it arrives only through the admin
           // endpoint this screen uses.
           consentNote: r.consentNote ?? '',

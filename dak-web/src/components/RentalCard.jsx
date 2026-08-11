@@ -14,6 +14,15 @@ const BILLS_LABELS = {
   OPTIONAL: '빌 선택',
 };
 
+// UNKNOWN is absent on purpose. A badge saying DAK does not know which
+// language the advertiser speaks tells a reader nothing and takes a slot
+// from something that does.
+const CONTACT_LANGUAGE_LABELS = {
+  KOREAN: '한국어 가능',
+  ENGLISH: '영어 문의',
+  BOTH: '한국어·영어',
+};
+
 /**
  * Server component, matching EventCard.
  *
@@ -96,6 +105,11 @@ export default function RentalCard({ rental }) {
         {rental.furnished && (
           <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-border-dark text-muted">
             가구 포함
+          </span>
+        )}
+        {CONTACT_LANGUAGE_LABELS[rental.contactLanguage] && (
+          <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-border-dark text-muted">
+            {CONTACT_LANGUAGE_LABELS[rental.contactLanguage]}
           </span>
         )}
       </div>

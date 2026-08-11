@@ -117,6 +117,18 @@ public class Rental {
     @Column(name = "inspection_note", length = 300)
     private String inspectionNote;
 
+    /**
+     * KOREAN, ENGLISH, BOTH or UNKNOWN.
+     *
+     * Most advertisers on this board speak no Korean, and a reader who writes
+     * in Korean gets no reply and no explanation of why. Recorded only where
+     * the advertiser said so or the original advertisement shows it — an
+     * external listing has never been spoken to, so UNKNOWN is the honest
+     * answer and is not shown at all rather than shown as a shrug.
+     */
+    @Column(name = "contact_language", nullable = false, length = 20)
+    private String contactLanguage = "UNKNOWN";
+
     /** NONE, LINK_ONLY or FULL. See the class comment. */
     @Column(name = "consent_status", nullable = false, length = 20)
     private String consentStatus = "NONE";

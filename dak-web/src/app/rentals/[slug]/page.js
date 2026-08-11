@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Wallet, CalendarCheck, Clock, Sofa,
   ExternalLink, Phone, ShieldCheck, ShieldAlert, ShieldQuestion, Eye, Link2,
+  Languages,
 } from 'lucide-react';
 import { getRentalById } from '@/api/server';
 import PageShell from '@/components/PageShell';
@@ -21,6 +22,17 @@ const BILLS_LABELS = {
   EXCLUDED: '빌 별도',
   OPTIONAL: '빌 선택 가능',
   UNKNOWN: '빌 정보 없음',
+};
+
+// No UNKNOWN entry, so the row does not render at all where DAK has not
+// established which language the advertiser uses. Writing in Korean to
+// someone who does not read it produces silence rather than a refusal,
+// which is why this is worth a row of its own rather than a line in the
+// description.
+const CONTACT_LANGUAGE_LABELS = {
+  KOREAN: '한국어로 문의할 수 있습니다',
+  ENGLISH: '영어로 문의해야 합니다',
+  BOTH: '한국어·영어 모두 문의할 수 있습니다',
 };
 
 /**
@@ -300,10 +312,19 @@ export default async function RentalPage({ params }) {
               </div>
             )}
 
-            {rental.inspectionNote && (
+{rental.inspectionNote && (
               <div className={rowClass}>
                 <Eye size={16} strokeWidth={1.75} className={iconClass} />
                 <p className="text-snow">{rental.inspectionNote}</p>
+              </div>
+            )}
+
+            {CONTACT_LANGUAGE_LABELS[rental.contactLanguage] && (
+              <div className={rowClass}>
+                <Languages size={16} strokeWidth={1.75} className={iconClass} />
+                <p className="text-snow">
+                  {CONTACT_LANGUAGE_LABELS[rental.contactLanguage]}
+                </p>
               </div>
             )}
           </div>
