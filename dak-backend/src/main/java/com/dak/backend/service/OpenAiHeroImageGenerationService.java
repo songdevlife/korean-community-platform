@@ -130,18 +130,27 @@ private String buildPhotographicPrompt(CardSpec.VisualSpec visual) {
                         SUBJECT:
                         %s
             
-                        Reduce the subject to ONE simple physical object or a small
-                        arrangement of objects. Do not depict the event itself.
-            
-                        The objects must not read as pleasant. A straw hat beside a
-                        wooden hut and a pile of coins is a rural idyll, and placed
-                        against a report of wage theft it contradicts the words. Choose
-                        what the situation actually looks like: what is worn out, empty,
-                        unpaid, locked or left behind.
-            
-                        MOOD:
-                        Serious and factual. Restrained. Nothing warm, nostalgic,
-                        picturesque or charming.
+            Reduce the subject to ONE simple physical object or a small
+            arrangement of objects. Do not depict the event itself.
+
+            Draw what the SUBJECT above describes, not the difficulty that
+            surrounds it. Where the subject is help being offered — a place
+            to go, a service that exists, something a reader can use — show
+            the thing that is open and available: a full bowl, a door with
+            the light on, a stocked shelf, a hand offering rather than a
+            hand empty. A worn wallet, a padlock and a crumpled receipt
+            describe having nothing, and a guide about where to eat is not
+            about having nothing.
+
+            Where the subject is harm or loss itself, the reverse applies:
+            do not make it pleasant. A straw hat beside a wooden hut and a
+            pile of coins is a rural idyll, and against a report of wage
+            theft it contradicts the words.
+
+            MOOD:
+            Serious and factual. Restrained. Not cheerful, but not bleak
+            either — the register is that of a public notice rather than a
+            campaign poster or a photograph of hardship.
             
                         STYLE:
             Studio product photography.

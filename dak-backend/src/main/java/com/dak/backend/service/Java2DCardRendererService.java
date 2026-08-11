@@ -223,7 +223,7 @@ public class Java2DCardRendererService implements CardRendererService {
     // underneath the footer logo. Blocks now share the space the way
     // drawInfographicLayout has always shared it, sized to the count.
     private static final int CAROUSEL_BLOCK_MAX_HEIGHT = 150;
-    private static final int CAROUSEL_BLOCK_MIN_HEIGHT = 108;
+    private static final int CAROUSEL_BLOCK_MIN_HEIGHT = 96;
     private static final int CAROUSEL_BLOCK_GAP = 20;
 
 

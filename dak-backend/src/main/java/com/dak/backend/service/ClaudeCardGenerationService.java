@@ -329,14 +329,23 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             chosen URGENT — the two are answered separately and a story is
             routinely GRAVE and STANDARD at once.
 
-            GRAVE — people were harmed, exploited, underpaid, endangered,
-            discriminated against, displaced, or stripped of a protection
-            they had. Wage theft, unsafe work, unsafe housing, visa
-            conditions that trap someone, and abuse of people who cannot
+            GRAVE — a report ABOUT people being harmed, exploited, underpaid,
+            endangered, discriminated against, displaced, or stripped of a
+            protection they had. Wage theft, unsafe work, unsafe housing,
+            visa conditions that trap someone, abuse of people who cannot
             easily complain. Also deaths, serious injury and disaster.
 
-            NEUTRAL — everything else. Fee changes, new services, procedures,
-            deadlines, recalls, closures, seasonal notices. A story can be
+            NEUTRAL — everything else, including guides that tell a reader
+            where to get help. A piece about free meals, emergency relief,
+            legal advice or crisis support is written for someone in a hard
+            situation, and it is about the help rather than about the
+            hardship. Its subject is a door that is open. Treating it as
+            GRAVE produces a picture of what the reader lacks, printed above
+            a list of places that would give it to them.
+
+            Ask what the piece is ABOUT, not who is reading it. Fee changes,
+            new services, procedures, deadlines, recalls, closures, seasonal
+            notices and support services are all NEUTRAL. A story can be
             important and still be NEUTRAL; importance is not gravity.
 
             When unsure, choose NEUTRAL. GRAVE changes the illustration to a
