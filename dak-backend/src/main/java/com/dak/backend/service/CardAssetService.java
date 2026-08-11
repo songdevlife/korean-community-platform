@@ -37,7 +37,8 @@ public class CardAssetService {
     private static final Logger log =
             LoggerFactory.getLogger(CardAssetService.class);
 
-    public static final String CONTENT_AU_UPDATE = "AU_UPDATE";
+            public static final String CONTENT_AU_UPDATE = "AU_UPDATE";
+            public static final String CONTENT_GUIDE = "GUIDE";
 
     private final CardAssetRepository cardAssetRepository;
     private final CloudinaryService cloudinaryService;
@@ -66,16 +67,26 @@ public class CardAssetService {
      * Returns the bytes rather than the URL because the renderer draws the
      * image rather than linking to it.
      */
-    @Transactional(readOnly = true)
-    public Optional<byte[]> findHero(
-            UUID contentId,
-            CardSpec cardSpec
-    ) {
+/** Australia Updates, which were the only caller when this was written. */
+@Transactional(readOnly = true)
+public Optional<byte[]> findHero(
+        UUID contentId,
+        CardSpec cardSpec
+) {
+    return findHero(CONTENT_AU_UPDATE, contentId, cardSpec);
+}
 
-        return cardAssetRepository
-                .findByContentTypeAndContentIdAndAssetKindAndSpecHash(
-                        CONTENT_AU_UPDATE,
-                        contentId,
+@Transactional(readOnly = true)
+public Optional<byte[]> findHero(
+        String contentType,
+        UUID contentId,
+        CardSpec cardSpec
+) {
+
+    return cardAssetRepository
+            .findByContentTypeAndContentIdAndAssetKindAndSpecHash(
+                    contentType,
+                    contentId,
                         CardAsset.KIND_HERO,
                         specHash(cardSpec)
                 )
@@ -112,6 +123,16 @@ public class CardAssetService {
             CardSpec cardSpec,
             byte[] imageBytes
     ) {
+        storeHero(CONTENT_AU_UPDATE, contentId, cardSpec, imageBytes);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void storeHero(
+            String contentType,
+            UUID contentId,
+            CardSpec cardSpec,
+            byte[] imageBytes
+    ) {
 
         if (!cloudinaryService.isEnabled()) {
             return;
@@ -121,10 +142,10 @@ public class CardAssetService {
             CloudinaryService.StoredImage stored =
                     cloudinaryService.upload(imageBytes, heroFolder);
 
-            cardAssetRepository.save(
-                    CardAsset.hero(
-                            CONTENT_AU_UPDATE,
-                            contentId,
+                    cardAssetRepository.save(
+                        CardAsset.hero(
+                                contentType,
+                                contentId,
                             specHash(cardSpec),
                             cardSpec.effectiveLayoutType().name(),
                             stored.imageUrl(),
@@ -151,6 +172,16 @@ public class CardAssetService {
      */
     @Transactional
     public CardAsset storeCard(
+            UUID contentId,
+            CardSpec cardSpec,
+            byte[] imageBytes
+    ) {
+        return storeCard(CONTENT_AU_UPDATE, contentId, cardSpec, imageBytes);
+    }
+
+    @Transactional
+    public CardAsset storeCard(
+            String contentType,
             UUID contentId,
             CardSpec cardSpec,
             byte[] imageBytes
@@ -194,10 +225,15 @@ public class CardAssetService {
 
     @Transactional(readOnly = true)
     public Optional<CardAsset> findCard(UUID contentId) {
+        return findCard(CONTENT_AU_UPDATE, contentId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<CardAsset> findCard(String contentType, UUID contentId) {
 
         return cardAssetRepository
                 .findByContentTypeAndContentIdAndAssetKindOrderByCreatedAtDesc(
-                        CONTENT_AU_UPDATE,
+                        contentType,
                         contentId,
                         CardAsset.KIND_CARD
                 )
@@ -210,10 +246,15 @@ public class CardAssetService {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void evictHeroes(UUID contentId) {
+        evictHeroes(CONTENT_AU_UPDATE, contentId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void evictHeroes(String contentType, UUID contentId) {
 
         List<CardAsset> heroes = cardAssetRepository
                 .findByContentTypeAndContentIdAndAssetKind(
-                        CONTENT_AU_UPDATE,
+                        contentType,
                         contentId,
                         CardAsset.KIND_HERO
                 );

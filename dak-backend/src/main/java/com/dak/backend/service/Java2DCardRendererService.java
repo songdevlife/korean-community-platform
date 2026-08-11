@@ -31,8 +31,16 @@ public class Java2DCardRendererService implements CardRendererService {
     // Top badge
     private static final int BADGE_X = 72;
     private static final int BADGE_Y = 42;
-    private static final int BADGE_WIDTH = 390;
+    // Width is measured from the label rather than fixed: the update badge
+    // and the guide badge are different lengths, and a fixed box leaves the
+    // shorter one with a stretch of empty red beside it.
+    private static final int BADGE_PADDING_X = 32;
     private static final int BADGE_HEIGHT = 72;
+
+    // The badge says what kind of thing the card is. Width is fixed, so a
+    // longer label than these would need the box measured rather than set.
+    private static final String BADGE_TEXT_AU_UPDATE = "AUSTRALIA UPDATE";
+    private static final String BADGE_TEXT_GUIDE = "DAK GUIDE";
 
     // DAK mascot
     // Drawn at an exact width with the original aspect ratio preserved,
@@ -51,8 +59,11 @@ public class Java2DCardRendererService implements CardRendererService {
     // Narrowed because the mascot now starts at x=665.
     private static final int HEADER_TITLE_WIDTH = 565;
 
-    // Wraps onto at most two lines, shrinking only if two lines still overflow.
-    private static final int HEADER_TITLE_FONT_SIZE = 76;
+    // Sized so that eight or nine characters still fit on one line. The model
+    // is asked for six or seven and repeatedly returns more, and a second line
+    // here pushes the divider, the hero and everything below them down the
+    // card — so the renderer absorbs it rather than the layout doing so.
+    private static final int HEADER_TITLE_FONT_SIZE = 64;
     private static final int HEADER_TITLE_MIN_FONT_SIZE = 44;
     private static final int HEADER_TITLE_MAX_LINES = 2;
 
@@ -507,6 +518,7 @@ public class Java2DCardRendererService implements CardRendererService {
 
                 drawCarouselCard(
                         g,
+                        cardSpec,
                         cards.get(index - 1)
                 );
 
@@ -596,6 +608,7 @@ boolean urgent = layout == CardSpec.LayoutType.URGENT;
 
 drawBadge(
         g,
+        cardSpec,
         urgent ? URGENT_BADGE : new Color(255, 63, 54)
 );
 
@@ -708,21 +721,24 @@ g.setColor(urgent ? TEXT_PRIMARY : HOOK_ACCENT);
                 )
         );
 
-        g.setColor(TEXT_MUTED);
-
         int y = HOOK_HEADLINE_Y;
 
-        for (String line : wrapText(
+        for (List<TextRun> line : wrapRuns(
                 headline,
                 g.getFontMetrics(),
-                HOOK_CONTENT_WIDTH,
-                HOOK_HEADLINE_MAX_LINES
+                HOOK_CONTENT_WIDTH
         )) {
 
-            g.drawString(
+            // The figure above already carries the accent here, so a
+            // marked phrase in the supporting line uses the body colour
+            // rather than competing with it.
+            drawRuns(
+                    g,
                     line,
                     HOOK_CONTENT_X,
-                    y
+                    y,
+                    TEXT_MUTED,
+                    TEXT_PRIMARY
             );
 
             y += HOOK_HEADLINE_LINE_HEIGHT;
@@ -759,25 +775,31 @@ if (headline != null && !headline.isBlank()) {
         )
 );
 
-g.setColor(INFO_HEADLINE_COLOR);
-
 int y = INFO_HEADLINE_Y;
 
-    for (String line : wrapToFit(
-            headline,
-            g.getFontMetrics(),
-            INFO_CONTENT_WIDTH
-    )) {
+            // The marked phrase takes the accent; the rest stays readable.
+            for (List<TextRun> line : wrapRuns(
+                    headline,
+                    g.getFontMetrics(),
+                    INFO_CONTENT_WIDTH
+            )) {
 
-        if (y > INFO_HEADLINE_Y
-                + (INFO_HEADLINE_LINE_HEIGHT * (INFO_HEADLINE_MAX_LINES - 1))) {
-            break;
-        }
+                if (y > INFO_HEADLINE_Y
+                        + (INFO_HEADLINE_LINE_HEIGHT * (INFO_HEADLINE_MAX_LINES - 1))) {
+                    break;
+                }
 
-        g.drawString(line, INFO_CONTENT_X, y);
+                drawRuns(
+                        g,
+                        line,
+                        INFO_CONTENT_X,
+                        y,
+                        TEXT_PRIMARY,
+                        INFO_HEADLINE_COLOR
+                );
 
-        y += INFO_HEADLINE_LINE_HEIGHT;
-    }
+                y += INFO_HEADLINE_LINE_HEIGHT;
+            }
 }
 
 List<CardSpec.InfoBlock> blocks = cardSpec.usableInfoBlocks();
@@ -837,10 +859,11 @@ for (int i = 0; i < blocks.size(); i++) {
      */
 private void drawCarouselCard(
         Graphics2D g,
+        CardSpec cardSpec,
         CardSpec.CarouselCard card
 ) {
-
-    drawBadge(g);
+    
+            drawBadge(g, cardSpec);
 
     drawImageAtWidth(
             g,
@@ -850,9 +873,11 @@ private void drawCarouselCard(
             MASCOT_WIDTH
     );
 
+    String heading = stripMarkers(card.heading());
+
     Font headingFont = fitWrappedFont(
-        g,
-        card.heading(),
+            g,
+            heading,
         extraBoldFont,
         CAROUSEL_HEADING_FONT_SIZE,
         CAROUSEL_HEADING_MIN_FONT_SIZE,
@@ -878,14 +903,14 @@ Font bodyFont = regularFont.deriveFont(
         (float) CAROUSEL_BODY_FONT_SIZE
 );
 
-List<String> bodyLines =
-        (blocks.isEmpty() && card.body() != null && !card.body().isBlank())
-                ? wrapToFit(
-                        card.body(),
-                        g.getFontMetrics(bodyFont),
-                        CAROUSEL_CONTENT_WIDTH
-                )
-                : List.of();
+List<List<TextRun>> bodyLines =
+                (blocks.isEmpty() && card.body() != null && !card.body().isBlank())
+                        ? wrapRuns(
+                                card.body(),
+                                g.getFontMetrics(bodyFont),
+                                CAROUSEL_CONTENT_WIDTH
+                        )
+                        : List.of();
 
 // Measure the whole block before drawing any of it, so a short card
 // and a long one are both centred in the band rather than both
@@ -959,19 +984,23 @@ for (String line : headingLines) {
     }
 
     g.setFont(bodyFont);
-    g.setColor(TEXT_PRIMARY);
 
     int bottomLimit = FOOTER_TOP_Y - CAROUSEL_BODY_LINE_HEIGHT;
 
-    for (String line : bodyLines) {
+    for (List<TextRun> line : bodyLines) {
 
-        // Drops what will not fit rather than running into the footer.
-        // A body written to the length asked for does not reach here.
         if (y > bottomLimit) {
             break;
         }
 
-        g.drawString(line, CAROUSEL_CONTENT_X, y);
+        drawRuns(
+                g,
+                line,
+                CAROUSEL_CONTENT_X,
+                y,
+                TEXT_PRIMARY,
+                HOOK_ACCENT
+        );
 
         y += CAROUSEL_BODY_LINE_HEIGHT;
     }
@@ -1026,17 +1055,29 @@ BufferedImage icon =
                 (float) INFO_BLOCK_LABEL_FONT_SIZE
         );
 
-        // One line where the text allows it: a two-line value in one block and
+// One line where the text allows it: a two-line value in one block and
         // a one-line value in the next reads as two different kinds of block.
         Font valueFont = fitWrappedFont(
-            g,
-            block.value(),
-            extraBoldFont,
-            INFO_BLOCK_VALUE_FONT_SIZE,
-            24,
-            textWidth,
-            1
-    );
+                g,
+                block.value(),
+                extraBoldFont,
+                INFO_BLOCK_VALUE_FONT_SIZE,
+                24,
+                textWidth,
+                1
+        );
+
+        // A value with no spaces cannot be wrapped, so fitting it to a line
+        // count achieves nothing and it runs past the block edge. Shrink
+        // until it actually measures short enough.
+        while (valueFont.getSize() > 16
+                && g.getFontMetrics(valueFont).stringWidth(block.value()) > textWidth) {
+
+            valueFont = extraBoldFont.deriveFont(
+                    Font.PLAIN,
+                    (float) (valueFont.getSize() - 1)
+            );
+        }
 
         Font noteFont = regularFont.deriveFont(
                 Font.PLAIN,
@@ -1301,9 +1342,11 @@ BufferedImage icon =
         // Shrinks to fit rather than failing. A title one word too long used
         // to throw, which meant the whole render returned 500 and the caller
         // received JSON where it expected a PNG.
+        title = stripMarkers(title);
+
         Font font = fitWrappedFont(
-            g,
-            title,
+                g,
+                title,
             extraBoldFont,
             TITLE_FONT_SIZE,
             40,
@@ -1342,9 +1385,11 @@ BufferedImage icon =
         return;
     }
 
+// Markers are not drawn, so the fitted size has to be measured without
+    // them or a marked headline would shrink further than it needs to.
     Font font = fitWrappedFont(
         g,
-        headline,
+        stripMarkers(headline),
         semiBoldFont,
         HEADLINE_FONT_SIZE,
         26,
@@ -1353,26 +1398,26 @@ BufferedImage icon =
 );
 
 g.setFont(font);
-g.setColor(TEXT_PRIMARY);
-
-List<String> lines =
-        wrapToFit(
-                headline,
-                g.getFontMetrics(),
-                HEADLINE_WIDTH
-        );
 
 int y = HEADLINE_Y;
 
-    for (String line : lines) {
-        g.drawString(
-                line,
-                HEADLINE_X,
-                y
-        );
+for (List<TextRun> line : wrapRuns(
+        headline,
+        g.getFontMetrics(),
+        HEADLINE_WIDTH
+)) {
 
-        y += HEADLINE_LINE_HEIGHT;
-    }
+    drawRuns(
+            g,
+            line,
+            HEADLINE_X,
+            y,
+            TEXT_PRIMARY,
+            HOOK_ACCENT
+    );
+
+    y += HEADLINE_LINE_HEIGHT;
+}
 }
 
         private void drawKeyFact(
@@ -1828,49 +1873,64 @@ g.drawImage(badge, x, y, null);
         return lines;
     }
 
-    private void drawBadge(Graphics2D g) {
+    private void drawBadge(Graphics2D g, CardSpec cardSpec) {
 
-        drawBadge(g, new Color(255, 63, 54));
+        drawBadge(g, cardSpec, new Color(255, 63, 54));
     }
 
     private void drawBadge(
-            Graphics2D g,
-            Color background
-    ) {
+        Graphics2D g,
+        CardSpec cardSpec,
+        Color background
+) {
 
-        g.setColor(background);
+    String label = badgeText(cardSpec);
 
-        g.fillRoundRect(
-                BADGE_X,
-                BADGE_Y,
-                BADGE_WIDTH,
-                BADGE_HEIGHT,
-                36,
-                36
-        );
+    Font badgeFont = extraBoldFont.deriveFont(
+            Font.PLAIN,
+            34f
+    );
 
-        g.setFont(
-                extraBoldFont.deriveFont(
-                        Font.PLAIN,
-                        34f
-                )
-        );
+    int labelWidth = g.getFontMetrics(badgeFont).stringWidth(label);
 
-        g.setColor(Color.WHITE);
+    g.setColor(background);
 
-        g.drawString(
-                "AUSTRALIA UPDATE",
-                BADGE_X + 32,
-                BADGE_Y + 49
-        );
+    g.fillRoundRect(
+            BADGE_X,
+            BADGE_Y,
+            labelWidth + (BADGE_PADDING_X * 2),
+            BADGE_HEIGHT,
+            36,
+            36
+    );
+
+    g.setFont(badgeFont);
+    g.setColor(Color.WHITE);
+
+    g.drawString(
+            label,
+            BADGE_X + BADGE_PADDING_X,
+            BADGE_Y + 49
+    );
+}
+
+    /**
+     * Falls back to the update label rather than leaving the badge empty:
+     * an unlabelled card is worse than one labelled as the commoner kind.
+     */
+    private String badgeText(CardSpec cardSpec) {
+
+        return "GUIDE".equals(cardSpec.contentType())
+                ? BADGE_TEXT_GUIDE
+                : BADGE_TEXT_AU_UPDATE;
     }
 
     private void drawHeader(
-            Graphics2D g,
-            CardSpec cardSpec
-    ) {
+        Graphics2D g,
+        CardSpec cardSpec
+) {
 
-        drawBadge(g);
+    drawBadge(g, cardSpec);
 
         // Mascot
     drawImageAtWidth(
@@ -2117,6 +2177,149 @@ private List<String> wrapToFit(
 
     if (lines.isEmpty()) {
         lines.add(text.trim());
+    }
+
+    return lines;
+}
+
+/**
+     * One run of headline text, and whether it carries the accent colour.
+     *
+     * The model marks a phrase with double asterisks. Splitting on those
+     * rather than colouring the whole headline is what makes the emphasis
+     * mean anything — a line entirely in the accent colour emphasises
+     * nothing.
+     */
+private record TextRun(String text, boolean accent) {}
+
+/**
+ * Splits **marked** phrases out of a line into runs.
+ *
+ * Unmatched asterisks are left as literal text rather than swallowed:
+ * a stray marker is visible and can be corrected, where silently
+ * dropping it hides the mistake.
+ */
+private List<TextRun> parseRuns(String text) {
+
+    List<TextRun> runs = new ArrayList<>();
+
+    int cursor = 0;
+
+    while (cursor < text.length()) {
+
+        int open = text.indexOf("**", cursor);
+
+        if (open < 0) {
+            runs.add(new TextRun(text.substring(cursor), false));
+            break;
+        }
+
+        int close = text.indexOf("**", open + 2);
+
+        if (close < 0) {
+            runs.add(new TextRun(text.substring(cursor), false));
+            break;
+        }
+
+        if (open > cursor) {
+            runs.add(new TextRun(text.substring(cursor, open), false));
+        }
+
+        runs.add(new TextRun(text.substring(open + 2, close), true));
+
+        cursor = close + 2;
+    }
+
+    return runs;
+}
+
+/** The same text with the markers removed, for measuring and wrapping. */
+private String stripMarkers(String text) {
+
+    if (text == null) {
+        return null;
+    }
+
+    return text.replace("**", "");
+}
+
+/**
+ * Draws a line that may contain accented runs, and returns where the
+ * next line should start on the x axis is irrelevant — the caller
+ * advances y itself.
+ *
+ * Runs are drawn one after another rather than as one string, because
+ * only the marked ones take the accent colour.
+ */
+private void drawRuns(
+        Graphics2D g,
+        List<TextRun> runs,
+        int x,
+        int baseline,
+        Color plain,
+        Color accent
+) {
+
+    int cursor = x;
+
+    for (TextRun run : runs) {
+
+        g.setColor(run.accent() ? accent : plain);
+
+        g.drawString(run.text(), cursor, baseline);
+
+        cursor += g.getFontMetrics().stringWidth(run.text());
+    }
+}
+
+/**
+ * Wraps text that carries markers, keeping each line's runs intact.
+ *
+ * Wrapping has to happen on the stripped text — the markers are not
+ * drawn and must not count toward the width — but the runs then have to
+ * be rebuilt per line, which is what this returns.
+ */
+private List<List<TextRun>> wrapRuns(
+        String marked,
+        FontMetrics metrics,
+        int maxWidth
+) {
+
+    List<TextRun> all = parseRuns(marked);
+
+    List<List<TextRun>> lines = new ArrayList<>();
+
+    List<TextRun> current = new ArrayList<>();
+
+    int width = 0;
+
+    for (TextRun run : all) {
+
+        for (String word : run.text().split("(?<= )")) {
+
+            if (word.isEmpty()) {
+                continue;
+            }
+
+            int wordWidth = metrics.stringWidth(word);
+
+            if (width + wordWidth > maxWidth && !current.isEmpty()) {
+                lines.add(current);
+                current = new ArrayList<>();
+                width = 0;
+
+                // A line never starts with the space that ended the last.
+                word = word.stripLeading();
+                wordWidth = metrics.stringWidth(word);
+            }
+
+            current.add(new TextRun(word, run.accent()));
+            width += wordWidth;
+        }
+    }
+
+    if (!current.isEmpty()) {
+        lines.add(current);
     }
 
     return lines;

@@ -1,26 +1,26 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { renderUpdateCard } from '@/api/admin';
+import { renderGuideCard } from '@/api/admin';
 import PageShell from '@/components/PageShell';
 import AdminGuard from '@/components/admin/AdminGuard';
 import AdminBackButton from '@/components/admin/AdminBackButton';
 import CardPreview from '@/components/admin/CardPreview';
 
-export default function UpdateCardPage() {
-  const { updateId } = useParams();
+export default function GuideCardPage() {
+  const { guideId } = useParams();
 
   return (
     <AdminGuard>
       <PageShell>
-        <AdminBackButton href="/admin/australia-updates" label="Australia Updates" />
+        <AdminBackButton href="/admin/guides" label="Guides" />
 
         <h1 className="text-xl font-bold text-snow mb-1">Social card</h1>
 
         <CardPreview
-          contentId={updateId}
-          render={renderUpdateCard}
-          filePrefix="dak-card"
+          contentId={guideId}
+          render={renderGuideCard}
+          filePrefix="dak-guide"
         />
       </PageShell>
     </AdminGuard>

@@ -31,7 +31,8 @@ public class CardSpecStore {
     private static final Logger log =
             LoggerFactory.getLogger(CardSpecStore.class);
 
-    public static final String CONTENT_AU_UPDATE = "AU_UPDATE";
+            public static final String CONTENT_AU_UPDATE = "AU_UPDATE";
+            public static final String CONTENT_GUIDE = "GUIDE";
 
     private final CardSpecRecordRepository repository;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -42,9 +43,14 @@ public class CardSpecStore {
 
     @Transactional(readOnly = true)
     public Optional<CardSpec> find(UUID contentId) {
+        return find(CONTENT_AU_UPDATE, contentId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<CardSpec> find(String contentType, UUID contentId) {
 
         return repository
-                .findByContentTypeAndContentId(CONTENT_AU_UPDATE, contentId)
+                .findByContentTypeAndContentId(contentType, contentId)
                 .flatMap(record -> {
 
                     try {
@@ -81,14 +87,19 @@ public class CardSpecStore {
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void save(UUID contentId, CardSpec cardSpec) {
+        save(CONTENT_AU_UPDATE, contentId, cardSpec);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void save(String contentType, UUID contentId, CardSpec cardSpec) {
 
         try {
             String json = objectMapper.writeValueAsString(cardSpec);
 
             CardSpecRecord record = repository
-                    .findByContentTypeAndContentId(CONTENT_AU_UPDATE, contentId)
+                    .findByContentTypeAndContentId(contentType, contentId)
                     .orElseGet(() -> new CardSpecRecord(
-                            CONTENT_AU_UPDATE,
+                            contentType,
                             contentId,
                             json
                     ));
@@ -109,9 +120,14 @@ public class CardSpecStore {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void evict(UUID contentId) {
+        evict(CONTENT_AU_UPDATE, contentId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void evict(String contentType, UUID contentId) {
 
         repository.deleteByContentTypeAndContentId(
-                CONTENT_AU_UPDATE,
+                contentType,
                 contentId
         );
     }

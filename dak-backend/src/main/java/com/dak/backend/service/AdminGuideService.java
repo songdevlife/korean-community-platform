@@ -11,6 +11,8 @@ import com.dak.backend.dto.UpdateGuideStatusRequest;
 import com.dak.backend.exception.ApiException;
 import com.dak.backend.repository.GuideCategoryRepository;
 import com.dak.backend.repository.GuideRepository;
+import com.dak.backend.dto.CardSpec;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.Normalizer;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,13 +32,35 @@ public class AdminGuideService {
     // rejected with a clear error rather than a database exception.
     private static final Set<String> VALID_STATUSES = Set.of("DRAFT", "PUBLISHED", "ARCHIVED");
 
+    private static final String CONTENT_TYPE = CardSpecStore.CONTENT_GUIDE;
+
     private final GuideRepository guideRepository;
     private final GuideCategoryRepository guideCategoryRepository;
+    private final CardGenerationService cardGenerationService;
+    private final HeroImageGenerationService heroImageGenerationService;
+    private final CardRendererService cardRendererService;
+    private final CardSpecStore cardSpecStore;
+    private final CardAssetService cardAssetService;
+
+    // Stub artwork is a placeholder rather than the illustration for this
+    // guide, so it is never stored.
+    @Value("${app.image.openai.enabled:true}")
+    private boolean imageGenerationEnabled;
 
     public AdminGuideService(GuideRepository guideRepository,
-                             GuideCategoryRepository guideCategoryRepository) {
+                             GuideCategoryRepository guideCategoryRepository,
+                             CardGenerationService cardGenerationService,
+                             HeroImageGenerationService heroImageGenerationService,
+                             CardRendererService cardRendererService,
+                             CardSpecStore cardSpecStore,
+                             CardAssetService cardAssetService) {
         this.guideRepository = guideRepository;
         this.guideCategoryRepository = guideCategoryRepository;
+        this.cardGenerationService = cardGenerationService;
+        this.heroImageGenerationService = heroImageGenerationService;
+        this.cardRendererService = cardRendererService;
+        this.cardSpecStore = cardSpecStore;
+        this.cardAssetService = cardAssetService;
     }
 
     @Transactional(readOnly = true)
@@ -157,7 +182,146 @@ public class AdminGuideService {
 
         return GuideService.toDetail(guide);
     }
+// --- Cards ---
 
+@Transactional(readOnly = true)
+public CardSpec generateCardSpec(UUID guideId) {
+    return generateCardSpec(guideId, false);
+}
+
+/**
+ * Produces the card spec, reusing the stored one where available.
+ *
+ * A guide changes far less often than a news item, which makes the stored
+ * spec more valuable here than it is for updates: a guide published in
+ * March should still render the card an administrator approved in March.
+ */
+@Transactional(readOnly = true)
+public CardSpec generateCardSpec(UUID guideId, boolean regenerate) {
+
+    if (regenerate) {
+        cardSpecStore.evict(CONTENT_TYPE, guideId);
+    } else {
+        Optional<CardSpec> stored = cardSpecStore.find(CONTENT_TYPE, guideId);
+
+        if (stored.isPresent()) {
+            return stored.get();
+        }
+    }
+
+    Guide guide = guideRepository.findById(guideId)
+            .orElseThrow(() -> ApiException.notFound("Guide not found."));
+
+    if (guide.getBody() == null || guide.getBody().isBlank()) {
+        throw ApiException.badRequest(
+                "MISSING_BODY",
+                "A Guide needs body content before a card can be generated."
+        );
+    }
+
+    CardSpec cardSpec = cardGenerationService.generateForGuide(
+            guide.getTitle(),
+            guide.getSummary(),
+            guide.getBody()
+    );
+
+    cardSpecStore.save(CONTENT_TYPE, guideId, cardSpec);
+
+    return cardSpec;
+}
+
+/**
+ * Renders one card. Index 0 is the cover; later indexes are the cards of
+ * a carousel, which guides produce more often than news does — a guide is
+ * usually a sequence rather than a single fact.
+ */
+@Transactional(readOnly = true)
+public CardRendererService.RenderedCard generateCardPreview(
+        UUID guideId,
+        boolean regenerate,
+        int cardIndex
+) {
+
+    CardSpec cardSpec = generateCardSpec(guideId, regenerate);
+
+    boolean needsHero =
+            cardIndex == 0
+                    && cardSpec.effectiveLayoutType()
+                            != CardSpec.LayoutType.INFOGRAPHIC;
+
+    if (needsHero && cardSpec.visual() == null) {
+        throw ApiException.badRequest(
+                "MISSING_VISUAL_SPEC",
+                "A visual specification is required before a card can be rendered."
+        );
+    }
+
+    if (regenerate) {
+        cardAssetService.evictHeroes(CONTENT_TYPE, guideId);
+    }
+
+    byte[] heroBytes = null;
+
+    if (needsHero) {
+
+        heroBytes = cardAssetService
+                .findHero(CONTENT_TYPE, guideId, cardSpec)
+                .orElse(null);
+
+        if (heroBytes == null) {
+
+            HeroImageGenerationService.HeroImageResult heroResult =
+                    heroImageGenerationService.generate(
+                            cardSpec.visual(),
+                            cardSpec.effectiveLayoutType()
+                    );
+
+            heroBytes = decodeHeroImage(heroResult.imageUrl());
+
+            if (imageGenerationEnabled) {
+                cardAssetService.storeHero(
+                        CONTENT_TYPE,
+                        guideId,
+                        cardSpec,
+                        heroBytes
+                );
+            }
+        }
+    }
+
+    return cardRendererService.renderCarouselCard(
+            cardSpec,
+            heroBytes,
+            cardIndex
+    );
+}
+
+@Transactional(readOnly = true)
+public int countCards(UUID guideId) {
+    return 1 + generateCardSpec(guideId).usableCarouselCards().size();
+}
+
+private byte[] decodeHeroImage(String imageUrl) {
+
+    String prefix = "data:image/png;base64,";
+
+    if (imageUrl == null || !imageUrl.startsWith(prefix)) {
+        throw new IllegalStateException(
+                "Hero image result did not contain a PNG data URL."
+        );
+    }
+
+    try {
+        return java.util.Base64.getDecoder().decode(
+                imageUrl.substring(prefix.length())
+        );
+    } catch (IllegalArgumentException e) {
+        throw new IllegalStateException(
+                "Hero image base64 data could not be decoded.",
+                e
+        );
+    }
+}
     /**
      * Prefers an admin-supplied slug and falls back to deriving one from the
      * title. A Korean title reduces to an empty string, so the UUID fallback

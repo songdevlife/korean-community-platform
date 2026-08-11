@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Check, Archive, ChevronDown, Plus } from 'lucide-react';
+import { Check, Archive, ChevronDown, Plus, Sparkles } from 'lucide-react';
 import {
   fetchDraftGuides,
   fetchPublishedGuides,
@@ -172,6 +172,14 @@ export default function AdminGuidesPage() {
                         </span>
                       </div>
                       <div className="flex gap-2 shrink-0">
+                        {/* Needs body content: the card is written from it. */}
+                        <Link
+                          href={`/admin/guides/${guide.id}/card`}
+                          className={secondaryBtn}
+                        >
+                          <Sparkles size={13} strokeWidth={2} />
+                          Card
+                        </Link>
                         <button
                           onClick={() => handleGuideAction(guide.id, 'PUBLISHED')}
                           className={primaryBtn}
@@ -224,13 +232,22 @@ export default function AdminGuidesPage() {
                             {timeAgo(guide.publishedAt ?? guide.createdAt)}
                           </span>
                         </div>
-                        <button
-                          onClick={() => handleGuideAction(guide.id, 'ARCHIVED')}
-                          className={`${secondaryBtn} shrink-0`}
-                        >
-                          <Archive size={14} strokeWidth={2} />
-                          Archive
-                        </button>
+                        <div className="flex gap-2 shrink-0">
+                          <Link
+                            href={`/admin/guides/${guide.id}/card`}
+                            className={secondaryBtn}
+                          >
+                            <Sparkles size={13} strokeWidth={2} />
+                            Card
+                          </Link>
+                          <button
+                            onClick={() => handleGuideAction(guide.id, 'ARCHIVED')}
+                            className={secondaryBtn}
+                          >
+                            <Archive size={14} strokeWidth={2} />
+                            Archive
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

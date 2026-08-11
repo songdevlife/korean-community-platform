@@ -217,6 +217,39 @@ export async function fetchUpdateCardSpec(updateId) {
   return response.data.data;
 }
 
+/**
+ * The same as renderUpdateCard, for guides. A guide more often produces a
+ * carousel than a news item does, since a guide is usually a sequence.
+ */
+export async function renderGuideCard(
+  guideId,
+  { regenerate = false, index = 0 } = {}
+) {
+  const params = { index };
+
+  if (regenerate) {
+    params.regenerate = true;
+  }
+
+  const response = await apiClient.post(
+    `/admin/guides/${guideId}/card-render-preview`,
+    null,
+    { params, responseType: 'blob' }
+  );
+
+  const count = Number(response.headers['x-card-count']);
+
+  return {
+    blob: response.data,
+    cardCount: Number.isFinite(count) && count > 0 ? count : 1,
+  };
+}
+
+export async function fetchGuideCardSpec(guideId) {
+  const response = await apiClient.post(`/admin/guides/${guideId}/card-preview`);
+  return response.data.data;
+}
+
 // --- Rentals ---
 
 export async function fetchRentalsByStatus(status, page = 0) {

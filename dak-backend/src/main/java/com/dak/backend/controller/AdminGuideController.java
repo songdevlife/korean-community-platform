@@ -6,11 +6,15 @@ import com.dak.backend.dto.AdminGuideSummaryResponse;
 import com.dak.backend.dto.CreateGuideRequest;
 import com.dak.backend.dto.GuideDetailResponse;
 import com.dak.backend.dto.UpdateGuideRequest;
+import com.dak.backend.dto.CardSpec;
 import com.dak.backend.dto.UpdateGuideStatusRequest;
 import com.dak.backend.service.AdminGuideService;
+import com.dak.backend.service.CardRendererService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -72,5 +76,43 @@ public class AdminGuideController {
             @PathVariable UUID guideId,
             @Valid @RequestBody UpdateGuideStatusRequest request) {
         return ApiResponse.ok(adminGuideService.updateStatus(guideId, request));
+    }
+
+    /**
+     * The text and layout decisions behind the card, without rendering it.
+     * Cheap compared with rendering, since no illustration is generated.
+     */
+    @PostMapping("/{guideId}/card-preview")
+    public ApiResponse<CardSpec> generateCardPreview(
+            @PathVariable UUID guideId) {
+        return ApiResponse.ok(adminGuideService.generateCardSpec(guideId));
+    }
+
+    /**
+     * Renders one card. Index 0 is the cover; later indexes are the cards of
+     * a carousel, which guides produce more often than news does — a guide is
+     * usually a sequence rather than a single fact.
+     *
+     * The card count travels as a header because it cannot be read from a
+     * PNG. It is exposed to the browser in CorsConfig; without that the
+     * header is dropped before it arrives.
+     */
+    @PostMapping(
+            value = "/{guideId}/card-render-preview",
+            produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> renderCard(
+            @PathVariable UUID guideId,
+            @RequestParam(defaultValue = "false") boolean regenerate,
+            @RequestParam(defaultValue = "0") int index) {
+
+        CardRendererService.RenderedCard rendered =
+                adminGuideService.generateCardPreview(guideId, regenerate, index);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .header(
+                        "X-Card-Count",
+                        String.valueOf(adminGuideService.countCards(guideId)))
+                .body(rendered.imageBytes());
     }
 }

@@ -169,6 +169,12 @@ public class ClaudeCardGenerationService implements CardGenerationService {
               the card, above a divider line and beside the DAK mascot.
             - headerTitle must be a noun phrase only, with no particles,
               no verbs and no sentence ending.
+            - headerTitle must be 6 or 7 Korean characters, counting spaces.
+              It is set large beside the mascot, and eight will wrap onto a
+              second line that pushes everything below it down the card.
+            - Drop the qualifier before the subject: "면허 규정 변경" over
+              "남호주 면허 규정 변경", "정보 유출 확인" over "오리진 정보 유출 확인".
+              The title below carries the specifics; this is a label.
             - headerTitle should be roughly 6 to 10 Korean characters and fit
               on one line. It sits beside the mascot with limited room, and a
               second line pushes everything below it down the card.
@@ -189,6 +195,14 @@ public class ClaudeCardGenerationService implements CardGenerationService {
               instead.
             - Keep the headline concise and natural in Korean.
             - Do not put several facts into the headline.
+            - Mark the one phrase a reader must not miss by wrapping it in
+              double asterisks: 영주권자는 **90일 안에** 시험을 봐야 합니다.
+              It is drawn in the accent colour while the rest stays black.
+            - Mark one phrase, never two, and never the whole headline. A
+              headline entirely in the accent colour emphasises nothing.
+            - The marked phrase should be short — a period, a figure, a
+              condition. Not a clause.
+            - Where nothing in the headline stands out, use no asterisks.
             - keyFact is optional and there may be only ONE.
             - A keyFact should normally be a date, amount, deadline, number,
               location, eligibility condition or similarly concrete fact.
@@ -235,8 +249,30 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Keep note to roughly twenty Korean characters. The blocks share
               a height, so one long note leaves the others looking empty.
             - Blocks should carry a similar amount of text as one another.
+            - On an INFOGRAPHIC, write infoBlocks first. Then write the
+              headline, and before you do, list to yourself every date,
+              amount, period and figure you have just put in a block. None of
+              them may appear in the headline. Not the year, not the month,
+              not the number of days, not the price.
+
+            - The headline is the sentence a reader would say if asked what
+              this means for them. It names who is affected and what is now
+              required of them, without stating when or how much — the blocks
+              are directly beneath it and answer those.
+
+              Acceptable: 한국 면허 소지자는 이제 시험을 다시 봐야 합니다
+              Acceptable: 영주권을 받으면 남호주 면허로 바꿔야 합니다
+              Not acceptable: 2025년 5월부터 영주권자는 90일 안에 시험을 봐야 합니다
+              Not acceptable: 340~380불의 실기 시험을 통과해야 합니다
+
+              The last two are rejected because the card already shows 2025년
+              5월 1일, 90일 and 340~380불 in its blocks.
             - value must stay short enough to read at a glance: aim for under
-              fifteen Korean characters. Detail belongs in note.
+              ten Korean characters, and never more than twelve. It is set
+              large in a narrow box beside an icon.
+            - Put no qualifier in the value. "340~380불" is the value;
+              what it is for goes in the label, and the conditions go in the
+              note.
             - icon names the picture shown beside the block. Choose the one
               that fits the fact, from exactly this list, or null:
               CALENDAR for a fixed date, CLOCK for a period or deadline,
