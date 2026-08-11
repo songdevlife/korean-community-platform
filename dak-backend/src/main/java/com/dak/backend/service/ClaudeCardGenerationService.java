@@ -35,7 +35,12 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
     private static final String API_VERSION = "2023-06-01";
 
-    private static final int MAX_TOKENS = 1200;
+    // Raised from 1200. A carousel spec with three cards of blocks, each with
+    // a label, value, note and icon, runs past that limit and the response is
+    // cut off mid-JSON — which surfaces as a parse failure and falls back to a
+    // spec carrying the title three times and no visual concept at all. The
+    // failure is silent from the outside: a card renders, it just says nothing.
+    private static final int MAX_TOKENS = 4000;
 
     private static final int MAX_INPUT_CHARS = 12_000;
 
@@ -502,14 +507,19 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             );
 
         } catch (Exception e) {
-            log.warn(
-                    "Card generation failed for '{}': {}",
-                    safeTitle,
-                    e.getMessage()
-            );
-
-            return fallbackSpec(contentType, safeTitle);
-        }
+                // Logged at error rather than warn. The fallback renders a card
+                // that looks finished — title repeated three times over artwork
+                // about nothing — so nothing in the admin screen says the
+                // generation failed. The log is the only place it shows.
+                log.error(
+                        "Card generation failed for '{}', falling back to a spec "
+                                + "with no visual concept: {}",
+                        safeTitle,
+                        e.getMessage()
+                );
+    
+                return fallbackSpec(contentType, safeTitle);
+            }
     }
 
     private String truncate(String text) {
@@ -831,7 +841,8 @@ List<CardSpec.CarouselCard> carouselCards = parseCarouselCards(
                             null,
                             null,
                             new CardSpec.VisualSpec(
-                                "simple hand-painted editorial illustration representing the topic",
+                                "simple hand-painted editorial illustration representing "
+                                        + safeTitle,
                                 "informative and neutral",
                                 null,
                                 CARD_STYLE_ILLUSTRATION
