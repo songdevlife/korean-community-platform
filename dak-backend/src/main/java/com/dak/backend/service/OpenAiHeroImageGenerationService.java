@@ -124,24 +124,26 @@ private String buildPhotographicPrompt(CardSpec.VisualSpec visual) {
                     ? "A single conceptual object representing the topic"
                     : visual.subject();
 
-    String mood =
-            visual.mood() == null
-                    ? "Serious and factual"
-                    : visual.mood();
-
-    return """
-            Create a conceptual photograph for a news information card.
-
-            SUBJECT:
-            %s
-
-            Reduce the subject to ONE simple physical object or a small
-            arrangement of objects. Do not depict the event itself.
-
-            MOOD:
-            %s
-
-            STYLE:
+                    return """
+                        Create a conceptual photograph for a news information card.
+            
+                        SUBJECT:
+                        %s
+            
+                        Reduce the subject to ONE simple physical object or a small
+                        arrangement of objects. Do not depict the event itself.
+            
+                        The objects must not read as pleasant. A straw hat beside a
+                        wooden hut and a pile of coins is a rural idyll, and placed
+                        against a report of wage theft it contradicts the words. Choose
+                        what the situation actually looks like: what is worn out, empty,
+                        unpaid, locked or left behind.
+            
+                        MOOD:
+                        Serious and factual. Restrained. Nothing warm, nostalgic,
+                        picturesque or charming.
+            
+                        STYLE:
             Studio product photography.
             Single clear subject on a plain seamless background.
             Soft directional light with gentle shadows.
@@ -180,8 +182,7 @@ private String buildPhotographicPrompt(CardSpec.VisualSpec visual) {
 
             Do not render any typography.
             """.formatted(
-            subject,
-            mood
+            subject
     );
 }
     private String buildPrompt(CardSpec.VisualSpec visual) {

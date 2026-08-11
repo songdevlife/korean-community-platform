@@ -160,10 +160,22 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             content contains numbers.
 
             URGENT
-            - Use for deaths, serious injury, disaster, emergency warnings and
-              similarly grave events.
+            - Use ONLY for a specific event in which people were killed or
+              seriously injured, a disaster, or an emergency warning that a
+              reader must act on now.
+            - It is not the layout for a serious subject. Wage theft, unsafe
+              working conditions, exploitation, discrimination and reports of
+              systemic harm are serious, and they are STANDARD or INFOGRAPHIC.
+              A report about a condition that has persisted for years is not
+              an emergency, however grave it is.
+            - Ask whether something happened on a particular day that a
+              reader needs to know about today. If not, this is not URGENT.
+            - Requires a keyFact with a concrete value, and that value must
+              be the figure the event newly established — a toll, a count of
+              those affected, an area evacuated. A background statistic such
+              as an hourly wage or a working week does not qualify, and if
+              that is the only figure available the layout is not URGENT.
             - Present the fact plainly. Never treat human harm as spectacle.
-            - Requires a keyFact with a concrete value.
 
             Never choose a layout to make the story feel more dramatic than the
             supplied content supports.
@@ -294,24 +306,25 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
             TONE:
 
-            Set tone to GRAVE or NEUTRAL. This is a separate judgement from
-            the layout. A layout answers whether one figure is the point of
-            the card; tone answers whether the subject matter is grave. A
-            story can be serious and carry no figure at all, which is why
-            STANDARD does not imply NEUTRAL.
+            You have already chosen the layout. Do not revisit it here.
+
+            Tone decides only how the illustration is treated. It does not
+            change the layout, and a GRAVE tone is not a reason to have
+            chosen URGENT — the two are answered separately and a story is
+            routinely GRAVE and STANDARD at once.
 
             GRAVE — people were harmed, exploited, underpaid, endangered,
             discriminated against, displaced, or stripped of a protection
-            they had. Deaths, serious injury, disaster, emergency warnings.
-            Also: wage theft, unsafe housing, visa conditions that trap
-            someone, and abuse of people who cannot easily complain.
+            they had. Wage theft, unsafe work, unsafe housing, visa
+            conditions that trap someone, and abuse of people who cannot
+            easily complain. Also deaths, serious injury and disaster.
 
             NEUTRAL — everything else. Fee changes, new services, procedures,
             deadlines, recalls, closures, seasonal notices. A story can be
             important and still be NEUTRAL; importance is not gravity.
 
-            When unsure, choose NEUTRAL. GRAVE changes the visual treatment
-            to a restrained one, and applying it to an ordinary notice makes
+            When unsure, choose NEUTRAL. GRAVE changes the illustration to a
+            restrained treatment, and applying it to an ordinary notice makes
             routine information look alarming.
 
             HERO VISUAL RULES:
