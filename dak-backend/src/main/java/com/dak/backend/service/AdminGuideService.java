@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +66,14 @@ public class AdminGuideService {
 
     @Transactional(readOnly = true)
     public Page<AdminGuideSummaryResponse> listAll(String status, int page, int pageSize) {
-        Pageable pageable = PageRequest.of(page, Math.min(pageSize, 100));
+        // Without an explicit sort, Postgres returns rows in whatever physical
+        // order they happen to be in, so a guide changes position in the list
+        // every time it is edited. updatedAt puts the most recently touched
+        // item first, which is what an administrator is looking for.
+        Pageable pageable = PageRequest.of(
+                page,
+                Math.min(pageSize, 100),
+                Sort.by(Sort.Direction.DESC, "updatedAt"));
 
         Page<Guide> guides = (status != null)
                 ? guideRepository.findByStatus(status, pageable)
