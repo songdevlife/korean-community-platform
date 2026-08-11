@@ -63,6 +63,37 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Do not translate or reconstruct information from an external source.
               Work only from the DAK content supplied to you.
 
+            SINGLE CARD OR CAROUSEL:
+
+            A single card carries one thing a reader takes away at a glance.
+            A carousel carries a sequence: the point, then what it means, then
+            what to do about it.
+
+            Choose a carousel only where the supplied content actually holds
+            enough for each card to say something different. Two cards that
+            restate one another are worse than one card that says it once.
+            A short news item is a single card.
+
+            When you choose a carousel, supply carouselCards: one to three of
+            them, following the first card rather than repeating it. The first
+            card is described by title, headline, keyFact and layoutType as
+            usual; these are what a reader swipes to.
+
+            Each carousel card has a role:
+
+            DETAIL   - what happened, or what the thing is. Expands on the
+                       first card without repeating its wording.
+            ACTION   - what the reader should do, check, watch for or be
+                       aware of. Only where the content supports it; never
+                       invent advice.
+            SOURCE   - where this came from and what to consult for the full
+                       picture. Optional, and last when present.
+
+            Order them as a reader needs them: DETAIL before ACTION, SOURCE
+            last. Do not use the same role twice.
+
+            Otherwise leave carouselCards as null.
+
             LAYOUT SELECTION:
 
             Choose exactly one layoutType for this card.
@@ -132,19 +163,30 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
             CARD WRITING RULES:
 
-            - format is always SINGLE.
+            - format is SINGLE for one card, CAROUSEL where carouselCards
+              are supplied.
             - headerTitle is the short Korean label printed at the very top of
               the card, above a divider line and beside the DAK mascot.
             - headerTitle must be a noun phrase only, with no particles,
               no verbs and no sentence ending.
-            - headerTitle should be roughly 6 to 14 Korean characters and must
-              wrap onto no more than two short lines.
+            - headerTitle should be roughly 6 to 10 Korean characters and fit
+              on one line. It sits beside the mascot with limited room, and a
+              second line pushes everything below it down the card.
             - headerTitle compresses the topic. Examples of the intended shape:
               "오리진 정보 유출", "2026 호주 센서스", "학생비자 규정 변경".
             - headerTitle must never repeat title word for word.
-            - title should identify the topic immediately.
-            - Keep the title short enough for at most two lines on a mobile card.
-            - headline must communicate only ONE main takeaway.
+            - title should identify the topic immediately, in roughly fifteen
+              to twenty-five Korean characters. It is set large, and a title
+              that wraps onto a second line with one word on it reads as a
+              mistake.
+            - headline must add what the title does not already say. The
+              consequence, the scale, who is affected, what changes, or what
+              the reader should do about it.
+            - A headline that restates the title in different words is wasted
+              space on a card that has very little of it. If the only thing
+              you can write is the title again, the content is thin enough
+              that the headline should carry the next most useful fact
+              instead.
             - Keep the headline concise and natural in Korean.
             - Do not put several facts into the headline.
             - keyFact is optional and there may be only ONE.
@@ -162,6 +204,21 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Do not write explanatory paragraphs.
             - Do not include a URL, source citation, hashtags or social-media CTA.
               Those are added later by the renderer.
+
+            CAROUSEL CARD RULES:
+
+            - heading is a short Korean line naming what this card covers.
+              Roughly six to sixteen characters. Not a sentence.
+            - body is two to four short Korean sentences. This is the only
+              place on a card where continuous prose belongs, and it still has
+              to be readable on a phone at arm's length.
+            - blocks is optional and follows the infoBlocks rules below. Use
+              it where the card carries separate facts rather than an
+              explanation — dates, amounts, contacts. A card has either a body
+              or blocks, not both.
+            - Never repeat a sentence from the first card.
+            - Every statement must come from the supplied content, exactly as
+              on the first card. A carousel is more room, not more licence.
 
             INFOGRAPHIC BLOCK RULES:
 
@@ -245,6 +302,14 @@ public class ClaudeCardGenerationService implements CardGenerationService {
                   "icon": "CALENDAR | CLOCK | PEOPLE | LOCATION | MONEY | DOCUMENT | LIGHTBULB | CHECK | WARNING | INFO, or null"
                 }
               ],
+              "carouselCards": [
+                {
+                  "role": "DETAIL | ACTION | SOURCE",
+                  "heading": "short Korean line naming what this card covers",
+                  "body": "two to four short Korean sentences, or null",
+                  "blocks": null
+                }
+              ],
               "visual": {
                 "subject": "English description of the main illustration subject",
                 "mood": "English description of the intended mood",
@@ -259,6 +324,10 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             Unless the layout is INFOGRAPHIC, use:
 
             "infoBlocks": null
+
+            For a single card, use:
+
+            "carouselCards": null
             """;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -479,6 +548,10 @@ List<CardSpec.InfoBlock> infoBlocks = parseInfoBlocks(
         node.path("infoBlocks")
 );
 
+List<CardSpec.CarouselCard> carouselCards = parseCarouselCards(
+        node.path("carouselCards")
+);
+
         JsonNode visualNode = node.path("visual");
 
         String subject = textOrFallback(
@@ -503,16 +576,17 @@ List<CardSpec.InfoBlock> infoBlocks = parseInfoBlocks(
         );
 
         return new CardSpec(
-            contentType,
-            "SINGLE",
-            layoutType,
+                contentType,
+                carouselCards == null ? "SINGLE" : "CAROUSEL",
+                layoutType,
             headerTitle,
             title,
             headline,
-                keyFact,
-                infoBlocks,
-                visual
-        );
+            keyFact,
+            infoBlocks,
+            carouselCards,
+            visual
+    );
     }
 
     private CardSpec.KeyFact parseKeyFact(JsonNode node) {
@@ -564,6 +638,40 @@ List<CardSpec.InfoBlock> infoBlocks = parseInfoBlocks(
 
         return blocks.isEmpty() ? null : blocks;
     }
+
+    private List<CardSpec.CarouselCard> parseCarouselCards(JsonNode node) {
+
+        if (node == null || !node.isArray() || node.isEmpty()) {
+            return null;
+        }
+
+        List<CardSpec.CarouselCard> cards = new ArrayList<>();
+
+        for (JsonNode element : node) {
+
+            String heading = nullableText(element.path("heading"));
+
+            // A card with no heading has nothing to lead with, and the
+            // renderer would draw an empty band where one should be.
+            if (heading == null) {
+                continue;
+            }
+
+            String role = nullableText(element.path("role"));
+
+            cards.add(
+                    new CardSpec.CarouselCard(
+                            role == null ? CardSpec.CardRole.DETAIL.name() : role,
+                            heading,
+                            nullableText(element.path("body")),
+                            parseInfoBlocks(element.path("blocks"))
+                    )
+            );
+        }
+
+        return cards.isEmpty() ? null : cards;
+    }
+
     private String textOrFallback(
             JsonNode node,
             String fallback
@@ -618,10 +726,11 @@ List<CardSpec.InfoBlock> infoBlocks = parseInfoBlocks(
                             // the renderer falls back to the title.
                             null,
                             safeTitle,
-                safeTitle,
-                null,
-                null,
-                new CardSpec.VisualSpec(
+                            safeTitle,
+                            null,
+                            null,
+                            null,
+                            new CardSpec.VisualSpec(
                         "simple hand-painted editorial illustration representing the topic",
                         "informative and neutral",
                         null,

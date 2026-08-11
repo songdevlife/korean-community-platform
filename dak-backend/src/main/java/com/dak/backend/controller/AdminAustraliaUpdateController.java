@@ -53,7 +53,7 @@ public class AdminAustraliaUpdateController {
         return ApiResponse.ok(adminAustraliaUpdateService.updateStatus(updateId, request));
     }
 
-        @PostMapping("/{updateId}/card-preview")
+    @PostMapping("/{updateId}/card-preview")
     public ApiResponse<CardSpec> generateCardPreview(
             @PathVariable UUID updateId
     ) {
@@ -63,7 +63,7 @@ public class AdminAustraliaUpdateController {
     }
 
     /**
-     * Renders and stores the card, returning where it now lives.
+     * Renders and stores the cover card, returning where it now lives.
      */
     @PostMapping("/{updateId}/card")
     public ApiResponse<CardAssetResponse> saveCard(
@@ -97,28 +97,40 @@ public class AdminAustraliaUpdateController {
     }
 
     /**
-     * Renders the final card.
+     * Renders one card.
      *
-     * The hero illustration is reused between requests where the inputs have
-     * not changed, because generating one is a paid call. Pass regenerate=true
-     * to discard it and produce new artwork.
+     * Index 0 is the cover; later indexes are the cards of a carousel, where
+     * the content produced one. The hero illustration is reused between
+     * requests where the inputs have not changed, because generating one is a
+     * paid call — pass regenerate=true to discard it and produce new artwork.
+     *
+     * The number of cards is not knowable from a PNG, so it travels as a
+     * header: the admin screen needs it to decide whether to offer a next
+     * card. It is exposed to the browser in SecurityConfig's CORS
+     * configuration; without that the header is dropped before it arrives.
      */
     @PostMapping(
-        value = "/{updateId}/card-render-preview",
-        produces = MediaType.IMAGE_PNG_VALUE
-)
-public ResponseEntity<byte[]> generateFinalCardPreview(
-        @PathVariable UUID updateId,
-        @RequestParam(defaultValue = "false") boolean regenerate
-) {
-    CardRendererService.RenderedCard rendered =
-            adminAustraliaUpdateService.generateFinalCardPreview(
-                    updateId,
-                    regenerate
-            );
+            value = "/{updateId}/card-render-preview",
+            produces = MediaType.IMAGE_PNG_VALUE
+    )
+    public ResponseEntity<byte[]> generateFinalCardPreview(
+            @PathVariable UUID updateId,
+            @RequestParam(defaultValue = "false") boolean regenerate,
+            @RequestParam(defaultValue = "0") int index
+    ) {
+        CardRendererService.RenderedCard rendered =
+                adminAustraliaUpdateService.generateFinalCardPreview(
+                        updateId,
+                        regenerate,
+                        index
+                );
 
-    return ResponseEntity.ok()
-            .contentType(MediaType.IMAGE_PNG)
-            .body(rendered.imageBytes());
-}
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .header(
+                        "X-Card-Count",
+                        String.valueOf(adminAustraliaUpdateService.countCards(updateId))
+                )
+                .body(rendered.imageBytes());
+    }
 }

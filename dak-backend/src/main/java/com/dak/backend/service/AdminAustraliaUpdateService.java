@@ -10,12 +10,12 @@ import com.dak.backend.repository.AustraliaUpdateRepository;
 import com.dak.backend.repository.UpdateCategoryRepository;
 import com.dak.backend.repository.UpdateSourceReferenceRepository;
 import com.dak.backend.repository.UpdateSourceRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -46,9 +46,7 @@ public class AdminAustraliaUpdateService {
 
     // Stub artwork is a placeholder rather than the illustration for this
     // story, so it is never stored.
-    @org.springframework.beans.factory.annotation.Value(
-            "${app.image.openai.enabled:true}"
-    )
+    @Value("${app.image.openai.enabled:true}")
     private boolean imageGenerationEnabled;
 
     public AdminAustraliaUpdateService(AustraliaUpdateRepository australiaUpdateRepository,
@@ -64,7 +62,7 @@ public class AdminAustraliaUpdateService {
         CardSpecCache cardSpecCache,
         CardAssetService cardAssetService,
         CardSpecStore cardSpecStore) {
-        
+
         this.cardGenerationService = cardGenerationService;
         this.heroImageGenerationService = heroImageGenerationService;
         this.cardRendererService = cardRendererService;
@@ -72,7 +70,7 @@ public class AdminAustraliaUpdateService {
         this.cardSpecCache = cardSpecCache;
         this.cardAssetService = cardAssetService;
         this.cardSpecStore = cardSpecStore;
-        this.australiaUpdateRepository = australiaUpdateRepository;;
+        this.australiaUpdateRepository = australiaUpdateRepository;
         this.updateCategoryRepository = updateCategoryRepository;
         this.updateSourceRepository = updateSourceRepository;
         this.updateSourceReferenceRepository = updateSourceReferenceRepository;
@@ -91,8 +89,8 @@ public class AdminAustraliaUpdateService {
                 ? australiaUpdateRepository.findByStatusOrderByPublished(status, pageable)
                 : australiaUpdateRepository.findAll(pageable);
 
-                return updates.map(u -> new AdminUpdateSummaryResponse(
-                        u.getId(), u.getSlug(), u.getTitle(), u.getStatus(), u.isAiGenerated(),
+        return updates.map(u -> new AdminUpdateSummaryResponse(
+                u.getId(), u.getSlug(), u.getTitle(), u.getStatus(), u.isAiGenerated(),
                 u.getCategory() != null, !u.getSources().isEmpty(),
                 u.getGeographicScope() != null && !u.getGeographicScope().isBlank(),
                 u.getCategory() == null ? null : u.getCategory().getId(),
@@ -100,10 +98,10 @@ public class AdminAustraliaUpdateService {
                 // The reviewer needs their own draft, the raw source text to
                 // write it from, and a link to the original.
                 u.getKoreanSummary(),
-                        u.getExtractedText(),
-                        u.getSources().stream().findFirst()
-                                .map(s -> s.getSourceUrl()).orElse(null),
-                        u.getPublishedAt()
+                u.getExtractedText(),
+                u.getSources().stream().findFirst()
+                        .map(s -> s.getSourceUrl()).orElse(null),
+                u.getPublishedAt()
         ));
     }
 
@@ -136,11 +134,11 @@ public class AdminAustraliaUpdateService {
                 ? result.koreanTitle()
                 : sourceTitle;
 
-                AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
-                        displayTitle, content.bodyText(), result.koreanDraft());
-                update.setSlug(AustraliaUpdateService.resolveSlug(
-                        result.slug(), displayTitle, australiaUpdateRepository::existsBySlug));
-                // Scope tracks the source rather than the article: an Adelaide feed
+        AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
+                displayTitle, content.bodyText(), result.koreanDraft());
+        update.setSlug(AustraliaUpdateService.resolveSlug(
+                result.slug(), displayTitle, australiaUpdateRepository::existsBySlug));
+        // Scope tracks the source rather than the article: an Adelaide feed
         // produces Adelaide news. An admin can still override it.
         update.setGeographicScope(source.getDefaultGeographicScope());
         australiaUpdateRepository.save(update);
@@ -187,28 +185,28 @@ public class AdminAustraliaUpdateService {
         }
 
         if (request.title() != null) {
-                String title = request.title().trim();
-                if (title.isEmpty()) {
-                    throw ApiException.badRequest("INVALID_TITLE", "Title cannot be empty.");
-                }
-                update.setTitle(title);
+            String title = request.title().trim();
+            if (title.isEmpty()) {
+                throw ApiException.badRequest("INVALID_TITLE", "Title cannot be empty.");
             }
-    
-            // Editable while it is a draft and not afterwards. The summariser's slug
-            // is usually good and sometimes is not, and a draft has no links to
-            // break; a published one has every link already shared under it, which
-            // the UUID fallback does not cover. Same rule events enforce by
-            // omitting the field entirely - here the field has to exist for drafts,
-            // so the guard is a status check rather than a missing parameter.
-            if (request.slug() != null) {
-                if ("PUBLISHED".equals(update.getStatus())) {
-                    throw ApiException.badRequest("SLUG_LOCKED",
-                            "The address of a published update cannot be changed.");
-                }
-                update.setSlug(AustraliaUpdateService.resolveSlug(
-                        request.slug(), update.getTitle(),
-                        s -> australiaUpdateRepository.existsBySlugAndIdNot(s, updateId)));
+            update.setTitle(title);
+        }
+
+        // Editable while it is a draft and not afterwards. The summariser's slug
+        // is usually good and sometimes is not, and a draft has no links to
+        // break; a published one has every link already shared under it, which
+        // the UUID fallback does not cover. Same rule events enforce by
+        // omitting the field entirely - here the field has to exist for drafts,
+        // so the guard is a status check rather than a missing parameter.
+        if (request.slug() != null) {
+            if ("PUBLISHED".equals(update.getStatus())) {
+                throw ApiException.badRequest("SLUG_LOCKED",
+                        "The address of a published update cannot be changed.");
             }
+            update.setSlug(AustraliaUpdateService.resolveSlug(
+                    request.slug(), update.getTitle(),
+                    s -> australiaUpdateRepository.existsBySlugAndIdNot(s, updateId)));
+        }
 
         if (request.koreanSummary() != null) {
             String summary = request.koreanSummary().trim();
@@ -253,207 +251,231 @@ public class AdminAustraliaUpdateService {
         update.setStatus(request.status());
 
         return toDetail(update);
-        }
-        
-        @Transactional(readOnly = true)
-        public CardSpec generateCardSpec(UUID updateId) {
-            return generateCardSpec(updateId, false);
-        }
+    }
 
-        /**
-         * Produces the card spec, reusing the previous one where available.
-         *
-         * The model rewords its output on every call, so regenerating a spec
-         * for an unchanged update would also change the visual description and
-         * force new paid artwork.
-         */
-        @Transactional(readOnly = true)
-        public CardSpec generateCardSpec(
-                UUID updateId,
-                boolean regenerate
-        ) {
-                if (regenerate) {
-                        cardSpecCache.evict(updateId);
-                        cardSpecStore.evict(updateId);
-                    } else {
-                        // The store survives a restart; the map does not, and a
-                        // restart is what every code change costs.
-                        Optional<CardSpec> stored = cardSpecStore.find(updateId);
-        
-                        if (stored.isPresent()) {
-                            return stored.get();
-                        }
-        
-                        CardSpec cached = cardSpecCache.get(updateId);
-        
-                        if (cached != null) {
-                            return cached;
-                        }
-                    }
+    @Transactional(readOnly = true)
+    public CardSpec generateCardSpec(UUID updateId) {
+        return generateCardSpec(updateId, false);
+    }
 
-            AustraliaUpdate update = australiaUpdateRepository.findById(updateId)
-                    .orElseThrow(() ->
-                            ApiException.notFound("Australia Update not found."));
-        
-            if (update.getKoreanSummary() == null
-                    || update.getKoreanSummary().isBlank()) {
-                throw ApiException.badRequest(
-                        "MISSING_SUMMARY",
-                        "An Australia Update needs a Korean summary before a card can be generated."
-                );
+    /**
+     * Produces the card spec, reusing the previous one where available.
+     *
+     * The model rewords its output on every call, so regenerating a spec
+     * for an unchanged update would also change the visual description and
+     * force new paid artwork. It would also mean the card an administrator
+     * approved is not the card that renders next.
+     */
+    @Transactional(readOnly = true)
+    public CardSpec generateCardSpec(
+            UUID updateId,
+            boolean regenerate
+    ) {
+
+        if (regenerate) {
+            cardSpecCache.evict(updateId);
+            cardSpecStore.evict(updateId);
+        } else {
+            // The store survives a restart; the map does not, and a restart is
+            // what every code change costs.
+            Optional<CardSpec> stored = cardSpecStore.find(updateId);
+
+            if (stored.isPresent()) {
+                return stored.get();
             }
-        
-            CardSpec cardSpec =
-                    cardGenerationService.generateForAustraliaUpdate(
-                            update.getTitle(),
-                            update.getKoreanSummary()
-                    );
 
-                    cardSpecCache.put(updateId, cardSpec);
-                    cardSpecStore.save(updateId, cardSpec);
-        
-                    return cardSpec;
-                }
+            CardSpec cached = cardSpecCache.get(updateId);
 
-        @Transactional(readOnly = true)
-        public HeroImageGenerationService.HeroImageResult generateHeroPreview(UUID updateId) {
+            if (cached != null) {
+                return cached;
+            }
+        }
+
+        AustraliaUpdate update = australiaUpdateRepository.findById(updateId)
+                .orElseThrow(() ->
+                        ApiException.notFound("Australia Update not found."));
+
+        if (update.getKoreanSummary() == null
+                || update.getKoreanSummary().isBlank()) {
+            throw ApiException.badRequest(
+                    "MISSING_SUMMARY",
+                    "An Australia Update needs a Korean summary before a card can be generated."
+            );
+        }
+
+        CardSpec cardSpec =
+                cardGenerationService.generateForAustraliaUpdate(
+                        update.getTitle(),
+                        update.getKoreanSummary()
+                );
+
+        cardSpecCache.put(updateId, cardSpec);
+        cardSpecStore.save(updateId, cardSpec);
+
+        return cardSpec;
+    }
+
+    @Transactional(readOnly = true)
+    public HeroImageGenerationService.HeroImageResult generateHeroPreview(UUID updateId) {
+
         CardSpec cardSpec = generateCardSpec(updateId);
 
-                if (cardSpec.visual() == null) {
-                  throw ApiException.badRequest(
-                        "MISSING_VISUAL_SPEC",
-                        "A visual specification is required before a hero image can be generated."
-                );
+        if (cardSpec.visual() == null) {
+            throw ApiException.badRequest(
+                    "MISSING_VISUAL_SPEC",
+                    "A visual specification is required before a hero image can be generated."
+            );
         }
 
         return heroImageGenerationService.generate(
                 cardSpec.visual(),
                 cardSpec.effectiveLayoutType()
         );
-        }
+    }
 
-        @Transactional(readOnly = true)
-        public CardRendererService.RenderedCard generateFinalCardPreview(UUID updateId) {
+    @Transactional(readOnly = true)
+    public CardRendererService.RenderedCard generateFinalCardPreview(UUID updateId) {
+        return generateFinalCardPreview(updateId, false, 0);
+    }
 
-        return generateFinalCardPreview(updateId, false);
-        }
+    @Transactional(readOnly = true)
+    public CardRendererService.RenderedCard generateFinalCardPreview(
+            UUID updateId,
+            boolean regenerate
+    ) {
+        return generateFinalCardPreview(updateId, regenerate, 0);
+    }
 
-        /**
-         * Renders the final card, reusing a previously generated hero image
-         * where possible.
-         *
-         * Image generation is billed per request, so a layout adjustment must
-         * not silently pay for artwork that has not changed. Passing
-         * regenerate discards the stored image and produces a new one.
-         */
-        @Transactional(readOnly = true)
-        public CardRendererService.RenderedCard generateFinalCardPreview(
-                UUID updateId,
-                boolean regenerate
-        ) {
+    /**
+     * Renders one card, reusing previously generated artwork where possible.
+     *
+     * Index 0 is the cover; later indexes are the cards of a carousel, where
+     * the content produced one. Only the cover carries artwork, so a later
+     * index neither looks for a stored hero nor generates one.
+     *
+     * Image generation is billed per request, so a layout adjustment must not
+     * silently pay for artwork that has not changed. Passing regenerate
+     * discards the stored image and produces a new one.
+     */
+    @Transactional(readOnly = true)
+    public CardRendererService.RenderedCard generateFinalCardPreview(
+            UUID updateId,
+            boolean regenerate,
+            int cardIndex
+    ) {
 
-                CardSpec cardSpec = generateCardSpec(updateId, regenerate);
+        CardSpec cardSpec = generateCardSpec(updateId, regenerate);
 
-                // INFOGRAPHIC draws blocks rather than artwork, so generating an
-        // illustration for one would be paying for an image the card never
-        // shows.
+        // Cards after the cover are text, and an infographic cover draws
+        // blocks rather than artwork. Generating an illustration for either
+        // would be paying for an image the card never shows.
         boolean needsHero =
-        cardSpec.effectiveLayoutType()
-                != CardSpec.LayoutType.INFOGRAPHIC;
+                cardIndex == 0
+                        && cardSpec.effectiveLayoutType()
+                                != CardSpec.LayoutType.INFOGRAPHIC;
 
-if (needsHero && cardSpec.visual() == null) {
-        throw ApiException.badRequest(
-                "MISSING_VISUAL_SPEC",
-                "A visual specification is required before a card can be rendered."
-        );
-}
+        if (needsHero && cardSpec.visual() == null) {
+            throw ApiException.badRequest(
+                    "MISSING_VISUAL_SPEC",
+                    "A visual specification is required before a card can be rendered."
+            );
+        }
 
         if (regenerate) {
-                heroImageCache.evict(updateId);
-                cardAssetService.evictHeroes(updateId);
+            heroImageCache.evict(updateId);
+            cardAssetService.evictHeroes(updateId);
         }
 
         byte[] heroBytes = null;
 
         if (needsHero) {
 
-                // Stored artwork first, then the in-memory copy. The store
-                // survives a restart; the map does not, and a restart is what
-                // every code change costs.
-                heroBytes = cardAssetService
-                        .findHero(updateId, cardSpec)
-                        .orElseGet(() -> heroImageCache.get(updateId, cardSpec));
+            // Stored artwork first, then the in-memory copy. The store
+            // survives a restart; the map does not.
+            heroBytes = cardAssetService
+                    .findHero(updateId, cardSpec)
+                    .orElseGet(() -> heroImageCache.get(updateId, cardSpec));
 
-                if (heroBytes == null) {
+            if (heroBytes == null) {
 
-                        HeroImageGenerationService.HeroImageResult heroResult =
-                                heroImageGenerationService.generate(
-                                        cardSpec.visual(),
-                                        cardSpec.effectiveLayoutType()
-                                );
+                HeroImageGenerationService.HeroImageResult heroResult =
+                        heroImageGenerationService.generate(
+                                cardSpec.visual(),
+                                cardSpec.effectiveLayoutType()
+                        );
 
-                        heroBytes = decodeHeroImage(heroResult.imageUrl());
+                heroBytes = decodeHeroImage(heroResult.imageUrl());
 
-                        heroImageCache.put(updateId, cardSpec, heroBytes);
+                heroImageCache.put(updateId, cardSpec, heroBytes);
 
-                        if (imageGenerationEnabled) {
-                                cardAssetService.storeHero(
-                                        updateId,
-                                        cardSpec,
-                                        heroBytes
-                                );
-                        }
+                if (imageGenerationEnabled) {
+                    cardAssetService.storeHero(
+                            updateId,
+                            cardSpec,
+                            heroBytes
+                    );
                 }
+            }
         }
 
-        return cardRendererService.renderSingle(
+        return cardRendererService.renderCarouselCard(
                 cardSpec,
-                heroBytes
+                heroBytes,
+                cardIndex
         );
-        }
+    }
 
-        /**
-         * Renders the card and stores it, replacing any earlier one.
-         *
-         * Separate from preview because publishing is a decision. A preview
-         * is discarded; this is the image that gets used.
-         */
-        @Transactional
-        public com.dak.backend.domain.CardAsset saveCard(UUID updateId) {
+    /**
+     * How many cards this update produces. One unless the content warranted
+     * a carousel.
+     */
+    @Transactional(readOnly = true)
+    public int countCards(UUID updateId) {
+        return 1 + generateCardSpec(updateId).usableCarouselCards().size();
+    }
+
+    /**
+     * Renders the cover and stores it, replacing any earlier one.
+     *
+     * Separate from preview because publishing is a decision. A preview is
+     * discarded; this is the image that gets used.
+     */
+    @Transactional
+    public com.dak.backend.domain.CardAsset saveCard(UUID updateId) {
 
         CardSpec cardSpec = generateCardSpec(updateId);
 
         CardRendererService.RenderedCard rendered =
-                generateFinalCardPreview(updateId, false);
+                generateFinalCardPreview(updateId, false, 0);
 
         return cardAssetService.storeCard(
                 updateId,
                 cardSpec,
                 rendered.imageBytes()
         );
-        }
+    }
 
-        private byte[] decodeHeroImage(String imageUrl) {
+    private byte[] decodeHeroImage(String imageUrl) {
 
         String prefix = "data:image/png;base64,";
 
         if (imageUrl == null || !imageUrl.startsWith(prefix)) {
-                throw new IllegalStateException(
-                        "Hero image result did not contain a PNG data URL."
-                );
+            throw new IllegalStateException(
+                    "Hero image result did not contain a PNG data URL."
+            );
         }
 
         try {
-                return java.util.Base64.getDecoder().decode(
-                        imageUrl.substring(prefix.length())
-                );
+            return java.util.Base64.getDecoder().decode(
+                    imageUrl.substring(prefix.length())
+            );
         } catch (IllegalArgumentException e) {
-                throw new IllegalStateException(
-                        "Hero image base64 data could not be decoded.",
-                        e
-                );
+            throw new IllegalStateException(
+                    "Hero image base64 data could not be decoded.",
+                    e
+            );
         }
-        }
+    }
 
     private AustraliaUpdateDetailResponse toDetail(AustraliaUpdate u) {
         List<SourceReferenceResponse> sources = u.getSources().stream()

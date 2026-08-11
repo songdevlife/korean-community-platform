@@ -181,16 +181,29 @@ export async function deleteEvent(eventId) {
  * repeat request returns immediately. Pass regenerate to discard it and pay
  * for new artwork — which is the only way to change the illustration.
  */
-export async function renderUpdateCard(updateId, { regenerate = false } = {}) {
+export async function renderUpdateCard(
+  updateId,
+  { regenerate = false, index = 0 } = {}
+) {
+  const params = { index };
+
+  if (regenerate) {
+    params.regenerate = true;
+  }
+
   const response = await apiClient.post(
     `/admin/australia-updates/${updateId}/card-render-preview`,
     null,
-    {
-      params: regenerate ? { regenerate: true } : undefined,
-      responseType: 'blob',
-    }
+    { params, responseType: 'blob' }
   );
-  return response.data;
+
+  // Header tells the caller whether there are further cards to fetch.
+  const count = Number(response.headers['x-card-count']);
+
+  return {
+    blob: response.data,
+    cardCount: Number.isFinite(count) && count > 0 ? count : 1,
+  };
 }
 
 /**

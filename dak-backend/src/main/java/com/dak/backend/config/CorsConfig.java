@@ -38,6 +38,12 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PATCH", "DELETE", "PUT")
                 .allowedHeaders("*")
+                // allowedHeaders covers what a browser may send; a response
+                // header is hidden from JavaScript unless it is named here.
+                // The card renderer returns a PNG and reports how many cards
+                // the carousel has in X-Card-Count, which the admin screen
+                // cannot read otherwise.
+                .exposedHeaders("X-Card-Count")
                 .allowCredentials(true);
     }
 }

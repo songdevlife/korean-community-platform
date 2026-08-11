@@ -162,6 +162,37 @@ public class Java2DCardRendererService implements CardRendererService {
     private static final int INFO_BLOCK_CORNER = 44;
     private static final int INFO_BLOCK_PADDING = 32;
 
+    // Carousel body cards
+    // No AI hero: these are read rather than glanced at, and an illustration
+    // per card would multiply the cost of a story by the number of cards.
+    private static final int CAROUSEL_CONTENT_X = 72;
+    private static final int CAROUSEL_CONTENT_WIDTH = 936;
+
+    // Where the content block may sit. The heading is placed within this band
+    // according to how much follows it, rather than at a fixed line: a card
+    // with two lines of body and one with five would otherwise leave very
+    // different amounts of empty space beneath them.
+    private static final int CAROUSEL_BAND_TOP_Y = 360;
+    private static final int CAROUSEL_BAND_BOTTOM_Y = 1120;
+    private static final int CAROUSEL_HEADING_FONT_SIZE = 76;
+    private static final int CAROUSEL_HEADING_MIN_FONT_SIZE = 48;
+    private static final int CAROUSEL_HEADING_MAX_LINES = 3;
+    private static final double CAROUSEL_HEADING_LINE_HEIGHT_RATIO = 1.24;
+
+    private static final int CAROUSEL_RULE_GAP = 44;
+    private static final int CAROUSEL_RULE_WIDTH = 140;
+    private static final int CAROUSEL_RULE_HEIGHT = 6;
+
+    private static final int CAROUSEL_BODY_GAP = 48;
+    private static final int CAROUSEL_BODY_FONT_SIZE = 40;
+    private static final int CAROUSEL_BODY_LINE_HEIGHT = 62;
+
+    // Blocks on a carousel card sit where the body would, at a fixed height
+    // each rather than sharing the space as they do on an infographic.
+    private static final int CAROUSEL_BLOCK_HEIGHT = 150;
+    private static final int CAROUSEL_BLOCK_GAP = 20;
+
+
     // The headline on an infographic is the line that says who this concerns,
     // which is the one thing a reader scrolling past needs to catch.
     private static final Color INFO_HEADLINE_COLOR =
@@ -427,13 +458,93 @@ public class Java2DCardRendererService implements CardRendererService {
             );
         }
     }
+
+    @Override
+    public RenderedCard renderCarouselCard(
+            CardSpec cardSpec,
+            byte[] heroImage,
+            int index
+    ) {
+
+        // The cover is a single card in every respect; only what follows it
+        // is drawn differently.
+        if (index == 0) {
+            return renderSingle(cardSpec, heroImage);
+        }
+
+        List<CardSpec.CarouselCard> cards = cardSpec.usableCarouselCards();
+
+        if (index < 1 || index > cards.size()) {
+            throw new IllegalArgumentException(
+                    "Card " + index + " does not exist in this carousel."
+            );
+        }
+
+        try {
+            BufferedImage canvas = new BufferedImage(
+                    WIDTH,
+                    HEIGHT,
+                    BufferedImage.TYPE_INT_ARGB
+            );
+
+            Graphics2D g = canvas.createGraphics();
+
+            try {
+                configureGraphics(g);
+
+                g.setColor(BACKGROUND);
+                g.fillRect(0, 0, WIDTH, HEIGHT);
+
+                g.setColor(PANEL_BACKGROUND);
+                g.fillRoundRect(
+                        PANEL_MARGIN,
+                        PANEL_MARGIN,
+                        WIDTH - (PANEL_MARGIN * 2),
+                        HEIGHT - (PANEL_MARGIN * 2),
+                        PANEL_CORNER_RADIUS,
+                        PANEL_CORNER_RADIUS
+                );
+
+                drawCarouselCard(
+                        g,
+                        cards.get(index - 1)
+                );
+
+                drawFooter(g);
+
+            } finally {
+                g.dispose();
+            }
+
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+            ImageIO.write(canvas, "png", output);
+
+            return new RenderedCard(
+                    output.toByteArray(),
+                    "image/png",
+                    WIDTH,
+                    HEIGHT
+            );
+
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Failed to render carousel card " + index + ".",
+                    e
+            );
+        }
+    }
+
+
     private void drawStandardLayout(
         Graphics2D g,
         CardSpec cardSpec,
         BufferedImage hero
 ) {
 
-drawContainedImage(
+    drawHeader(g, cardSpec);
+
+    drawContainedImage(
                 g,
                 hero,
                 HERO_X,
@@ -715,6 +826,157 @@ for (int i = 0; i < blocks.size(); i++) {
     );
 }
 }
+
+/**
+     * A card a reader swipes to.
+     *
+     * The badge and mascot stay so a card lifted out of the set still reads
+     * as DAK's, but there is no header title or divider: the heading below
+     * does that work, and repeating the cover's title would waste the space
+     * this card exists to provide.
+     */
+private void drawCarouselCard(
+        Graphics2D g,
+        CardSpec.CarouselCard card
+) {
+
+    drawBadge(g);
+
+    drawImageAtWidth(
+            g,
+            dakMascot,
+            MASCOT_X,
+            MASCOT_Y,
+            MASCOT_WIDTH
+    );
+
+    Font headingFont = fitWrappedFont(
+        g,
+        card.heading(),
+        extraBoldFont,
+        CAROUSEL_HEADING_FONT_SIZE,
+        CAROUSEL_HEADING_MIN_FONT_SIZE,
+        CAROUSEL_CONTENT_WIDTH,
+        CAROUSEL_HEADING_MAX_LINES
+);
+
+List<String> headingLines = wrapToFit(
+        card.heading(),
+        g.getFontMetrics(headingFont),
+        CAROUSEL_CONTENT_WIDTH
+);
+
+int lineHeight = (int) Math.round(
+        headingFont.getSize() * CAROUSEL_HEADING_LINE_HEIGHT_RATIO
+);
+
+List<CardSpec.InfoBlock> blocks =
+        card.blocks() == null ? List.of() : card.blocks();
+
+Font bodyFont = regularFont.deriveFont(
+        Font.PLAIN,
+        (float) CAROUSEL_BODY_FONT_SIZE
+);
+
+List<String> bodyLines =
+        (blocks.isEmpty() && card.body() != null && !card.body().isBlank())
+                ? wrapToFit(
+                        card.body(),
+                        g.getFontMetrics(bodyFont),
+                        CAROUSEL_CONTENT_WIDTH
+                )
+                : List.of();
+
+// Measure the whole block before drawing any of it, so a short card
+// and a long one are both centred in the band rather than both
+// starting at the same line.
+int contentHeight =
+        (lineHeight * headingLines.size())
+                + CAROUSEL_RULE_GAP
+                + CAROUSEL_RULE_HEIGHT
+                + CAROUSEL_BODY_GAP;
+
+if (!blocks.isEmpty()) {
+    int count = Math.min(blocks.size(), 4);
+    contentHeight += (CAROUSEL_BLOCK_HEIGHT * count)
+            + (CAROUSEL_BLOCK_GAP * (count - 1));
+} else {
+    contentHeight += CAROUSEL_BODY_LINE_HEIGHT * bodyLines.size();
+}
+
+int band = CAROUSEL_BAND_BOTTOM_Y - CAROUSEL_BAND_TOP_Y;
+
+int y = CAROUSEL_BAND_TOP_Y
+        + Math.max(0, (band - contentHeight) / 2)
+        + headingFont.getSize();
+
+g.setFont(headingFont);
+g.setColor(TEXT_PRIMARY);
+
+for (String line : headingLines) {
+        g.drawString(line, CAROUSEL_CONTENT_X, y);
+        y += lineHeight;
+    }
+    
+    // Short rule under the heading, in place of the header divider.
+    y += CAROUSEL_RULE_GAP - lineHeight;
+    
+        g.setColor(new Color(117, 190, 245));
+
+    g.fillRoundRect(
+            CAROUSEL_CONTENT_X,
+            y,
+            CAROUSEL_RULE_WIDTH,
+            CAROUSEL_RULE_HEIGHT,
+            CAROUSEL_RULE_HEIGHT,
+            CAROUSEL_RULE_HEIGHT
+    );
+
+    y += CAROUSEL_BODY_GAP;
+
+        if (!blocks.isEmpty()) {
+
+        for (int i = 0; i < Math.min(blocks.size(), 4); i++) {
+
+            drawInfoBlock(
+                    g,
+                    blocks.get(i),
+                    i,
+                    CAROUSEL_CONTENT_X,
+                    y,
+                    CAROUSEL_CONTENT_WIDTH,
+                    CAROUSEL_BLOCK_HEIGHT
+            );
+
+            y += CAROUSEL_BLOCK_HEIGHT + CAROUSEL_BLOCK_GAP;
+        }
+
+        return;
+    }
+
+    if (bodyLines.isEmpty()) {
+        return;
+    }
+
+    g.setFont(bodyFont);
+    g.setColor(TEXT_PRIMARY);
+
+    int bottomLimit = FOOTER_TOP_Y - CAROUSEL_BODY_LINE_HEIGHT;
+
+    for (String line : bodyLines) {
+
+        // Drops what will not fit rather than running into the footer.
+        // A body written to the length asked for does not reach here.
+        if (y > bottomLimit) {
+            break;
+        }
+
+        g.drawString(line, CAROUSEL_CONTENT_X, y);
+
+        y += CAROUSEL_BODY_LINE_HEIGHT;
+    }
+}
+
 
 private void drawInfoBlock(
     Graphics2D g,

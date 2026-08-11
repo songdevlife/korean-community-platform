@@ -38,6 +38,13 @@ public record CardSpec(
          */
         List<InfoBlock> infoBlocks,
 
+        /**
+         * Cards after the first, where the content warrants a carousel.
+         * Null for a single card. The first card is described by the fields
+         * above; these are the ones that follow it.
+         */
+        List<CarouselCard> carouselCards,
+
         VisualSpec visual
 ) {
 
@@ -166,6 +173,57 @@ public record InfoBlock(
      */
     String icon
 ) {}
+
+/**
+     * One card after the first in a carousel.
+     *
+     * The roles are deliberately not named for news: a guide runs overview,
+     * steps, then what to watch for, and a news item runs what happened then
+     * what to do about it, but both are a detail card followed by an action
+     * card. Naming them WHAT_HAPPENED would have meant a second set for
+     * guides.
+     */
+public record CarouselCard(
+    String role,
+    String heading,
+    String body,
+    List<InfoBlock> blocks
+) {}
+
+public enum CardRole {
+
+/** Explains, expands, gives the substance. */
+DETAIL,
+
+/** What the reader should do, check, or watch for. */
+ACTION,
+
+/** Where this came from and where to read more. */
+SOURCE
+}
+
+/**
+* The cards that follow the first, filtered to those that can be drawn.
+* Capped at three, which with the cover makes four — beyond that a reader
+* stops swiping.
+*/
+public List<CarouselCard> usableCarouselCards() {
+
+if (carouselCards == null) {
+    return List.of();
+}
+
+return carouselCards.stream()
+        .filter(card -> card != null)
+        .filter(card -> card.heading() != null && !card.heading().isBlank())
+        .limit(3)
+        .toList();
+}
+
+@com.fasterxml.jackson.annotation.JsonIgnore
+    public boolean isCarousel() {
+        return !usableCarouselCards().isEmpty();
+    }
 
 /**
 * The icons available to an infographic block.

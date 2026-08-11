@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Download, RefreshCw, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft, ChevronLeft, ChevronRight, Download, RefreshCw, Sparkles,
+} from 'lucide-react';
 import { renderUpdateCard } from '@/api/admin';
 import { useAuth } from '@/context/AuthContext';
 import PageShell from '@/components/PageShell';
@@ -12,43 +14,76 @@ import PageShell from '@/components/PageShell';
  * Card preview for one Australia Update.
  *
  * A first render takes around half a minute: the text is written, then an
- * illustration is generated, then the card is drawn. The backend keeps the
- * illustration, so pressing the button again returns the same artwork
- * immediately. Regenerate is the only route to different artwork and is
- * deliberately separate, because it is the action that costs money.
+ * illustration is generated, then the card is drawn. Both are stored, so
+ * pressing Render again returns the same card immediately. Regenerating is
+ * the only route to different artwork and is deliberately separate, because
+ * it is the action that costs money.
+ *
+ * Where the content warranted a carousel the update produces several cards.
+ * Only the first carries artwork; the rest are text and render in a moment.
  */
 export default function UpdateCardPage() {
   const router = useRouter();
   const { updateId } = useParams();
   const { user, loading: authLoading } = useAuth();
 
-  const [cardUrl, setCardUrl] = useState(null);
+  // One entry per card index, filled as each is fetched.
+  const [cards, setCards] = useState({});
+  const [cardCount, setCardCount] = useState(1);
+  const [index, setIndex] = useState(0);
+
   const [busy, setBusy] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState('');
 
   const isAdmin = user?.role === 'ADMINISTRATOR';
+  const currentUrl = cards[index];
 
   // Object URLs are not garbage collected on their own, and a session here
-  // creates one per render.
+  // creates one per card rendered.
   useEffect(() => {
     return () => {
-      if (cardUrl) URL.revokeObjectURL(cardUrl);
+      Object.values(cards).forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [cardUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  async function render({ regenerate = false } = {}) {
+  async function render(cardIndex, { regenerate = false } = {}) {
     setError('');
     setBusy(true);
     setRegenerating(regenerate);
 
     try {
-      const blob = await renderUpdateCard(updateId, { regenerate });
-
-      setCardUrl((previous) => {
-        if (previous) URL.revokeObjectURL(previous);
-        return URL.createObjectURL(blob);
+      const { blob, cardCount: count } = await renderUpdateCard(updateId, {
+        regenerate,
+        index: cardIndex,
       });
+
+      // Some mobile browsers drop the download attribute's filename and save
+      // the blob with no extension, which leaves it out of the gallery. An
+      // explicit type is what they fall back to.
+      const png =
+        blob.type === 'image/png'
+          ? blob
+          : new Blob([blob], { type: 'image/png' });
+
+      setCards((previous) => {
+        // Regenerating invalidates every card, since the text is rewritten
+        // along with the artwork.
+        const kept = regenerate ? {} : { ...previous };
+
+        if (regenerate) {
+          Object.values(previous).forEach((url) => URL.revokeObjectURL(url));
+        } else if (kept[cardIndex]) {
+          URL.revokeObjectURL(kept[cardIndex]);
+        }
+
+        kept[cardIndex] = URL.createObjectURL(png);
+        return kept;
+      });
+
+      setCardCount(count);
+      setIndex(cardIndex);
     } catch (err) {
       // The error body arrives as a blob because the request asked for one,
       // so it has to be read back as text before the message is reachable.
@@ -69,12 +104,27 @@ export default function UpdateCardPage() {
     }
   }
 
+  // Fetches a card the first time it is looked at; later visits reuse it.
+  function goTo(nextIndex) {
+    if (nextIndex < 0 || nextIndex >= cardCount) return;
+
+    if (cards[nextIndex]) {
+      setIndex(nextIndex);
+      return;
+    }
+
+    render(nextIndex);
+  }
+
   function download() {
-    if (!cardUrl) return;
+    if (!currentUrl) return;
 
     const link = document.createElement('a');
-    link.href = cardUrl;
-    link.download = `dak-card-${updateId}.png`;
+    link.href = currentUrl;
+    link.download =
+      cardCount > 1
+        ? `dak-card-${updateId}-${index + 1}.png`
+        : `dak-card-${updateId}.png`;
     link.click();
   }
 
@@ -128,24 +178,21 @@ export default function UpdateCardPage() {
       <h1 className="text-xl font-bold text-snow mb-1">Social card</h1>
       <p className="text-[13px] text-muted mb-5">
         1080 × 1350, ready for Instagram.
+        {cardCount > 1 && ` Carousel of ${cardCount}.`}
       </p>
 
       {error && <p className="text-adelaide-red text-[13px] mb-4">{error}</p>}
 
-      <div className="flex gap-2 mb-5">
-        <button
-          onClick={() => render()}
-          disabled={busy}
-          className={primaryBtn}
-        >
+      <div className="flex flex-wrap gap-2 mb-5">
+        <button onClick={() => render(index)} disabled={busy} className={primaryBtn}>
           <Sparkles size={14} strokeWidth={2} />
-          {busy && !regenerating ? 'Rendering…' : cardUrl ? 'Render again' : 'Render'}
+          {busy && !regenerating ? 'Rendering…' : currentUrl ? 'Render again' : 'Render'}
         </button>
 
-        {/* Separate from Render because this is what pays for new artwork.
-            Render on its own reuses whatever was generated before. */}
+        {/* Separate from Render because this is what pays for new artwork,
+            and it rewrites the text as well. */}
         <button
-          onClick={() => render({ regenerate: true })}
+          onClick={() => render(0, { regenerate: true })}
           disabled={busy}
           className={secondaryBtn}
         >
@@ -157,11 +204,7 @@ export default function UpdateCardPage() {
           {regenerating ? 'Generating…' : 'New illustration'}
         </button>
 
-        <button
-          onClick={download}
-          disabled={!cardUrl || busy}
-          className={secondaryBtn}
-        >
+        <button onClick={download} disabled={!currentUrl || busy} className={secondaryBtn}>
           <Download size={14} strokeWidth={2} />
           Download
         </button>
@@ -175,14 +218,42 @@ export default function UpdateCardPage() {
         </p>
       )}
 
+      {/* Only where there is more than one card. A pager over a single card
+          is a control that does nothing. */}
+      {cardCount > 1 && (
+        <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => goTo(index - 1)}
+            disabled={busy || index === 0}
+            className={secondaryBtn}
+            aria-label="Previous card"
+          >
+            <ChevronLeft size={14} strokeWidth={2} />
+          </button>
+
+          <span className="text-[13px] text-muted tabular-nums">
+            {index + 1} / {cardCount}
+          </span>
+
+          <button
+            onClick={() => goTo(index + 1)}
+            disabled={busy || index === cardCount - 1}
+            className={secondaryBtn}
+            aria-label="Next card"
+          >
+            <ChevronRight size={14} strokeWidth={2} />
+          </button>
+        </div>
+      )}
+
       <div
         className="rounded-2xl border border-border-dark bg-night p-4 flex justify-center"
         style={{ minHeight: 320 }}
       >
-        {cardUrl ? (
+        {currentUrl ? (
           <img
-            src={cardUrl}
-            alt="Rendered card"
+            src={currentUrl}
+            alt={`Card ${index + 1}`}
             className="rounded-lg max-w-full"
             style={{ maxWidth: 405 }}
           />
