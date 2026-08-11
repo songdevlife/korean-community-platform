@@ -39,8 +39,15 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
     private static final int MAX_INPUT_CHARS = 12_000;
 
-    private static final String CARD_STYLE =
+    // The house style for ordinary updates.
+    private static final String CARD_STYLE_ILLUSTRATION =
             "DAK_HAND_PAINTED_EDITORIAL_V1";
+
+    // Used where the subject matter is grave. Chosen separately from the
+    // layout: a layout answers whether a figure is the point of the card,
+    // and a story can be serious without carrying a figure at all.
+    private static final String CARD_STYLE_PHOTOGRAPHIC =
+            "DAK_CONCEPTUAL_PHOTO_V1";
 
     private static final String SYSTEM_PROMPT = """
             You are the card editor for DAK, Discover Adelaide Korea.
@@ -285,6 +292,28 @@ public class ClaudeCardGenerationService implements CardGenerationService {
               same thing in different words is worse than one block.
             - Order them the way a reader would need them, not by importance.
 
+            TONE:
+
+            Set tone to GRAVE or NEUTRAL. This is a separate judgement from
+            the layout. A layout answers whether one figure is the point of
+            the card; tone answers whether the subject matter is grave. A
+            story can be serious and carry no figure at all, which is why
+            STANDARD does not imply NEUTRAL.
+
+            GRAVE — people were harmed, exploited, underpaid, endangered,
+            discriminated against, displaced, or stripped of a protection
+            they had. Deaths, serious injury, disaster, emergency warnings.
+            Also: wage theft, unsafe housing, visa conditions that trap
+            someone, and abuse of people who cannot easily complain.
+
+            NEUTRAL — everything else. Fee changes, new services, procedures,
+            deadlines, recalls, closures, seasonal notices. A story can be
+            important and still be NEUTRAL; importance is not gravity.
+
+            When unsure, choose NEUTRAL. GRAVE changes the visual treatment
+            to a restrained one, and applying it to an ordinary notice makes
+            routine information look alarming.
+
             HERO VISUAL RULES:
 
             Describe one simple visual scene that communicates the topic before
@@ -323,6 +352,7 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
             {
               "layoutType": "STANDARD | INFOGRAPHIC | FACT_HOOK | URGENT",
+              "tone": "NEUTRAL | GRAVE",
               "headerTitle": "very short Korean noun phrase for the card header",
               "title": "short Korean card title",
               "headline": "one concise Korean takeaway",
@@ -604,11 +634,21 @@ List<CardSpec.CarouselCard> carouselCards = parseCarouselCards(
                 visualNode.path("mascot")
         );
 
+        // Anything other than GRAVE is treated as neutral, so a missing or
+        // malformed value falls to the house style rather than to the
+        // restrained one — a wrong illustration is a smaller error than an
+        // ordinary notice dressed as a grave one.
+        String tone = nullableText(node.path("tone"));
+
+        String style = "GRAVE".equalsIgnoreCase(tone)
+                ? CARD_STYLE_PHOTOGRAPHIC
+                : CARD_STYLE_ILLUSTRATION;
+
         CardSpec.VisualSpec visual = new CardSpec.VisualSpec(
                 subject,
                 mood,
                 mascot,
-                CARD_STYLE
+                style
         );
 
         return new CardSpec(
@@ -767,11 +807,11 @@ List<CardSpec.CarouselCard> carouselCards = parseCarouselCards(
                             null,
                             null,
                             new CardSpec.VisualSpec(
-                        "simple hand-painted editorial illustration representing the topic",
-                        "informative and neutral",
-                        null,
-                        CARD_STYLE
-                )
+                                "simple hand-painted editorial illustration representing the topic",
+                                "informative and neutral",
+                                null,
+                                CARD_STYLE_ILLUSTRATION
+                        )
         );
     }
 }

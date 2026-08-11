@@ -59,9 +59,9 @@ public class OpenAiHeroImageGenerationService
         }
 
         try {
-            String prompt = usesPhotographicStyle(layoutType)
-                    ? buildPhotographicPrompt(visual)
-                    : buildPrompt(visual);
+                String prompt = usesPhotographicStyle(visual, layoutType)
+                        ? buildPhotographicPrompt(visual)
+                        : buildPrompt(visual);
             String base64 = callApi(prompt);
 
             String dataUrl = "data:image/png;base64," + base64;
@@ -84,13 +84,30 @@ public class OpenAiHeroImageGenerationService
         }
     }
 /**
-     * Figure-led and grave stories carry more weight with a photographic
+     * Grave stories carry more weight with the restrained photographic
      * treatment. Everyday updates stay in the illustrated house style.
+     *
+     * The style now follows the tone decided by the card editor rather than
+     * the layout. Layout answers whether a figure is the point of the card,
+     * which is a different question: a report of wage theft with no new
+     * figure in it is STANDARD and grave at the same time, and tying the two
+     * together left it in the house illustration style — which produced a
+     * cheerful farm worker beside a story about seven dollars an hour.
+     *
+     * URGENT stays here as a floor. It is only chosen for deaths and
+     * disasters, so it is grave whatever the tone field says.
      */
-private boolean usesPhotographicStyle(CardSpec.LayoutType layoutType) {
+private boolean usesPhotographicStyle(
+        CardSpec.VisualSpec visual,
+        CardSpec.LayoutType layoutType
+) {
 
-    return layoutType == CardSpec.LayoutType.FACT_HOOK
-            || layoutType == CardSpec.LayoutType.URGENT;
+    if (layoutType == CardSpec.LayoutType.URGENT) {
+        return true;
+    }
+
+    return visual != null
+            && "DAK_CONCEPTUAL_PHOTO_V1".equals(visual.style());
 }
 
 /**

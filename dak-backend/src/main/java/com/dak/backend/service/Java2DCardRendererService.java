@@ -179,12 +179,18 @@ public class Java2DCardRendererService implements CardRendererService {
     private static final int CAROUSEL_CONTENT_X = 72;
     private static final int CAROUSEL_CONTENT_WIDTH = 936;
 
-    // Where the content block may sit. The heading is placed within this band
-    // according to how much follows it, rather than at a fixed line: a card
-    // with two lines of body and one with five would otherwise leave very
-    // different amounts of empty space beneath them.
-    private static final int CAROUSEL_BAND_TOP_Y = 360;
+    // Where the content block may sit. Content is top-aligned just below the
+    // mascot rather than centred in the band: centring left a short card with
+    // a stretch of empty white above the heading and another below the body,
+    // which reads as a card that failed to load rather than as generous
+    // whitespace. The band bottom is still the limit body may not cross.
+    private static final int CAROUSEL_BAND_TOP_Y = 400;
     private static final int CAROUSEL_BAND_BOTTOM_Y = 1120;
+
+    // Content shorter than this fraction of the band is pushed to the top
+    // instead of centred. A card that nearly fills the band still centres,
+    // because a small residual gap split evenly looks deliberate.
+    private static final double CAROUSEL_CENTRE_THRESHOLD = 0.75;
     private static final int CAROUSEL_HEADING_FONT_SIZE = 76;
     private static final int CAROUSEL_HEADING_MIN_FONT_SIZE = 48;
     private static final int CAROUSEL_HEADING_MAX_LINES = 3;
@@ -931,8 +937,14 @@ if (!blocks.isEmpty()) {
 
 int band = CAROUSEL_BAND_BOTTOM_Y - CAROUSEL_BAND_TOP_Y;
 
+// Short content sits at the top of the band; content that nearly fills it
+// is centred, so the leftover gap is split rather than dumped at the bottom.
+int offset = contentHeight < band * CAROUSEL_CENTRE_THRESHOLD
+        ? 0
+        : Math.max(0, (band - contentHeight) / 2);
+
 int y = CAROUSEL_BAND_TOP_Y
-        + Math.max(0, (band - contentHeight) / 2)
+        + offset
         + headingFont.getSize();
 
 g.setFont(headingFont);
