@@ -195,7 +195,7 @@ public class Java2DCardRendererService implements CardRendererService {
     // a stretch of empty white above the heading and another below the body,
     // which reads as a card that failed to load rather than as generous
     // whitespace. The band bottom is still the limit body may not cross.
-    private static final int CAROUSEL_BAND_TOP_Y = 400;
+    private static final int CAROUSEL_BAND_TOP_Y = 370;
     private static final int CAROUSEL_BAND_BOTTOM_Y = 1120;
 
     // Content shorter than this fraction of the band is pushed to the top
@@ -215,9 +215,15 @@ public class Java2DCardRendererService implements CardRendererService {
     private static final int CAROUSEL_BODY_FONT_SIZE = 40;
     private static final int CAROUSEL_BODY_LINE_HEIGHT = 62;
 
-    // Blocks on a carousel card sit where the body would, at a fixed height
-    // each rather than sharing the space as they do on an infographic.
-    private static final int CAROUSEL_BLOCK_HEIGHT = 150;
+    // Blocks on a carousel card sit where the body would. A fixed height of
+    // 150 fitted three and overflowed four: 150x4 plus gaps plus the heading
+    // came to roughly nine hundred pixels in a band of seven hundred and
+    // twenty, and nothing stopped the overflow — the body text path checks a
+    // bottom limit and the block path did not, so the last block was drawn
+    // underneath the footer logo. Blocks now share the space the way
+    // drawInfographicLayout has always shared it, sized to the count.
+    private static final int CAROUSEL_BLOCK_MAX_HEIGHT = 150;
+    private static final int CAROUSEL_BLOCK_MIN_HEIGHT = 108;
     private static final int CAROUSEL_BLOCK_GAP = 20;
 
 
@@ -932,21 +938,55 @@ List<List<TextRun>> bodyLines =
 // Measure the whole block before drawing any of it, so a short card
 // and a long one are both centred in the band rather than both
 // starting at the same line.
-int contentHeight =
+int headerHeight =
         (lineHeight * headingLines.size())
                 + CAROUSEL_RULE_GAP
                 + CAROUSEL_RULE_HEIGHT
                 + CAROUSEL_BODY_GAP;
 
-if (!blocks.isEmpty()) {
-    int count = Math.min(blocks.size(), 4);
-    contentHeight += (CAROUSEL_BLOCK_HEIGHT * count)
-            + (CAROUSEL_BLOCK_GAP * (count - 1));
+int band = CAROUSEL_BAND_BOTTOM_Y - CAROUSEL_BAND_TOP_Y;
+
+int blockCount = Math.min(blocks.size(), 4);
+
+// Sized to what is left after the heading rather than fixed, so four
+// blocks fit where three used to and two are not left looking sparse.
+// Floored so a block never becomes too short for its own label, value
+// and note; below the floor the last block is dropped instead, which
+// loses one fact rather than making all four unreadable.
+int blockHeight = CAROUSEL_BLOCK_MAX_HEIGHT;
+
+if (blockCount > 0) {
+
+    int availableForBlocks =
+            band - headerHeight - (CAROUSEL_BLOCK_GAP * (blockCount - 1));
+
+    blockHeight = Math.min(
+            CAROUSEL_BLOCK_MAX_HEIGHT,
+            availableForBlocks / blockCount
+    );
+
+    while (blockCount > 1 && blockHeight < CAROUSEL_BLOCK_MIN_HEIGHT) {
+
+        blockCount--;
+
+        availableForBlocks =
+                band - headerHeight - (CAROUSEL_BLOCK_GAP * (blockCount - 1));
+
+        blockHeight = Math.min(
+                CAROUSEL_BLOCK_MAX_HEIGHT,
+                availableForBlocks / blockCount
+        );
+    }
+}
+
+int contentHeight = headerHeight;
+
+if (blockCount > 0) {
+    contentHeight += (blockHeight * blockCount)
+            + (CAROUSEL_BLOCK_GAP * (blockCount - 1));
 } else {
     contentHeight += CAROUSEL_BODY_LINE_HEIGHT * bodyLines.size();
 }
-
-int band = CAROUSEL_BAND_BOTTOM_Y - CAROUSEL_BAND_TOP_Y;
 
 // Short content sits at the top of the band; content that nearly fills it
 // is centred, so the leftover gap is split rather than dumped at the bottom.
@@ -982,9 +1022,9 @@ for (String line : headingLines) {
 
     y += CAROUSEL_BODY_GAP;
 
-        if (!blocks.isEmpty()) {
+    if (blockCount > 0) {
 
-        for (int i = 0; i < Math.min(blocks.size(), 4); i++) {
+        for (int i = 0; i < blockCount; i++) {
 
             drawInfoBlock(
                     g,
@@ -993,10 +1033,10 @@ for (String line : headingLines) {
                     CAROUSEL_CONTENT_X,
                     y,
                     CAROUSEL_CONTENT_WIDTH,
-                    CAROUSEL_BLOCK_HEIGHT
+                    blockHeight
             );
 
-            y += CAROUSEL_BLOCK_HEIGHT + CAROUSEL_BLOCK_GAP;
+            y += blockHeight + CAROUSEL_BLOCK_GAP;
         }
 
         return;
