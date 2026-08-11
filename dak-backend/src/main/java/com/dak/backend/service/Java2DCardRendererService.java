@@ -2179,8 +2179,60 @@ private List<String> wrapToFit(
         lines.add(text.trim());
     }
 
-    return lines;
+    return rebalanceOrphan(lines, metrics, maxWidth);
 }
+
+/**
+ * Pulls one word down when the last line holds a single word.
+ *
+ * Greedy wrapping fills each line to the limit, which regularly leaves a
+ * Korean title ending in a one-syllable 어절 alone on its own line. The
+ * line count is unchanged, so this is safe to run inside the measurement
+ * path used by fitWrappedFont.
+ */
+private List<String> rebalanceOrphan(
+        List<String> lines,
+        FontMetrics metrics,
+        int maxWidth
+) {
+
+    if (lines.size() < 2) {
+        return lines;
+    }
+
+    String last = lines.get(lines.size() - 1);
+
+    // Already more than one word: nothing to rescue.
+    if (last.contains(" ")) {
+        return lines;
+    }
+
+    String previous = lines.get(lines.size() - 2);
+
+    int split = previous.lastIndexOf(' ');
+
+    // Moving the only word off the previous line would empty it.
+    if (split < 0) {
+        return lines;
+    }
+
+    String moved = previous.substring(split + 1);
+
+    String adjustedLast = moved + " " + last;
+
+    // The word being moved has to actually fit alongside the orphan.
+    if (metrics.stringWidth(adjustedLast) > maxWidth) {
+        return lines;
+    }
+
+    List<String> adjusted = new ArrayList<>(lines);
+
+    adjusted.set(adjusted.size() - 2, previous.substring(0, split));
+    adjusted.set(adjusted.size() - 1, adjustedLast);
+
+    return adjusted;
+}
+
 
 /**
      * One run of headline text, and whether it carries the accent colour.
