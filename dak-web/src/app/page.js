@@ -9,6 +9,7 @@ import HomeSearch from '@/components/HomeSearch';
 import HomeGreeting from '@/components/HomeGreeting';
 import HomeNotice from '@/components/HomeNotice';
 import UpdatesSidePanel from '@/components/UpdatesSidePanel';
+import PromotionsSidePanel from '@/components/PromotionsSidePanel';
 
 export const metadata = {
   description:
@@ -29,6 +30,18 @@ export const revalidate = 60;
 // holds, with everything else behind View all.
 const FEATURED_COUNT = 3;
 
+// A promotion is stored as an event and is not one, so the two are split
+// after fetching rather than fetched separately — the events endpoint takes
+// a category to include and has no way to exclude one.
+const PROMOTION_SLUG = 'promotions';
+
+// Enough to leave three dated events after the promotions are taken out.
+// Fetching FEATURED_COUNT gave three rows that promotions could fill
+// entirely, which is what happened: a voucher running to September held a
+// card that an expo two days away needed.
+const EVENT_FETCH_COUNT = 10;
+const SIDE_PANEL_PROMOTION_COUNT = 3;
+
 // Guides lead the page: 02 Product Vision treats search as the primary
 // acquisition channel, and a guide is what a search arrives on.
 const FEATURED_GUIDE_COUNT = 3;
@@ -43,7 +56,7 @@ export default async function HomePage() {
   const results = await Promise.allSettled([
     getGuides({ pageSize: FEATURED_GUIDE_COUNT }),
     getBusinesses({ pageSize: FEATURED_COUNT }),
-    getEvents({ pageSize: FEATURED_COUNT }),
+    getEvents({ pageSize: EVENT_FETCH_COUNT }),
     getUpdates({ pageSize: SIDE_PANEL_COUNT }),
     getRentals({ pageSize: FEATURED_COUNT }),
   ]);
@@ -53,13 +66,30 @@ export default async function HomePage() {
 
   const guides = contentOf(results[0]);
   const businesses = contentOf(results[1]);
-  const events = contentOf(results[2]);
+  const allEvents = contentOf(results[2]);
   const updates = contentOf(results[3]);
   const rentals = contentOf(results[4]);
 
+  const isPromotion = (event) => event.category?.slug === PROMOTION_SLUG;
+
+  const events = allEvents
+    .filter((event) => !isPromotion(event))
+    .slice(0, FEATURED_COUNT);
+
+  const promotions = allEvents
+    .filter(isPromotion)
+    .slice(0, SIDE_PANEL_PROMOTION_COUNT);
+
 
   return (
-    <PageShell aside={<UpdatesSidePanel updates={updates} />}>
+    <PageShell
+      aside={
+        <div className="flex flex-col gap-6">
+          <UpdatesSidePanel updates={updates} />
+          <PromotionsSidePanel promotions={promotions} />
+        </div>
+      }
+    >
       {/* Mobile only. The sidebar carries the mark and the name on desktop, but
           there is no sidebar below md, so someone arriving from a search result
           on a phone sees a search box with nothing identifying the site around
