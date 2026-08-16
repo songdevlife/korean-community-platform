@@ -133,6 +133,44 @@ public class ClaudeSummarizationService implements AiSummarizationService {
             "koreanDraft": "the Korean briefing, or null if not relevant"}
             """;
 
+            private static final String MANUAL_SYSTEM_PROMPT = """
+                You are an editorial assistant for DAK, a local-information platform
+                for Korean speakers living in Adelaide, South Australia.
+        
+                The administrator has already selected this article for review.
+        
+                Do NOT judge relevance.
+                Do NOT reject the article.
+                Always produce a Korean draft, Korean headline and English URL slug.
+        
+                Do NOT translate the article. Read the facts and write a fresh Korean
+                briefing in your own structure and wording. Do not reproduce sentences
+                or phrasing from the source.
+        
+                Write three to five short paragraphs in clear Korean using the polite
+                -습니다 register.
+        
+                If the article contains dates, amounts, locations, organisation names,
+                warnings or actions readers should take, preserve those facts exactly.
+        
+                Write a Korean headline under 45 Korean characters. The headline should
+                state the concrete event and location or organisation where useful.
+                Do not use quotation marks, markdown or a trailing full stop.
+        
+                Write an English URL slug using three to six lowercase English words
+                separated by hyphens.
+        
+                Reply with JSON only in exactly this shape:
+        
+                {
+                  "relevant": true,
+                  "reason": "Manually selected by administrator",
+                  "koreanTitle": "the Korean headline",
+                  "slug": "the English slug",
+                  "koreanDraft": "the Korean briefing"
+                }
+                """;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -149,15 +187,40 @@ public class ClaudeSummarizationService implements AiSummarizationService {
     private boolean enabled;
 
     @Override
-    public SummarisationResult summarize(String title, String bodyText) {
-        if (!enabled || apiKey == null || apiKey.isBlank()) {
+public SummarisationResult summarize(String title, String bodyText) {
+
+    log.info(
+            "Claude summarisation started for '{}'. API key present: {}, enabled: {}",
+            title,
+            apiKey != null && !apiKey.isBlank(),
+            enabled
+    );
+
+    if (!enabled || apiKey == null || apiKey.isBlank()) {
             return SummarisationResult.relevant(
                     null, "AI summarisation disabled or no key configured.");
         }
 
         try {
-            String responseText = callApi(title, truncate(bodyText));
-            return parseResult(responseText);
+            String responseText =
+        callApi(
+                title,
+                truncate(bodyText),
+                SYSTEM_PROMPT
+        );
+        
+            SummarisationResult result = parseResult(responseText);
+        
+            log.info(
+                "Claude summarisation completed for '{}'. Relevant: {}, reason: '{}', Korean draft present: {}",
+                title,
+                result.relevant(),
+                result.reason(),
+                result.koreanDraft() != null && !result.koreanDraft().isBlank()
+        );
+        
+            return result;
+        
         } catch (Exception e) {
             // A failed call must not discard the article. Passing it through
             // unjudged puts it in front of an administrator, which is where it
@@ -168,12 +231,72 @@ public class ClaudeSummarizationService implements AiSummarizationService {
         }
     }
 
+    @Override
+public SummarisationResult summarizeManual(
+        String title,
+        String bodyText
+) {
+
+    log.info(
+            "Claude manual summarisation started for '{}'. API key present: {}, enabled: {}",
+            title,
+            apiKey != null && !apiKey.isBlank(),
+            enabled
+    );
+
+    if (!enabled || apiKey == null || apiKey.isBlank()) {
+        return SummarisationResult.relevant(
+                null,
+                "AI summarisation disabled or no key configured."
+        );
+    }
+
+    try {
+        String responseText =
+                callApi(
+                        title,
+                        truncate(bodyText),
+                        MANUAL_SYSTEM_PROMPT
+                );
+
+        SummarisationResult result =
+                parseResult(responseText);
+
+        log.info(
+                "Claude manual summarisation completed for '{}'. Korean draft present: {}",
+                title,
+                result.koreanDraft() != null
+                        && !result.koreanDraft().isBlank()
+        );
+
+        return result;
+
+    } catch (Exception e) {
+
+        log.warn(
+                "Manual summarisation failed for '{}': {}",
+                title,
+                e.getMessage()
+        );
+
+        return SummarisationResult.relevant(
+                null,
+                "Manual summarisation unavailable: "
+                        + e.getMessage()
+        );
+    }
+}
+
     private String truncate(String text) {
         if (text == null) return "";
         return text.length() <= MAX_INPUT_CHARS ? text : text.substring(0, MAX_INPUT_CHARS);
     }
 
-    private String callApi(String title, String bodyText) throws Exception {
+    private String callApi(
+        String title,
+        String bodyText,
+        String systemPrompt
+) throws Exception {
         ObjectNode userMessage = objectMapper.createObjectNode();
         userMessage.put("role", "user");
         userMessage.put("content", "Article title: " + title + "\n\nArticle text:\n" + bodyText);
@@ -181,7 +304,7 @@ public class ClaudeSummarizationService implements AiSummarizationService {
         ObjectNode payload = objectMapper.createObjectNode();
         payload.put("model", model);
         payload.put("max_tokens", MAX_TOKENS);
-        payload.put("system", SYSTEM_PROMPT);
+        payload.put("system", systemPrompt);
         payload.set("messages", objectMapper.createArrayNode().add(userMessage));
 
         HttpRequest request = HttpRequest.newBuilder()

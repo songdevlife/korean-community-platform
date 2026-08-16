@@ -279,10 +279,11 @@ public CardRendererService.RenderedCard generateCardPreview(
         if (heroBytes == null) {
 
             HeroImageGenerationService.HeroImageResult heroResult =
-                    heroImageGenerationService.generate(
-                            cardSpec.visual(),
-                            cardSpec.effectiveLayoutType()
-                    );
+        heroImageGenerationService.generate(
+                cardSpec.visual(),
+                cardSpec.effectiveLayoutType(),
+                effectiveTone(cardSpec)
+        );
 
             heroBytes = decodeHeroImage(heroResult.imageUrl());
 
@@ -307,6 +308,21 @@ public CardRendererService.RenderedCard generateCardPreview(
 @Transactional(readOnly = true)
 public int countCards(UUID guideId) {
     return 1 + generateCardSpec(guideId).usableCarouselCards().size();
+}
+
+private CardSpec.CardTone effectiveTone(CardSpec cardSpec) {
+
+    if (cardSpec.tone() == null || cardSpec.tone().isBlank()) {
+        return CardSpec.CardTone.STANDARD;
+    }
+
+    try {
+        return CardSpec.CardTone.valueOf(
+                cardSpec.tone().trim().toUpperCase()
+        );
+    } catch (IllegalArgumentException e) {
+        return CardSpec.CardTone.STANDARD;
+    }
 }
 
 private byte[] decodeHeroImage(String imageUrl) {

@@ -157,6 +157,92 @@ public class AdminAustraliaUpdateService {
                 update.getId(), request.sourceUrl(), displayTitle, content.bodyText(), update.getStatus());
     }
 
+    @Transactional
+public ImportUpdateResponse importFromText(
+        ManualImportUpdateRequest request
+) {
+
+    String sourceName = request.sourceName().trim();
+
+    /*
+     * Manual imports may come from sources that DAK has never used before.
+     *
+     * Reuse an existing source where the name already exists; otherwise
+     * create a lightweight source record automatically. This keeps source
+     * attribution normalised without forcing the admin to pre-register every
+     * publisher before importing an article.
+     */
+    String sourceType = request.sourceType().trim();
+
+UpdateSource source =
+        updateSourceRepository
+                .findByNameIgnoreCase(sourceName)
+                .orElseGet(() ->
+                        updateSourceRepository.save(
+                                UpdateSource.createNew(
+                                        sourceName,
+                                        sourceType
+                                )
+                        )
+                );
+
+    String sourceTitle = request.sourceTitle().trim();
+    String sourceContent = request.sourceContent().trim();
+
+        SummarisationResult result =
+        aiSummarizationService.summarizeManual(
+                sourceTitle,
+                sourceContent
+        );
+
+        String displayTitle =
+                result.koreanTitle() != null
+                        && !result.koreanTitle().isBlank()
+                        ? result.koreanTitle()
+                        : sourceTitle;
+
+        AustraliaUpdate update =
+                AustraliaUpdate.createDraftFromImport(
+                        displayTitle,
+                        sourceContent,
+                        result.koreanDraft()
+                );
+
+        update.setSlug(
+                AustraliaUpdateService.resolveSlug(
+                        result.slug(),
+                        displayTitle,
+                        australiaUpdateRepository::existsBySlug
+                )
+        );
+
+        update.setGeographicScope(
+                source.getDefaultGeographicScope()
+        );
+
+        australiaUpdateRepository.save(update);
+
+        UpdateSourceReference reference =
+                UpdateSourceReference.createNew(
+                        update,
+                        source,
+                        request.sourceUrl(),
+                        sourceTitle
+                );
+
+        updateSourceReferenceRepository.save(reference);
+
+        update.getSources().add(reference);
+
+        return new ImportUpdateResponse(
+                update.getId(),
+                request.sourceUrl(),
+                displayTitle,
+                sourceContent,
+                update.getStatus()
+        );
+        }
+
     /**
      * Updates the fields an admin must supply or rewrite before publication.
      * Imports arrive with no category, no scope and possibly no summary, so
@@ -241,11 +327,14 @@ public class AdminAustraliaUpdateService {
             // carries extracted_text and possibly an AI draft; publishing
             // without a summary an administrator has read would put unreviewed
             // content — or the publisher's own article — on DAK.
-            if (update.getKoreanSummary() == null || update.getKoreanSummary().isBlank()) {
-                throw ApiException.badRequest("MISSING_SUMMARY",
-                        "An Australia Update needs a Korean summary written by an administrator "
-                        + "before it can be published.");
-            }
+            if (update.getKoreanSummary() == null
+        || update.getKoreanSummary().isBlank()) {
+    throw ApiException.badRequest(
+            "MISSING_SUMMARY",
+            "An Australia Update needs a Korean summary written by an administrator "
+                    + "before it can be published."
+    );
+}
         }
 
         update.setStatus(request.status());
@@ -295,20 +384,18 @@ public class AdminAustraliaUpdateService {
                 .orElseThrow(() ->
                         ApiException.notFound("Australia Update not found."));
 
-        if (update.getKoreanSummary() == null
-                || update.getKoreanSummary().isBlank()) {
-            throw ApiException.badRequest(
-                    "MISSING_SUMMARY",
-                    "An Australia Update needs a Korean summary before a card can be generated."
-            );
-        }
-
+                        if (update.getExtractedText() == null
+                        || update.getExtractedText().isBlank()) {
+                    throw ApiException.badRequest(
+                            "MISSING_SOURCE_CONTENT",
+                            "An Australia Update needs source content before a card can be generated."
+                    );
+                }
         CardSpec cardSpec =
                 cardGenerationService.generateForAustraliaUpdate(
                         update.getTitle(),
-                        update.getKoreanSummary()
+                        update.getExtractedText()
                 );
-
         cardSpecCache.put(updateId, cardSpec);
         cardSpecStore.save(updateId, cardSpec);
 
@@ -329,7 +416,8 @@ public class AdminAustraliaUpdateService {
 
         return heroImageGenerationService.generate(
                 cardSpec.visual(),
-                cardSpec.effectiveLayoutType()
+                cardSpec.effectiveLayoutType(),
+                effectiveTone(cardSpec)
         );
     }
 
@@ -366,13 +454,9 @@ public class AdminAustraliaUpdateService {
 
         CardSpec cardSpec = generateCardSpec(updateId, regenerate);
 
-        // Cards after the cover are text, and an infographic cover draws
-        // blocks rather than artwork. Generating an illustration for either
-        // would be paying for an image the card never shows.
-        boolean needsHero =
-                cardIndex == 0
-                        && cardSpec.effectiveLayoutType()
-                                != CardSpec.LayoutType.INFOGRAPHIC;
+        // Only the cover carries artwork.
+// INFOGRAPHIC also uses a small editorial illustration.
+boolean needsHero = cardIndex == 0;
 
         if (needsHero && cardSpec.visual() == null) {
             throw ApiException.badRequest(
@@ -399,10 +483,11 @@ public class AdminAustraliaUpdateService {
             if (heroBytes == null) {
 
                 HeroImageGenerationService.HeroImageResult heroResult =
-                        heroImageGenerationService.generate(
-                                cardSpec.visual(),
-                                cardSpec.effectiveLayoutType()
-                        );
+        heroImageGenerationService.generate(
+                cardSpec.visual(),
+                cardSpec.effectiveLayoutType(),
+                effectiveTone(cardSpec)
+        );
 
                 heroBytes = decodeHeroImage(heroResult.imageUrl());
 
@@ -455,8 +540,23 @@ public class AdminAustraliaUpdateService {
         );
     }
 
-    private byte[] decodeHeroImage(String imageUrl) {
+    private CardSpec.CardTone effectiveTone(CardSpec cardSpec) {
 
+        if (cardSpec.tone() == null || cardSpec.tone().isBlank()) {
+            return CardSpec.CardTone.STANDARD;
+        }
+    
+        try {
+            return CardSpec.CardTone.valueOf(
+                    cardSpec.tone().trim().toUpperCase()
+            );
+        } catch (IllegalArgumentException e) {
+            return CardSpec.CardTone.STANDARD;
+        }
+    }
+    
+    private byte[] decodeHeroImage(String imageUrl) {
+    
         String prefix = "data:image/png;base64,";
 
         if (imageUrl == null || !imageUrl.startsWith(prefix)) {

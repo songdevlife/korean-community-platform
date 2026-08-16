@@ -13,6 +13,7 @@ import {
   updateUpdateStatus,
   updateUpdateMetadata,
   triggerRssPoll,
+  importManualAustraliaUpdate,
 } from '@/api/admin';
 import { fetchUpdateCategories } from '@/api/updates';
 import { useAuth } from '@/context/AuthContext';
@@ -79,6 +80,18 @@ export default function AdminUpdatesPage() {
   // feedback is that it is still going, then that the queue reloaded.
   const [polling, setPolling] = useState(false);
   const [pollNotice, setPollNotice] = useState('');
+  const [manualImportOpen, setManualImportOpen] = useState(false);
+
+  const [manualImport, setManualImport] = useState({
+    sourceName: '',
+    sourceType: 'OFFICIAL_GOVERNMENT',
+    sourceUrl: '',
+    sourceTitle: '',
+    sourceContent: '',
+  });
+
+  const [manualImporting, setManualImporting] = useState(false);
+  const [manualImportNotice, setManualImportNotice] = useState('');
 
   function cancelEditing() {
     setEditingId(null);
@@ -188,6 +201,62 @@ export default function AdminUpdatesPage() {
       );
     } finally {
       setPolling(false);
+    }
+  }
+
+  async function handleManualImport() {
+    if (manualImporting) return;
+  
+    setActionError('');
+    setManualImportNotice('');
+  
+    const {
+      sourceName,
+      sourceType,
+      sourceUrl,
+      sourceTitle,
+      sourceContent,
+    } = manualImport;
+    
+    if (!sourceName.trim() || !sourceTitle.trim() || !sourceContent.trim()) {
+      setActionError('Source, title and article content are required.');
+      return;
+    }
+  
+    setManualImporting(true);
+  
+    try {
+      await importManualAustraliaUpdate({
+        sourceName: sourceName.trim(),
+        sourceType,
+        sourceUrl: sourceUrl.trim(),
+        sourceTitle: sourceTitle.trim(),
+        sourceContent: sourceContent.trim(),
+      });
+  
+      setManualImport({
+        sourceName: '',
+        sourceUrl: '',
+        sourceTitle: '',
+        sourceContent: '',
+      });
+  
+      setManualImportNotice(
+        'Draft created. The pasted article was saved as source text and used to generate the AI draft.'
+      );
+  
+      if (draftPage !== 0) {
+        setDraftPage(0);
+      } else {
+        await loadData();
+      }
+    } catch (err) {
+      setActionError(
+        err.response?.data?.error?.message ||
+          'Could not create a draft from the pasted article.'
+      );
+    } finally {
+      setManualImporting(false);
     }
   }
 
@@ -309,22 +378,180 @@ export default function AdminUpdatesPage() {
               {/* The poll control sits with the queue it fills, so the thing it
                   changes is directly below it. */}
               <div className="flex items-center justify-between gap-4 mb-3">
-                <h2 className="text-lg font-semibold text-snow">
-                  Drafts <span className="text-muted font-normal">({draftTotal})</span>
-                </h2>
-                <button
-                  onClick={handlePoll}
-                  disabled={polling}
-                  className={`${secondaryBtn} shrink-0`}
-                >
-                  <RefreshCw
-                    size={14}
-                    strokeWidth={2}
-                    className={polling ? 'animate-spin' : undefined}
-                  />
-                  {polling ? 'Polling...' : 'Poll feeds'}
-                </button>
-              </div>
+  <h2 className="text-lg font-semibold text-snow">
+    Drafts <span className="text-muted font-normal">({draftTotal})</span>
+  </h2>
+
+  <div className="flex items-center gap-2">
+    <button
+      type="button"
+      onClick={() => setManualImportOpen((open) => !open)}
+      className={secondaryBtn}
+    >
+      {manualImportOpen ? 'Close manual import' : 'Manual article'}
+    </button>
+
+    <button
+      onClick={handlePoll}
+      disabled={polling}
+      className={`${secondaryBtn} shrink-0`}
+    >
+      <RefreshCw
+        size={14}
+        strokeWidth={2}
+        className={polling ? 'animate-spin' : undefined}
+      />
+      {polling ? 'Polling...' : 'Poll feeds'}
+    </button>
+  </div>
+</div>
+
+{manualImportOpen && (
+  <div className={`${cardClass} mb-4`}>
+    <div className="flex flex-col gap-3">
+    <div>
+  <label className="block text-[12px] font-medium text-muted mb-1.5">
+    Source
+  </label>
+
+  <input
+    type="text"
+    value={manualImport.sourceName}
+    onChange={(e) =>
+      setManualImport({
+        ...manualImport,
+        sourceName: e.target.value,
+      })
+    }
+    placeholder="e.g. South Australia Police"
+    className={fieldClass}
+  />
+</div>
+<div>
+  <label className="block text-[12px] font-medium text-muted mb-1.5">
+    Source type
+  </label>
+
+  <select
+    value={manualImport.sourceType}
+    onChange={(e) =>
+      setManualImport({
+        ...manualImport,
+        sourceType: e.target.value,
+      })
+    }
+    className={selectClass}
+  >
+    <option value="OFFICIAL_GOVERNMENT">
+      Official government
+    </option>
+
+    <option value="OFFICIAL_ORGANISATION">
+      Official organisation
+    </option>
+
+    <option value="LOCAL_AUTHORITY">
+      Local authority
+    </option>
+
+    <option value="NEWS_MEDIA">
+      News media
+    </option>
+
+    <option value="COMMUNITY_ORGANISATION">
+      Community organisation
+    </option>
+
+    <option value="SOCIAL_MEDIA">
+      Social media
+    </option>
+
+    <option value="USER_SUBMISSION">
+      User submission
+    </option>
+
+    <option value="OTHER">
+      Other
+    </option>
+  </select>
+</div>
+
+      <div>
+        <label className="block text-[12px] font-medium text-muted mb-1.5">
+          Source URL
+        </label>
+
+        <input
+          type="url"
+          value={manualImport.sourceUrl}
+          onChange={(e) =>
+            setManualImport({
+              ...manualImport,
+              sourceUrl: e.target.value,
+            })
+          }
+          placeholder="https://www.example.gov.au/article/..."
+          className={fieldClass}
+        />
+      </div>
+
+      <div>
+        <label className="block text-[12px] font-medium text-muted mb-1.5">
+          Original title
+        </label>
+
+        <input
+          type="text"
+          value={manualImport.sourceTitle}
+          onChange={(e) =>
+            setManualImport({
+              ...manualImport,
+              sourceTitle: e.target.value,
+            })
+          }
+          className={fieldClass}
+        />
+      </div>
+
+      <div>
+        <label className="block text-[12px] font-medium text-muted mb-1.5">
+          Article content
+        </label>
+
+        <textarea
+          value={manualImport.sourceContent}
+          onChange={(e) =>
+            setManualImport({
+              ...manualImport,
+              sourceContent: e.target.value,
+            })
+          }
+          rows={12}
+          placeholder="Paste the original article text here..."
+          className={`${fieldClass} resize-y leading-relaxed`}
+        />
+      </div>
+
+      <div>
+        <button
+          type="button"
+          onClick={handleManualImport}
+          disabled={manualImporting}
+          className={primaryBtn}
+        >
+          <Sparkles size={14} strokeWidth={2} />
+          {manualImporting ? 'Creating draft...' : 'Create AI draft'}
+        </button>
+      </div>
+
+      {manualImportNotice && (
+        <p className="text-[13px] text-muted">
+          {manualImportNotice}
+        </p>
+      )}
+    </div>
+  </div>
+)}
 
               {polling && (
                 <p className="text-[13px] text-muted mb-3">

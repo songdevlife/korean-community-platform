@@ -11,7 +11,7 @@ import com.dak.backend.dto.CardSpec;
  */
 public interface CardGenerationService {
 
-    CardSpec generateForAustraliaUpdate(String title, String koreanSummary);
+    CardSpec generateForAustraliaUpdate(String title, String sourceContent);
 
     CardSpec generateForGuide(String title, String summary, String body);
 }

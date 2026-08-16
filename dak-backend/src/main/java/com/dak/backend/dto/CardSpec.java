@@ -12,41 +12,141 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CardSpec(
-        String contentType,
+    String contentType,
     String format,
 
     /**
-     * Visual arrangement chosen for this content.
-     * See {@link LayoutType}. Falls back to STANDARD when absent.
+     * Legacy layout used by the current renderer.
+     *
+     * Kept during the migration so STANDARD / INFOGRAPHIC /
+     * FACT_HOOK / URGENT cards continue to render while the
+     * new hierarchy-based card engine is introduced.
      */
     String layoutType,
 
     /**
-     * Short Korean label shown in the card header, above the divider.
-     * Roughly 6-12 characters, noun phrase only, no particles or verbs.
-     * Falls back to title when absent.
+     * Overall editorial tone of the card.
+     *
+     * LIGHT      - friendly everyday information
+     * STANDARD   - ordinary news, policy, economy and migration
+     * SERIOUS    - accidents, crime, major disruption or serious harm
+     * SENSITIVE  - death, victims, grief or content requiring restraint
+     */
+    String tone,
+
+    /**
+     * Short Korean topic label shown in the header.
+     * It must remain understandable without the source article.
      */
     String headerTitle,
 
     String title,
-        String headline,
-        KeyFact keyFact,
 
-        /**
-         * Practical facts a reader needs in order to act, one per block.
-         * Only used by INFOGRAPHIC; null everywhere else.
-         */
-        List<InfoBlock> infoBlocks,
+    /**
+     * Optional contextual sentence.
+     *
+     * Concrete facts should normally live in the structured fact fields,
+     * not be repeated here.
+     */
+    String headline,
 
-        /**
-         * Cards after the first, where the content warrants a carousel.
-         * Null for a single card. The first card is described by the fields
-         * above; these are the ones that follow it.
-         */
-        List<CarouselCard> carouselCards,
+    /*
+     * -----------------------------------------------------------------
+     * NEW INFORMATION HIERARCHY
+     * -----------------------------------------------------------------
+     */
 
-        VisualSpec visual
+    /**
+     * The one fact that carries the story when one clearly exists.
+     * Null when all facts have similar importance.
+     */
+    CardFact primaryFact,
+
+    /**
+     * Secondary facts needed to understand the story.
+     *
+     * The renderer will decide whether these become columns, rows,
+     * cards or another example-based composition.
+     */
+    List<CardFact> supportingFacts,
+
+    /**
+     * One visually separate piece of context.
+     *
+     * Examples:
+     * South Australia-specific information,
+     * an important comparison,
+     * a consequence worth separating from the supporting facts.
+     */
+    Callout callout,
+
+    /**
+     * What the reader should do, only where the source explicitly
+     * supports an action.
+     */
+    ActionBlock action,
+
+    /*
+     * -----------------------------------------------------------------
+     * LEGACY FIELDS
+     * -----------------------------------------------------------------
+     *
+     * These remain temporarily so the existing renderer continues to work
+     * while cards are migrated to the hierarchy above.
+     */
+
+    KeyFact keyFact,
+
+    List<InfoBlock> infoBlocks,
+
+    List<CarouselCard> carouselCards,
+
+    VisualSpec visual
 ) {
+
+    /**
+     * Backward-compatible constructor used by the current card pipeline.
+     *
+     * Existing services still create CardSpec using the original fields.
+     * Keeping this constructor allows the hierarchy-based card model to be
+     * introduced without breaking every renderer and service at once.
+     */
+    public CardSpec(
+            String contentType,
+            String format,
+            String layoutType,
+            String headerTitle,
+            String title,
+            String headline,
+            KeyFact keyFact,
+            List<InfoBlock> infoBlocks,
+            List<CarouselCard> carouselCards,
+            VisualSpec visual
+    ) {
+        this(
+                contentType,
+                format,
+                layoutType,
+
+                // New tone is not supplied by old callers yet.
+                null,
+
+                headerTitle,
+                title,
+                headline,
+
+                // New hierarchy fields are populated in the next migration step.
+                null,
+                null,
+                null,
+                null,
+
+                keyFact,
+                infoBlocks,
+                carouselCards,
+                visual
+        );
+    }
 
 /**
  * Supported card layouts.
@@ -57,17 +157,39 @@ public record CardSpec(
  */
 public enum LayoutType {
 
-    /** Category, title, illustration, supporting key fact, branding. */
+    /** Current editorial layout used by the legacy renderer. */
     STANDARD,
 
-    /** Multiple explanatory blocks in a single card. Not yet rendered. */
+    /** Current multi-fact layout used by the legacy renderer. */
     INFOGRAPHIC,
 
-    /** A verified figure becomes the visual subject of the card. */
+    /** Current figure-led layout used by the legacy renderer. */
     FACT_HOOK,
 
-    /** Restrained treatment for death, injury, disaster and emergencies. */
+    /** Current restrained emergency layout used by the legacy renderer. */
     URGENT
+}
+
+/**
+ * Editorial tone controls the visual world of the card rather than
+ * the arrangement of its facts.
+ *
+ * The article decides WHAT the background depicts.
+ * Tone decides HOW that background is treated.
+ */
+public enum CardTone {
+
+    /** Friendly everyday information and community content. */
+    LIGHT,
+
+    /** Normal news, migration, policy, economy and public information. */
+    STANDARD,
+
+    /** Accidents, crime, major disruption and serious public-interest news. */
+    SERIOUS,
+
+    /** Death, victims, grief and other content requiring maximum restraint. */
+    SENSITIVE
 }
 
 /**
@@ -150,6 +272,86 @@ private boolean hasUsableKeyFact() {
             && !keyFact.value().isBlank();
 }
 
+/**
+ * A structured fact extracted from the article.
+ *
+ * role describes what the fact means editorially rather than where the
+ * renderer must physically place it.
+ */
+public record CardFact(
+    String role,
+
+    /**
+     * Controls how strongly this fact may be presented visually.
+     *
+     * CRITICAL is reserved for facts that genuinely define the severity
+     * or immediate consequence of the event, such as deaths, severe harm,
+     * evacuation orders or another exceptional immediate impact.
+     *
+     * NORMAL remains important editorially, but must not automatically
+     * become a large red figure.
+     */
+    String emphasis,
+
+    String label,
+    String value,
+    String note,
+    String icon
+) {
+
+    public FactEmphasis effectiveEmphasis() {
+
+        if (emphasis == null || emphasis.isBlank()) {
+            return FactEmphasis.NORMAL;
+        }
+
+        try {
+            return FactEmphasis.valueOf(
+                    emphasis.trim().toUpperCase()
+            );
+        } catch (IllegalArgumentException e) {
+            return FactEmphasis.NORMAL;
+        }
+    }
+}
+
+public enum FactEmphasis {
+
+    /** Important information without exceptional visual emphasis. */
+    NORMAL,
+
+    /** Exceptional immediate impact that may receive strong visual emphasis. */
+    CRITICAL
+}
+
+/**
+* A separate supporting callout.
+*
+* Used for information that deserves its own visual treatment but should
+* not compete with the primary fact.
+*/
+public record Callout(
+    String label,
+    String value,
+    String note
+) {}
+
+/**
+* Reader action explicitly supported by the source article.
+*
+* Null for articles where there is nothing the reader needs to do.
+*/
+public record ActionBlock(
+    String title,
+    String body,
+    String icon
+) {}
+
+/**
+* Legacy single key fact.
+*
+* Retained while the existing renderer is migrated.
+*/
 public record KeyFact(
     String label,
     String value
@@ -245,10 +447,53 @@ WARNING,
 INFO
 }
 
-    public record VisualSpec(
-            String subject,
-            String mood,
-            String mascot,
-            String style
-    ) {}
+public record VisualSpec(
+    /**
+     * Main visual subject of the article.
+     */
+    String subject,
+
+    /**
+     * Article-specific background scene.
+     *
+     * The article decides what this depicts;
+     * tone decides how it is visually treated.
+     */
+    String background,
+
+    /**
+     * Emotional treatment of the scene.
+     */
+    String mood,
+
+    /**
+     * Optional DAK mascot action.
+     */
+    String mascot,
+
+    /**
+     * Rendering style identifier.
+     */
+    String style
+) {
+
+/**
+ * Backward-compatible constructor for existing callers
+ * that still provide the original four fields.
+ */
+public VisualSpec(
+        String subject,
+        String mood,
+        String mascot,
+        String style
+) {
+    this(
+            subject,
+            null,
+            mood,
+            mascot,
+            style
+    );
+}
+}
 }

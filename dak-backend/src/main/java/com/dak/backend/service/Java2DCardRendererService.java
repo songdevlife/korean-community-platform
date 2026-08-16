@@ -175,11 +175,15 @@ public class Java2DCardRendererService implements CardRendererService {
     private static final int INFO_CONTENT_WIDTH = 936;
 
     private static final int INFO_HEADLINE_Y = 400;
+    private static final int INFO_HERO_X = 350;
+    private static final int INFO_HERO_Y = 360;
+    private static final int INFO_HERO_WIDTH = 380;
+    private static final int INFO_HERO_HEIGHT = 190;
     private static final int INFO_HEADLINE_FONT_SIZE = 46;
     private static final int INFO_HEADLINE_LINE_HEIGHT = 60;
     private static final int INFO_HEADLINE_MAX_LINES = 2;
 
-    private static final int INFO_BLOCKS_TOP_Y = 500;
+    private static final int INFO_BLOCKS_TOP_Y = 575;
     private static final int INFO_BLOCK_GAP = 24;
     private static final int INFO_BLOCK_CORNER = 44;
     private static final int INFO_BLOCK_PADDING = 32;
@@ -305,16 +309,87 @@ public class Java2DCardRendererService implements CardRendererService {
     private static final String FOOTER_WEBSITE = "discoveradelaidekorea.au";
     private static final String FOOTER_INSTAGRAM = "@discoveradelaidekorea";
 
-    // Outer cream canvas
-    private static final Color BACKGROUND =
-            new Color(248, 244, 234);
+// Default / legacy colours.
+private static final Color BACKGROUND =
+        new Color(248, 244, 234);
 
-    // Inner white panel that all content sits on
-    private static final Color PANEL_BACKGROUND =
-            new Color(255, 255, 255);
+private static final Color PANEL_BACKGROUND =
+        new Color(255, 255, 255);
 
-            private static final int PANEL_MARGIN = 16;
-            private static final int PANEL_CORNER_RADIUS = 56;
+// LIGHT — warm, friendly and approachable.
+private static final Color LIGHT_BACKGROUND =
+        new Color(239, 246, 225);
+
+private static final Color LIGHT_PANEL_BACKGROUND =
+        new Color(250, 252, 243);
+
+// STANDARD — warm editorial cream.
+private static final Color STANDARD_BACKGROUND =
+        new Color(244, 238, 226);
+
+private static final Color STANDARD_PANEL_BACKGROUND =
+        new Color(252, 249, 242);
+
+// SERIOUS — dark navy / charcoal editorial treatment.
+private static final Color SERIOUS_BACKGROUND =
+        new Color(13, 22, 31);
+
+private static final Color SERIOUS_PANEL_BACKGROUND =
+        new Color(19, 30, 41);
+
+// SENSITIVE — restrained, desaturated blue-grey.
+private static final Color SENSITIVE_BACKGROUND =
+        new Color(210, 216, 220);
+
+private static final Color SENSITIVE_PANEL_BACKGROUND =
+        new Color(230, 234, 236);
+
+/*
+ * SERIOUS composition
+ *
+ * The article image becomes the card environment rather than a small hero
+ * placed inside a plain panel. Text and fact panels sit over the scene.
+ */
+private static final int SERIOUS_CONTENT_X = 72;
+private static final int SERIOUS_CONTENT_WIDTH = 936;
+
+private static final int SERIOUS_TITLE_Y = 235;
+private static final int SERIOUS_TITLE_FONT_SIZE = 68;
+private static final int SERIOUS_TITLE_MIN_FONT_SIZE = 48;
+private static final int SERIOUS_TITLE_MAX_LINES = 2;
+private static final int SERIOUS_TITLE_LINE_HEIGHT = 78;
+
+private static final int SERIOUS_PRIMARY_Y = 405;
+private static final int SERIOUS_PRIMARY_FONT_SIZE = 76;
+private static final int SERIOUS_PRIMARY_MIN_FONT_SIZE = 48;
+
+private static final int SERIOUS_FACT_TOP_Y = 805;
+private static final int SERIOUS_FACT_HEIGHT = 220;
+private static final int SERIOUS_FACT_GAP = 18;
+
+private static final int SERIOUS_ACTION_Y = 1045;
+private static final int SERIOUS_ACTION_HEIGHT = 118;
+
+private static final Color SERIOUS_TEXT =
+        new Color(248, 248, 246);
+
+private static final Color SERIOUS_TEXT_MUTED =
+        new Color(220, 224, 227);
+
+private static final Color SERIOUS_ACCENT =
+        new Color(229, 62, 55);
+
+private static final Color SERIOUS_FACT_BACKGROUND =
+        new Color(8, 15, 22, 205);
+
+        private static final Color SERIOUS_ACTION_BACKGROUND =
+        new Color(164, 38, 38, 185);
+
+        private static final Color SERIOUS_ACTION_BORDER =
+        new Color(229, 62, 55, 170);
+
+private static final int PANEL_MARGIN = 16;
+private static final int PANEL_CORNER_RADIUS = 56;
 
     private static final Color KEY_FACT_BACKGROUND =
             new Color(232, 243, 255);
@@ -395,6 +470,43 @@ public class Java2DCardRendererService implements CardRendererService {
 
         this.heroHeight = HERO_BOTTOM_Y - heroY;
     }
+    private CardSpec.CardTone effectiveTone(CardSpec cardSpec) {
+
+        if (cardSpec == null
+                || cardSpec.tone() == null
+                || cardSpec.tone().isBlank()) {
+            return CardSpec.CardTone.STANDARD;
+        }
+    
+        try {
+            return CardSpec.CardTone.valueOf(
+                    cardSpec.tone().trim().toUpperCase()
+            );
+        } catch (IllegalArgumentException e) {
+            return CardSpec.CardTone.STANDARD;
+        }
+    }
+    
+    private Color backgroundFor(CardSpec.CardTone tone) {
+    
+        return switch (tone) {
+            case LIGHT -> LIGHT_BACKGROUND;
+            case STANDARD -> STANDARD_BACKGROUND;
+            case SERIOUS -> SERIOUS_BACKGROUND;
+            case SENSITIVE -> SENSITIVE_BACKGROUND;
+        };
+    }
+    
+    private Color panelBackgroundFor(CardSpec.CardTone tone) {
+    
+        return switch (tone) {
+            case LIGHT -> LIGHT_PANEL_BACKGROUND;
+            case STANDARD -> STANDARD_PANEL_BACKGROUND;
+            case SERIOUS -> SERIOUS_PANEL_BACKGROUND;
+            case SENSITIVE -> SENSITIVE_PANEL_BACKGROUND;
+        };
+    }
+    
     @Override
     public RenderedCard renderSingle(
             CardSpec cardSpec,
@@ -413,57 +525,75 @@ public class Java2DCardRendererService implements CardRendererService {
             try {
                 configureGraphics(g);
 
-                // Outer cream background
-                g.setColor(BACKGROUND);
-                g.fillRect(0, 0, WIDTH, HEIGHT);
+CardSpec.CardTone tone = effectiveTone(cardSpec);
 
-                // Inner white panel
-                g.setColor(PANEL_BACKGROUND);
-                g.fillRoundRect(
-                        PANEL_MARGIN,
-                        PANEL_MARGIN,
-                        WIDTH - (PANEL_MARGIN * 2),
-                        HEIGHT - (PANEL_MARGIN * 2),
-                        PANEL_CORNER_RADIUS,
-                        PANEL_CORNER_RADIUS
-                );
+g.setColor(backgroundFor(tone));
+g.fillRect(0, 0, WIDTH, HEIGHT);
 
-                CardSpec.LayoutType layout =
-                        cardSpec.effectiveLayoutType();
+g.setColor(panelBackgroundFor(tone));
+g.fillRoundRect(
+        PANEL_MARGIN,
+        PANEL_MARGIN,
+        WIDTH - (PANEL_MARGIN * 2),
+        HEIGHT - (PANEL_MARGIN * 2),
+        PANEL_CORNER_RADIUS,
+        PANEL_CORNER_RADIUS
+);
 
-                BufferedImage trimmedHero = null;
+BufferedImage hero = ImageIO.read(
+        new ByteArrayInputStream(heroImage)
+);
 
-                // INFOGRAPHIC is drawn from blocks and is given no artwork.
-                if (layout != CardSpec.LayoutType.INFOGRAPHIC) {
+if (hero == null) {
+    throw new IllegalArgumentException(
+            "Hero image could not be decoded."
+    );
+}
 
-                    BufferedImage hero = ImageIO.read(
-                            new ByteArrayInputStream(heroImage)
-                    );
+BufferedImage trimmedHero = trimTransparentBorder(hero);
 
-                    if (hero == null) {
-                        throw new IllegalArgumentException(
-                                "Hero image could not be decoded."
-                        );
-                    }
+if (tone == CardSpec.CardTone.SERIOUS) {
 
-                    trimmedHero = trimTransparentBorder(hero);
-                }
+    drawSeriousLayout(
+            g,
+            cardSpec,
+            trimmedHero
+    );
 
-                        if (layout == CardSpec.LayoutType.FACT_HOOK
-                            || layout == CardSpec.LayoutType.URGENT) {
-    
-                        drawFigureLedLayout(g, cardSpec, trimmedHero, layout);
-    
-                    } else if (layout == CardSpec.LayoutType.INFOGRAPHIC) {
-    
-                        drawInfographicLayout(g, cardSpec);
-    
-                    } else {
-    
-                        drawStandardLayout(g, cardSpec, trimmedHero);
-                    }
+} else {
 
-                drawFooter(g);
+    CardSpec.LayoutType layout =
+            cardSpec.effectiveLayoutType();
+
+    if (layout == CardSpec.LayoutType.FACT_HOOK
+            || layout == CardSpec.LayoutType.URGENT) {
+
+        drawFigureLedLayout(
+                g,
+                cardSpec,
+                trimmedHero,
+                layout
+        );
+
+    } else if (layout == CardSpec.LayoutType.INFOGRAPHIC) {
+
+        drawInfographicLayout(
+                g,
+                cardSpec,
+                trimmedHero
+        );
+
+    } else {
+
+        drawStandardLayout(
+                g,
+                cardSpec,
+                trimmedHero
+        );
+    }
+
+    drawFooter(g);
+}
 
             } finally {
                 g.dispose();
@@ -571,7 +701,219 @@ public class Java2DCardRendererService implements CardRendererService {
     }
 
 
-    private void drawStandardLayout(
+    /**
+ * SERIOUS tone composition.
+ *
+ * Matches the DAK tone guide:
+ * - article-specific artwork becomes the card environment
+ * - no mascot
+ * - white typography over the image
+ * - one primary fact may receive restrained red emphasis
+ * - supporting facts sit in dark translucent panels
+ * - action information sits in a separate bottom bar
+ */
+private void drawSeriousLayout(
+        Graphics2D g,
+        CardSpec cardSpec,
+        BufferedImage hero
+) {
+
+    /*
+     * ARTICLE BACKGROUND
+     *
+     * The artwork fills the entire rounded card panel rather than sitting
+     * between the header and the title.
+     */
+    drawCoverImage(
+            g,
+            hero,
+            PANEL_MARGIN,
+            PANEL_MARGIN,
+            WIDTH - (PANEL_MARGIN * 2),
+            HEIGHT - (PANEL_MARGIN * 2)
+    );
+
+    /*
+     * GLOBAL DARK VEIL
+     *
+     * Keeps generated artwork subordinate to the information.
+     */
+    g.setColor(new Color(5, 12, 18, 92));
+
+    g.fillRoundRect(
+            PANEL_MARGIN,
+            PANEL_MARGIN,
+            WIDTH - (PANEL_MARGIN * 2),
+            HEIGHT - (PANEL_MARGIN * 2),
+            PANEL_CORNER_RADIUS,
+            PANEL_CORNER_RADIUS
+    );
+
+    /*
+     * Stronger top veil behind the title.
+     */
+    Paint oldPaint = g.getPaint();
+
+    g.setPaint(
+            new GradientPaint(
+                    0,
+                    PANEL_MARGIN,
+                    new Color(3, 10, 17, 235),
+                    0,
+                    600,
+                    new Color(3, 10, 17, 45)
+            )
+    );
+
+    g.fillRoundRect(
+            PANEL_MARGIN,
+            PANEL_MARGIN,
+            WIDTH - (PANEL_MARGIN * 2),
+            650,
+            PANEL_CORNER_RADIUS,
+            PANEL_CORNER_RADIUS
+    );
+
+    /*
+     * Stronger bottom veil behind facts and footer.
+     */
+    g.setPaint(
+            new GradientPaint(
+                    0,
+                    690,
+                    new Color(3, 10, 17, 20),
+                    0,
+                    HEIGHT - PANEL_MARGIN,
+                    new Color(3, 10, 17, 245)
+            )
+    );
+
+    g.fillRect(
+            PANEL_MARGIN,
+            690,
+            WIDTH - (PANEL_MARGIN * 2),
+            HEIGHT - 690 - PANEL_MARGIN
+    );
+
+    g.setPaint(oldPaint);
+
+    // SERIOUS does not use the mascot.
+    drawBadge(
+            g,
+            cardSpec,
+            BADGE_AU_UPDATE
+    );
+
+    /*
+     * TITLE
+     */
+    String title = cardSpec.title();
+
+    if (title == null || title.isBlank()) {
+        title = cardSpec.effectiveHeaderTitle();
+    }
+
+    if (title != null && !title.isBlank()) {
+
+        title = stripMarkers(title);
+
+        Font titleFont = fitWrappedFont(
+                g,
+                title,
+                extraBoldFont,
+                SERIOUS_TITLE_FONT_SIZE,
+                SERIOUS_TITLE_MIN_FONT_SIZE,
+                SERIOUS_CONTENT_WIDTH,
+                SERIOUS_TITLE_MAX_LINES
+        );
+
+        g.setFont(titleFont);
+        g.setColor(SERIOUS_TEXT);
+
+        int y = SERIOUS_TITLE_Y;
+
+        for (String line : wrapToFit(
+                title,
+                g.getFontMetrics(),
+                SERIOUS_CONTENT_WIDTH
+        )) {
+
+            g.drawString(
+                    line,
+                    SERIOUS_CONTENT_X,
+                    y
+            );
+
+            y += SERIOUS_TITLE_LINE_HEIGHT;
+        }
+    }
+
+    /*
+     * PRIMARY FACT
+     *
+     * This is optional. Injury/death figures should only appear here where
+     * Claude actually marked them as the primary editorial fact.
+     */
+    CardSpec.CardFact primary = cardSpec.primaryFact();
+
+boolean criticalPrimary =
+        primary != null
+                && primary.value() != null
+                && !primary.value().isBlank()
+                && primary.effectiveEmphasis()
+                        == CardSpec.FactEmphasis.CRITICAL;
+
+                        if (criticalPrimary) {
+
+                                /*
+                                 * Only genuinely critical impact receives the large red treatment.
+                                 *
+                                 * NORMAL primary facts are intentionally not rendered here.
+                                 * The title already communicates the main development, while the
+                                 * supporting row carries the practical details.
+                                 */
+                                Font primaryFont = fitWrappedFont(
+                                        g,
+                                        primary.value(),
+                                        extraBoldFont,
+                                        SERIOUS_PRIMARY_FONT_SIZE,
+                                        SERIOUS_PRIMARY_MIN_FONT_SIZE,
+                                        SERIOUS_CONTENT_WIDTH,
+                                        1
+                                );
+                            
+                                g.setFont(primaryFont);
+                                g.setColor(SERIOUS_ACCENT);
+                            
+                                g.drawString(
+                                        primary.value(),
+                                        SERIOUS_CONTENT_X,
+                                        SERIOUS_PRIMARY_Y
+                                );
+                            }
+                            
+                            drawSeriousSupportingFacts(
+        g,
+        seriousFactsForRendering(
+                cardSpec.supportingFacts()
+        )
+);
+
+    drawSeriousAction(
+            g,
+            cardSpec.action()
+    );
+
+    drawSeriousFooter(g);
+
+    drawAiNotice(
+            g,
+            WIDTH - 72,
+            760
+    );
+}
+
+private void drawStandardLayout(
         Graphics2D g,
         CardSpec cardSpec,
         BufferedImage hero
@@ -780,14 +1122,31 @@ g.setColor(urgent ? TEXT_PRIMARY : HOOK_ACCENT);
      * full width otherwise, so a trailing block never sits beside a gap.
      */
 private void drawInfographicLayout(
-    Graphics2D g,
-    CardSpec cardSpec
-) {
-
-drawHeader(g, cardSpec);
-
-// Headline sits above the blocks as the one thing to take away.
-String headline = cardSpec.headline();
+        Graphics2D g,
+        CardSpec cardSpec,
+        BufferedImage hero
+    ) {
+    
+        drawHeader(g, cardSpec);
+    
+        String headline = cardSpec.headline();
+    
+        if (hero != null) {
+            drawContainedImage(
+                    g,
+                    hero,
+                    INFO_HERO_X,
+                    INFO_HERO_Y,
+                    INFO_HERO_WIDTH,
+                    INFO_HERO_HEIGHT
+            );
+    
+            drawAiNotice(
+                    g,
+                    INFO_HERO_X + INFO_HERO_WIDTH,
+                    INFO_HERO_Y + INFO_HERO_HEIGHT + AI_NOTICE_GAP
+            );
+        }
 
 if (headline != null && !headline.isBlank()) {
 
@@ -831,12 +1190,14 @@ if (blocks.isEmpty()) {
     return;
 }
 
-// Two columns only where the count divides evenly. Three blocks in two
-// columns leaves one beside empty space, which reads as a missing
-// block rather than a deliberate one.
+boolean hasHeadline =
+        headline != null && !headline.isBlank();
+
+int blocksTopY = INFO_BLOCKS_TOP_Y;
+
 boolean twoColumns = blocks.size() % 2 == 0;
 
-int availableHeight = FOOTER_TOP_Y - INFO_BLOCKS_TOP_Y - INFO_BLOCK_GAP;
+int availableHeight = FOOTER_TOP_Y - blocksTopY - INFO_BLOCK_GAP;
 
 int rows = twoColumns
         ? blocks.size() / 2
@@ -857,7 +1218,7 @@ for (int i = 0; i < blocks.size(); i++) {
     int x = INFO_CONTENT_X
             + (column * (blockWidth + INFO_BLOCK_GAP));
 
-    int y = INFO_BLOCKS_TOP_Y
+            int y = blocksTopY
             + (row * (blockHeight + INFO_BLOCK_GAP));
 
     drawInfoBlock(
@@ -1070,14 +1431,369 @@ for (String line : headingLines) {
 }
 
 
+private List<CardSpec.CardFact> seriousFactsForRendering(
+        List<CardSpec.CardFact> supporting
+) {
+
+    if (supporting == null) {
+        return List.of();
+    }
+
+    /*
+     * The primary fact has its own visual role:
+     *
+     * CRITICAL -> large red treatment.
+     * NORMAL   -> compact status line near the title.
+     *
+     * Therefore the supporting row contains only supportingFacts and does
+     * not sacrifice one of its three slots to the primary fact.
+     */
+    return supporting.stream()
+            .filter(fact -> fact != null)
+            .filter(fact ->
+                    fact.value() != null
+                            && !fact.value().isBlank()
+            )
+            .limit(3)
+            .toList();
+}
+
+private void drawSeriousSupportingFacts(
+        Graphics2D g,
+        List<CardSpec.CardFact> facts
+) {
+
+    if (facts == null || facts.isEmpty()) {
+        return;
+    }
+
+    List<CardSpec.CardFact> usable = facts.stream()
+            .filter(fact -> fact != null)
+            .filter(fact ->
+                    fact.value() != null
+                            && !fact.value().isBlank()
+            )
+            .limit(3)
+            .toList();
+
+    if (usable.isEmpty()) {
+        return;
+    }
+
+    int count = usable.size();
+
+    int width =
+            (SERIOUS_CONTENT_WIDTH
+                    - (SERIOUS_FACT_GAP * (count - 1)))
+                    / count;
+
+    for (int i = 0; i < count; i++) {
+
+        CardSpec.CardFact fact = usable.get(i);
+
+        int x =
+                SERIOUS_CONTENT_X
+                        + (i * (width + SERIOUS_FACT_GAP));
+
+        g.setColor(SERIOUS_FACT_BACKGROUND);
+
+        g.fillRoundRect(
+                x,
+                SERIOUS_FACT_TOP_Y,
+                width,
+                SERIOUS_FACT_HEIGHT,
+                28,
+                28
+        );
+
+        /*
+         * ICON
+         */
+        BufferedImage icon = null;
+
+        if (fact.icon() != null && !fact.icon().isBlank()) {
+            icon = blockIcons.get(
+                    fact.icon().trim().toUpperCase()
+            );
+        }
+
+        int contentX = x + 24;
+        int topY = SERIOUS_FACT_TOP_Y + 24;
+
+        int iconSize = 56;
+
+if (icon != null) {
+
+    g.drawImage(
+            icon,
+            contentX,
+            topY + 6,
+            iconSize,
+            iconSize,
+            null
+    );
+
+    contentX += iconSize + 16;
+}
+
+/*
+ * LABEL
+ */
+if (fact.label() != null && !fact.label().isBlank()) {
+
+        g.setFont(
+                semiBoldFont.deriveFont(
+                        Font.PLAIN,
+                        25f
+                )
+        );
+    
+        g.setColor(SERIOUS_TEXT);
+    
+        g.drawString(
+                fact.label(),
+                contentX,
+                topY + 36
+        );
+    
+        /*
+         * Divider under the label.
+         *
+         * Separates the category heading from the actual fact value,
+         * matching the visual hierarchy of the SERIOUS reference cards.
+         */
+        int dividerY = SERIOUS_FACT_TOP_Y + 90;
+    
+        g.setColor(
+                new Color(255, 255, 255, 90)
+        );
+    
+        g.fillRoundRect(
+                x + 24,
+                dividerY,
+                width - 48,
+                2,
+                2,
+                2
+        );
+    }
+
+        /*
+         * VALUE
+         *
+         * Smaller than before. The value is still the strongest text inside
+         * the panel, but it should not dominate the whole card.
+         */
+        Font valueFont = fitWrappedFont(
+                g,
+                fact.value(),
+                boldFont,
+                31,
+                26,
+                width - 48,
+                2
+        );
+
+        g.setFont(valueFont);
+        g.setColor(SERIOUS_TEXT);
+
+        int valueY = SERIOUS_FACT_TOP_Y + 132;
+
+        List<String> valueLines = wrapToFit(
+                fact.value(),
+                g.getFontMetrics(),
+                width - 48
+        );
+
+        for (String line : valueLines.stream().limit(2).toList()) {
+
+            g.drawString(
+                    line,
+                    x + 24,
+                    valueY
+            );
+
+            valueY += valueFont.getSize() + 6;
+        }
+
+        /*
+         * NOTE
+         *
+         * Slightly larger than before, but limited to one short line.
+         */
+        if (fact.note() != null && !fact.note().isBlank()) {
+
+                g.setFont(
+                        regularFont.deriveFont(
+                                Font.PLAIN,
+                                23f
+                        )
+                );
+                
+                g.setColor(SERIOUS_TEXT_MUTED);
+                
+                List<String> noteLines = wrapToFit(
+                        fact.note(),
+                        g.getFontMetrics(),
+                        width - 48
+                );
+                
+                if (!noteLines.isEmpty()) {
+                
+                    g.drawString(
+                            noteLines.get(0),
+                            x + 24,
+                            SERIOUS_FACT_TOP_Y + 185
+                    );
+                }
+        }
+    }
+}
+
+private void drawSeriousAction(
+        Graphics2D g,
+        CardSpec.ActionBlock action
+) {
+
+    if (action == null
+            || action.body() == null
+            || action.body().isBlank()) {
+        return;
+    }
+
+    /*
+     * Red protective-action panel.
+     *
+     * This is visually separate from the supporting facts because it tells
+     * the reader what to DO rather than merely describing the incident.
+     */
+    g.setColor(SERIOUS_ACTION_BACKGROUND);
+
+    g.fillRoundRect(
+            SERIOUS_CONTENT_X,
+            SERIOUS_ACTION_Y,
+            SERIOUS_CONTENT_WIDTH,
+            SERIOUS_ACTION_HEIGHT,
+            26,
+            26
+    );
+
+    g.setColor(SERIOUS_ACTION_BORDER);
+
+    g.drawRoundRect(
+            SERIOUS_CONTENT_X,
+            SERIOUS_ACTION_Y,
+            SERIOUS_CONTENT_WIDTH,
+            SERIOUS_ACTION_HEIGHT,
+            26,
+            26
+    );
+
+    /*
+     * ICON
+     */
+    BufferedImage icon = null;
+
+    if (action.icon() != null && !action.icon().isBlank()) {
+        icon = blockIcons.get(
+                action.icon().trim().toUpperCase()
+        );
+    }
+
+    int iconX = SERIOUS_CONTENT_X + 26;
+    int iconY = SERIOUS_ACTION_Y + 31;
+    int iconSize = 54;
+
+    int textX = SERIOUS_CONTENT_X + 28;
+
+    if (icon != null) {
+
+        g.drawImage(
+                icon,
+                iconX,
+                iconY,
+                iconSize,
+                iconSize,
+                null
+        );
+
+        textX = iconX + iconSize + 22;
+    }
+
+    int availableWidth =
+            SERIOUS_CONTENT_X
+                    + SERIOUS_CONTENT_WIDTH
+                    - textX
+                    - 28;
+
+    /*
+     * TITLE
+     */
+    int titleY = SERIOUS_ACTION_Y + 40;
+
+    if (action.title() != null && !action.title().isBlank()) {
+
+        g.setFont(
+                semiBoldFont.deriveFont(
+                        Font.PLAIN,
+                        22f
+                )
+        );
+
+        g.setColor(
+                new Color(255, 220, 220)
+        );
+
+        g.drawString(
+                action.title(),
+                textX,
+                titleY
+        );
+    }
+
+    /*
+     * BODY
+     *
+     * Larger than the title because the actual instruction is what the
+     * reader must notice.
+     */
+    g.setFont(
+            boldFont.deriveFont(
+                    Font.PLAIN,
+                    28f
+            )
+    );
+
+    g.setColor(Color.WHITE);
+
+    List<String> lines = wrapToFit(
+            action.body(),
+            g.getFontMetrics(),
+            availableWidth
+    );
+
+    int bodyY = SERIOUS_ACTION_Y + 78;
+
+    for (String line : lines.stream().limit(2).toList()) {
+
+        g.drawString(
+                line,
+                textX,
+                bodyY
+        );
+
+        bodyY += 32;
+    }
+}
+
 private void drawInfoBlock(
-    Graphics2D g,
-    CardSpec.InfoBlock block,
-    int index,
-    int x,
-    int y,
-    int width,
-    int height
+        Graphics2D g,
+        CardSpec.InfoBlock block,
+        int index,
+        int x,
+        int y,
+        int width,
+        int height
 ) {
 
 Color fill = INFO_BLOCK_FILLS[index % INFO_BLOCK_FILLS.length];
@@ -1273,14 +1989,68 @@ BufferedImage icon =
         );
     }
 
-    private void drawContainedImage(
-            Graphics2D g,
-            BufferedImage image,
-            int x,
-            int y,
-            int width,
-            int height
-    ) {
+    /**
+ * Draws an image like CSS background-size: cover.
+ *
+ * Unlike drawContainedImage(), the image is allowed to overflow the target
+ * rectangle. This is used by tone layouts where the artwork is the card
+ * environment rather than an isolated illustration.
+ */
+private void drawCoverImage(
+        Graphics2D g,
+        BufferedImage image,
+        int x,
+        int y,
+        int width,
+        int height
+) {
+
+    double scale = Math.max(
+            (double) width / image.getWidth(),
+            (double) height / image.getHeight()
+    );
+
+    int drawWidth =
+            (int) Math.round(image.getWidth() * scale);
+
+    int drawHeight =
+            (int) Math.round(image.getHeight() * scale);
+
+    int drawX =
+            x - ((drawWidth - width) / 2);
+
+    int drawY =
+            y - ((drawHeight - height) / 2);
+
+    java.awt.Shape oldClip = g.getClip();
+
+    g.clipRect(
+            x,
+            y,
+            width,
+            height
+    );
+
+    g.drawImage(
+            image,
+            drawX,
+            drawY,
+            drawWidth,
+            drawHeight,
+            null
+    );
+
+    g.setClip(oldClip);
+}
+
+private void drawContainedImage(
+        Graphics2D g,
+        BufferedImage image,
+        int x,
+        int y,
+        int width,
+        int height
+) {
 
         double scale = Math.min(
                 (double) width / image.getWidth(),
@@ -1562,7 +2332,77 @@ g.drawString(
         baselineY
 );
 }
-        private void drawFooter(Graphics2D g) {
+private void drawSeriousFooter(Graphics2D g) {
+
+        int logoWidth = 280;
+    
+        int logoHeight = (int) Math.round(
+                footerLogo.getHeight()
+                        * ((double) logoWidth / footerLogo.getWidth())
+        );
+    
+        BufferedImage whiteLogo = new BufferedImage(
+                footerLogo.getWidth(),
+                footerLogo.getHeight(),
+                BufferedImage.TYPE_INT_ARGB
+        );
+    
+        Graphics2D logoGraphics = whiteLogo.createGraphics();
+    
+        try {
+            configureGraphics(logoGraphics);
+    
+            logoGraphics.drawImage(
+                    footerLogo,
+                    0,
+                    0,
+                    null
+            );
+    
+            logoGraphics.setComposite(AlphaComposite.SrcIn);
+            logoGraphics.setColor(Color.WHITE);
+    
+            logoGraphics.fillRect(
+                    0,
+                    0,
+                    whiteLogo.getWidth(),
+                    whiteLogo.getHeight()
+            );
+    
+        } finally {
+            logoGraphics.dispose();
+        }
+    
+        g.drawImage(
+                whiteLogo,
+                FOOTER_LOGO_X,
+                1195,
+                logoWidth,
+                logoHeight,
+                null
+        );
+    
+        g.setFont(
+                regularFont.deriveFont(
+                        Font.PLAIN,
+                        24f
+                )
+        );
+    
+        g.setColor(SERIOUS_TEXT_MUTED);
+    
+        String website = "discoveradelaidekorea.au";
+    
+        int width = g.getFontMetrics().stringWidth(website);
+    
+        g.drawString(
+                website,
+                WIDTH - 72 - width,
+                1265
+        );
+    }
+    
+    private void drawFooter(Graphics2D g) {
 
             int chipTopY = FOOTER_TOP_Y;
     

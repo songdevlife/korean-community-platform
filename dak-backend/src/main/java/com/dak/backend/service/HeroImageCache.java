@@ -107,12 +107,14 @@ public class HeroImageCache {
                 .append('|')
                 .append(cardSpec.effectiveLayoutType());
 
-        if (visual != null) {
-            key.append('|').append(visual.subject())
-                    .append('|').append(visual.mood())
-                    .append('|').append(visual.mascot())
-                    .append('|').append(visual.style());
-        }
+                if (visual != null) {
+                        key.append('|').append(cardSpec.tone())
+                                .append('|').append(visual.subject())
+                                .append('|').append(visual.background())
+                                .append('|').append(visual.mood())
+                                .append('|').append(visual.mascot())
+                                .append('|').append(visual.style());
+                    }
 
         return key.toString();
     }

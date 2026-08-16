@@ -15,5 +15,13 @@ package com.dak.backend.service;
  */
 public interface AiSummarizationService {
 
-    SummarisationResult summarize(String title, String bodyText);
+    SummarisationResult summarize(
+            String title,
+            String bodyText
+    );
+
+    SummarisationResult summarizeManual(
+            String title,
+            String bodyText
+    );
 }

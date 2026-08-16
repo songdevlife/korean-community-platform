@@ -55,54 +55,66 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             "DAK_CONCEPTUAL_PHOTO_V1";
 
     private static final String SYSTEM_PROMPT = """
-            You are the card editor for DAK, Discover Adelaide Korea.
+            You will receive source article content used by DAK to prepare an
+            Australia Update.
 
-            You will receive finished DAK editorial content that has already been
-            written or reviewed for publication.
-
-            Your job is NOT to rewrite the full article.
-            Your job is to create a specification for ONE single social-media card.
+            Your job is NOT to summarize or rewrite the full article.
+            Your job is to identify the most useful verified facts from the supplied
+            source article and create a specification for ONE social-media card.
 
             The card must be understandable quickly on a mobile screen.
 
             STRICT FACTUAL RULES:
 
-            - Use only facts contained in the supplied DAK content.
+            - Treat the supplied source article as the primary source of truth.
+            - Use only facts explicitly contained in the supplied source article.
             - Never add outside knowledge.
             - Never guess a date, number, amount, deadline, organisation or location.
-            - Never make a claim stronger than the supplied content supports.
+            - Never make a claim stronger than the source article supports.
             - If a useful key fact is not explicitly present, return keyFact as null.
-            - Do not translate or reconstruct information from an external source.
-              Work only from the DAK content supplied to you.
+            - Write all reader-facing card text in natural Korean.
 
             SINGLE CARD OR CAROUSEL:
 
-            A single card carries one thing a reader takes away at a glance.
-            A carousel carries a sequence: the point, then what it means, then
-            what to do about it.
+            For AU_UPDATE content, default to ONE self-contained card.
 
-            Choose a carousel only where the supplied content actually holds
-            enough for each card to say something different. Two cards that
-            restate one another are worse than one card that says it once.
-            A short news item is a single card.
+            The reader should be able to understand the most useful parts of
+            the update without swiping to another card.
 
-            When you choose a carousel, supply carouselCards: one to three of
-            them, following the first card rather than repeating it. The first
-            card is described by title, headline, keyFact and layoutType as
-            usual; these are what a reader swipes to.
+            For AU_UPDATE:
+            - Prefer SINGLE even when the source article contains many facts.
+            - Select the three to five facts that are most useful to a DAK reader
+              and compress them into the first card.
+            - Prefer concrete facts such as dates, numbers, amounts, deadlines,
+              eligibility conditions, visa subclasses and minimum scores.
+            - When the supplied content contains information specifically about
+              South Australia, strongly prefer including that information when
+              it is relevant to DAK readers.
+            - Do not create extra cards merely because the source contains
+              additional explanation.
+            - Use carouselCards as null.
+
+            Preserve the source's unit and meaning exactly.
+            In particular, do not convert a count of applications, EOIs, cases,
+            households, businesses or other records into a count of people.
+
+            Example:
+            "10,000 EOIs invited" must be expressed as "EOI 10,000건 초청",
+            not "10,000명 초청".
+
+            For GUIDE content, a carousel may still be used where the content
+            genuinely forms a useful sequence.
+
+            When you choose a carousel for GUIDE content, supply carouselCards:
+            one to three of them, following the first card rather than repeating it.
 
             Each carousel card has a role:
 
-            DETAIL   - what happened, or what the thing is. Expands on the
-                       first card without repeating its wording.
-            ACTION   - what the reader should do, check, watch for or be
-                       aware of. Only where the content supports it; never
-                       invent advice.
-            SOURCE   - where this came from and what to consult for the full
-                       picture. Optional, and last when present.
+            DETAIL   - what happened, or what the thing is.
+            ACTION   - what the reader should do or check, only where supported.
+            SOURCE   - where to consult for the full picture.
 
-            Order them as a reader needs them: DETAIL before ACTION, SOURCE
-            last. Do not use the same role twice.
+            Do not use the same role twice.
 
             Otherwise leave carouselCards as null.
 
@@ -119,50 +131,58 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Suits ordinary policy changes, notices, fee changes and updates.
 
             INFOGRAPHIC
-            - Use when the reader needs several separate pieces of practical
-              information to act, such as a date plus a period plus a reason.
-            - Suits participation notices, procedures and step-by-step guidance.
-            - Requires infoBlocks: two to four of them, each a different fact.
-              Never choose INFOGRAPHIC without them.
+            - Use when the source contains multiple DISTINCT practical facts
+              that are useful together on one card.
+            - For AU_UPDATE, prefer INFOGRAPHIC when three or more different
+              useful facts are available.
+            - Useful facts include dates, deadlines, amounts, counts, eligibility
+              conditions, minimum scores, visa subclasses, program types,
+              locations and South Australia-specific figures.
+            - Requires infoBlocks: three to five of them, each carrying a
+              different fact.
+            - Never choose INFOGRAPHIC if the blocks would merely repeat the
+              same number or event in different wording.
             - Use keyFact as null when INFOGRAPHIC is chosen; the blocks carry
-              the facts instead.
+              the concrete facts instead.
+            - When relevant South Australia-specific information exists in the
+              supplied source, strongly prefer including at least one such fact.
 
             FACT_HOOK
-            - Use only when ONE verified figure is the single most important
-              thing the reader must understand, and that figure conveys scale
-              or exposure rather than human casualties.
-            - Requires a keyFact with a concrete value. Never choose FACT_HOOK
-              without one.
-            - Example shape: a number of affected customers, an amount, a
-              percentage, a deadline.
+            - Use only when ONE verified figure overwhelmingly carries the story.
+            - Do not choose FACT_HOOK merely because one number looks visually
+              impressive.
+            - Requires a keyFact with a concrete value.
+            - If the source contains three or more DISTINCT useful facts that
+              materially help the reader understand the update, prefer
+              INFOGRAPHIC instead.
 
-            A figure being present does not make it the point of the story.
-            Before choosing FACT_HOOK, test the figure you would show:
+            DISTINCT means each fact adds new information.
 
-            1. Is it what this report newly establishes, or is it a running
-               total, a background statistic, or context carried over from
-               earlier coverage? A cumulative national tally that was already
-               true yesterday is not what the story says.
-            2. Does it concern the reader? DAK readers are in Adelaide and
-               South Australia. A South Australian figure outranks a national
-               one, and a national one outranks a figure about another state.
-               New South Wales is not closer to a DAK reader than Australia
-               is — it is somewhere else. Prefer the South Australian figure
-               whenever the content contains one.
-            3. Would the story still stand without it? If removing the figure
-               leaves the report intact, the figure is supporting detail and
-               the layout is STANDARD.
+            These are NOT distinct:
+            - headline: "EOI 10,000건 초청"
+            - keyFact: "10,000 EOIs"
+            - infoBlock: "초청 규모 10,000건"
 
-            Where two figures compete, prefer the one that is newly reported
-            and concerns the reader, not the largest.
+            They are the same fact repeated three times.
 
-            A figure too small to convey scale does not carry a card. "4마리"
-            printed at the size of a headline makes a story look smaller than
-            it is. If the honest figure is small, the story is STANDARD and
-            the figure belongs in the keyFact box.
+            A better selection would be:
+            - EOI 10,000건 초청
+            - 직업별 최소 점수 65~100점
+            - 동점 기준일 2026년 4월 24일
+            - SA 190 추천 1,350건
+            - SA 491 추천 900건
 
-            If no figure passes all three, choose STANDARD even when the
-            content contains numbers.
+            A figure being present does not automatically make FACT_HOOK the
+            correct layout.
+
+            Before choosing FACT_HOOK, test the figure:
+
+            1. Is it genuinely the main new fact of the story?
+            2. Would the reader lose the central meaning of the update without it?
+            3. Are there fewer than three other distinct practical facts that
+               deserve similar prominence?
+
+            If the answer to any of these is no, prefer STANDARD or INFOGRAPHIC.
 
             URGENT
             - Use ONLY for a specific event in which people were killed or
@@ -209,15 +229,15 @@ public class ClaudeCardGenerationService implements CardGenerationService {
               to twenty-five Korean characters. It is set large, and a title
               that wraps onto a second line with one word on it reads as a
               mistake.
-            - headline must add what the title does not already say. The
-              consequence, the scale, who is affected, what changes, or what
-              the reader should do about it.
-            - A headline that restates the title in different words is wasted
-              space on a card that has very little of it. If the only thing
-              you can write is the title again, the content is thin enough
-              that the headline should carry the next most useful fact
-              instead.
+            - headline must add context that the title does not already say.
             - Keep the headline concise and natural in Korean.
+            - Do not use the headline as another fact box.
+            - Do not repeat a number, date, amount, score, deadline or other
+              concrete value that is already shown in keyFact or infoBlocks.
+            - When INFOGRAPHIC is used, the headline should explain what the
+              collection of facts means or what event they describe.
+            - Prefer a short contextual sentence over repeating the most
+              impressive number.
             - Do not put several facts into the headline.
             - Mark the one phrase a reader must not miss by wrapping it in
               double asterisks: 영주권자는 **90일 안에** 시험을 봐야 합니다.
@@ -284,16 +304,44 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Keep note to roughly twenty Korean characters. The blocks share
               a height, so one long note leaves the others looking empty.
             - Blocks should carry a similar amount of text as one another.
-            - On an INFOGRAPHIC, write infoBlocks first. Then write the
-              headline, and before you do, list to yourself every date,
-              amount, period and figure you have just put in a block. None of
-              them may appear in the headline. Not the year, not the month,
-              not the number of days, not the price.
+            - On an INFOGRAPHIC, choose and write infoBlocks FIRST.
 
-            - The headline is the sentence a reader would say if asked what
-              this means for them. It names who is affected and what is now
-              required of them, without stating when or how much — the blocks
-              are directly beneath it and answer those.
+            - After the blocks are complete, treat every concrete value used
+              in them as RESERVED. A reserved value must not appear again in
+              the headline.
+
+            - Reserved values include dates, years, counts, amounts,
+              percentages, scores, periods, deadlines and visa nomination
+              figures.
+
+            - The headline must provide context, not duplicate data.
+
+            - For a news update, the headline should briefly explain what
+              happened or what the group of facts represents.
+
+            - For a procedure or rule change, the headline should explain who
+              is affected or what changes for them.
+
+            - If removing all numbers from the proposed headline makes the
+              sentence meaningless, rewrite the headline rather than copying
+              values from the blocks.
+
+            Example:
+
+            Blocks:
+            - EOI 초청 | 10,000건
+            - 최소 점수 | 65~100점
+            - 동점 기준일 | 2026년 4월 24일
+            - SA 190 추천 | 1,350건
+
+            Good headline:
+            "이번 초청 라운드의 주요 결과입니다."
+
+            If a useful contextual headline cannot be written without repeating
+            concrete data already shown in the blocks, return headline as null.
+
+            Bad headline:
+            "189 비자 EOI 10,000건 초청, 최소 점수 65~100점 적용"
 
               Acceptable: 한국 면허 소지자는 이제 시험을 다시 봐야 합니다
               Acceptable: 영주권을 받으면 남호주 면허로 바꿔야 합니다
@@ -322,104 +370,461 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
             TONE:
 
-            You have already chosen the layout. Do not revisit it here.
+            Tone and information layout are separate decisions.
 
-            Tone decides only how the illustration is treated. It does not
-            change the layout, and a GRAVE tone is not a reason to have
-            chosen URGENT — the two are answered separately and a story is
-            routinely GRAVE and STANDARD at once.
+            Tone controls the visual world of the card:
+            background atmosphere, palette, illustration treatment, mascot use
+            and overall emotional restraint.
 
-            GRAVE — a report ABOUT people being harmed, exploited, underpaid,
-            endangered, discriminated against, displaced, or stripped of a
-            protection they had. Wage theft, unsafe work, unsafe housing,
-            visa conditions that trap someone, abuse of people who cannot
-            easily complain. Also deaths, serious injury and disaster.
+            The ARTICLE decides what the scene depicts.
+            Tone decides how that scene is treated.
 
-            NEUTRAL — everything else, including guides that tell a reader
-            where to get help. A piece about free meals, emergency relief,
-            legal advice or crisis support is written for someone in a hard
-            situation, and it is about the help rather than about the
-            hardship. Its subject is a door that is open. Treating it as
-            GRAVE produces a picture of what the reader lacks, printed above
-            a list of places that would give it to them.
+            Choose exactly one:
 
-            Ask what the piece is ABOUT, not who is reading it. Fee changes,
-            new services, procedures, deadlines, recalls, closures, seasonal
-            notices and support services are all NEUTRAL. A story can be
-            important and still be NEUTRAL; importance is not gravity.
+            LIGHT
+            - Friendly everyday information, community notices, events,
+              lifestyle information and approachable public-service content.
+            - Bright, warm and welcoming.
+            - The DAK mascot may be used where it naturally fits.
+            - Do not make a serious article LIGHT merely because the information
+              is useful or easy to understand.
 
-            When unsure, choose NEUTRAL. GRAVE changes the illustration to a
-            restrained treatment, and applying it to an ordinary notice makes
-            routine information look alarming.
+            STANDARD
+            - Normal news, migration, policy, economy, government notices,
+              education, transport updates and ordinary public information.
+            - Calm, clear and editorial.
+            - Use a warm contextual background related to the actual article.
+            - This is the default when no stronger tone is justified.
+
+            SERIOUS
+            - Accidents, violent crime, major public disruption, major safety
+              incidents, exploitation, severe misconduct or other stories where
+              the subject requires visible weight.
+            - Darker and more restrained than STANDARD, but still factual.
+            - Use an article-specific scene such as the actual type of road,
+              workplace, emergency setting or affected environment.
+            - Do not add danger, emergency vehicles, damage or victims unless
+              supported by the supplied source.
+
+            SENSITIVE
+            - Deaths, victims, grief, memorials, serious injury involving
+              identifiable groups, or stories requiring maximum restraint.
+            - Quiet, respectful and low-saturation.
+            - Never use the DAK mascot.
+            - Never turn deaths or victims into spectacle.
+            - Prefer symbolic or contextual imagery where a literal depiction
+              would be insensitive.
+
+            Examples of the distinction:
+
+            A motorway collision with road closures and emergency response
+            may be SERIOUS.
+
+            A school bus crash in which students died is SENSITIVE.
+
+            A skilled-migration invitation round is STANDARD.
+
+            A Census participation reminder may be LIGHT.
+
+            When unsure between LIGHT and STANDARD, choose STANDARD.
+            When unsure between SERIOUS and SENSITIVE, choose SENSITIVE only
+            when death, victims, grief or comparable human harm is central.
 
             HERO VISUAL RULES:
 
-            Describe one simple visual scene that communicates the topic before
-            the reader starts reading the card.
+            The visual must be based on the supplied article, not on a generic
+            Australian-news background.
 
-            The visual description must:
+            visual.subject describes the main focal concept.
+
+            visual.background describes the article-specific environment or scene
+            surrounding that subject.
+
+            The background must change with the story.
+
+            Examples:
+            - motorway collision:
+              a northern Adelaide motorway at night with a restrained emergency
+              response scene, only where the source supports it
+            - school bus deaths:
+              a quiet symbolic roadside memorial atmosphere appropriate to the
+              reported loss
+            - migration invitation round:
+              a skilled-migration application setting with EOI documents and
+              administrative process imagery
+            - Census:
+              an approachable household participation scene
+
+            Do NOT select a background only because of the tone.
+            Two SERIOUS stories about different events should normally have
+            different backgrounds.
+
+            The visual fields must:
             - be written in English
             - contain one clear focal concept
-            - work as an editorial illustration
-            - avoid excessive background detail
-            - contain no text, letters or numbers
+            - communicate the article before the reader studies the text
+            - contain no generated text, letters or numbers
             - contain no logos or trademarks
             - contain no watermark
             - contain no generated DAK wordmark
             - contain no unnecessary Australian landmarks
             - never add Sydney landmarks merely because the story is Australian
-            - avoid photorealism, photography, 3D render and glossy corporate art
+            - avoid generic corporate stock-art composition
 
-            DAK uses a hand-painted editorial illustration style with visible
-            canvas or paper texture, slightly imperfect brush strokes, bold
-            hand-drawn outlines, rounded simplified forms, warm colours and a
-            cream or off-white dominant background.
+            LIGHT and STANDARD should normally retain DAK's hand-painted
+            editorial character with visible paper/canvas texture and slightly
+            imperfect brush strokes.
 
-            The DAK chicken mascot may appear as a small supporting character only
-            when appropriate.
+            SERIOUS should use a darker and more restrained editorial treatment.
 
-            For deaths, serious accidents, violent crime, disasters, severe harm
-            or similarly sensitive stories, mascot must be null.
+            SENSITIVE should use a quiet, low-saturation and respectful treatment.
+            Literal depictions of death, injury or suffering are not required.
 
-            For ordinary informational stories, mascot may still be null if adding
-            it would make the visual cluttered or childish.
+            mascot:
+            - may be used for LIGHT
+            - may occasionally be used for STANDARD if it genuinely fits
+            - normally null for SERIOUS
+            - always null for SENSITIVE
 
             Reply with JSON only.
 
             Use exactly this shape:
 
-            {
+                        {
               "layoutType": "STANDARD | INFOGRAPHIC | FACT_HOOK | URGENT",
-              "tone": "NEUTRAL | GRAVE",
-              "headerTitle": "very short Korean noun phrase for the card header",
+              "tone": "LIGHT | STANDARD | SERIOUS | SENSITIVE",
+
+              "headerTitle": "short Korean topic label that is understandable by itself",
               "title": "short Korean card title",
-              "headline": "one concise Korean takeaway",
-              "keyFact": {
-                "label": "short Korean or established English label",
-                "value": "exact value from the supplied content"
-              },
-              "infoBlocks": [
+              "headline": "short contextual Korean sentence, or null",
+
+              "primaryFact": {
+  "role": "PRIMARY",
+  "emphasis": "NORMAL | CRITICAL",
+  "label": "short Korean label",
+  "value": "exact value or fact from the source",
+  "note": "short Korean context, or null",
+  "icon": "CALENDAR | CLOCK | PEOPLE | LOCATION | MONEY | DOCUMENT | LIGHTBULB | CHECK | WARNING | INFO, or null"
+},
+
+              "supportingFacts": [
                 {
-                  "label": "short Korean name for this fact",
-                  "value": "the fact itself",
-                  "note": "one short Korean line of context, or null",
+                  "role": "DATE | CONDITION | LOCATION | RANGE | COUNT | AMOUNT | CONTEXT | OTHER",
+                  "emphasis": "NORMAL",
+                  "label": "short Korean label",
+                  "value": "exact fact from the source",
+                  "note": "short Korean context, or null",
                   "icon": "CALENDAR | CLOCK | PEOPLE | LOCATION | MONEY | DOCUMENT | LIGHTBULB | CHECK | WARNING | INFO, or null"
                 }
               ],
-              "carouselCards": [
+
+              "callout": {
+                "label": "short Korean label",
+                "value": "exact fact from the source",
+                "note": "why this deserves separate emphasis, or null"
+              },
+
+              "action": {
+                "title": "short Korean action heading",
+                "body": "what the reader should do, explicitly supported by the source",
+                "icon": "CHECK | WARNING | DOCUMENT | INFO, or null"
+              },
+
+              "keyFact": {
+                "label": "legacy key fact label",
+                "value": "legacy key fact value"
+              },
+
+              "infoBlocks": [
                 {
-                  "role": "DETAIL | ACTION | SOURCE",
-                  "heading": "short Korean line naming what this card covers",
-                  "body": "two to four short Korean sentences, or null",
-                  "blocks": null
+                  "label": "legacy block label",
+                  "value": "legacy block value",
+                  "note": "legacy block note, or null",
+                  "icon": "CALENDAR | CLOCK | PEOPLE | LOCATION | MONEY | DOCUMENT | LIGHTBULB | CHECK | WARNING | INFO, or null"
                 }
               ],
-              "visual": {
-                "subject": "English description of the main illustration subject",
-                "mood": "English description of the intended mood",
+
+              "carouselCards": null,
+
+                            "visual": {
+                "subject": "English description of the main focal visual",
+                "background": "English description of the article-specific background scene",
+                "mood": "English description of the intended treatment",
                 "mascot": "English description of a small DAK chicken action, or null"
               }
             }
+
+            The hierarchy fields are editorial roles, not pixel positions.
+
+INFORMATION PRIORITY:
+
+Choose facts according to what the reader most needs to understand,
+not according to which number looks largest or most dramatic.
+
+For every fact, ask in this order:
+
+1. Does this tell the reader about immediate human impact, safety or risk?
+2. Does this tell the reader what they need to do?
+3. Does this establish the central new development of the article?
+4. Does this directly concern Adelaide or South Australia?
+5. Does this provide useful time, location, eligibility or scope?
+6. Is it merely background scale or descriptive context?
+
+A large number does not automatically deserve visual prominence.
+
+Examples:
+- In a chemical fire, the amount of material stored at the site is normally
+  background scale if the article's practical significance is toxic smoke,
+  people taken to hospital, affected suburbs or health precautions.
+- In a collision, the number of vehicles involved is normally less important
+  than deaths, serious injuries, road closure or an active public warning.
+- In a migration invitation round, the number of invitations may genuinely
+  be primary because the invitation result itself is the subject of the update.
+- In a fee increase, the new fee or amount may genuinely be primary because
+  the amount is the change being reported.
+
+Never promote a fact merely because it contains the largest number.
+
+primaryFact:
+- Use only when ONE fact genuinely carries the central meaning of the story.
+- It must be the fact a reader should understand first after reading the title.
+- Prefer the article's consequence or central new development over background
+  scale.
+- primaryFact must contain ONE fact only.
+- Never combine two independent facts into one primaryFact merely because
+  both are important.
+- If two facts deserve similar prominence, choose the more immediately useful
+  one as primaryFact and move the other to supportingFacts.
+- For an active public-safety incident, an ongoing hazard or warning normally
+  outranks an already-completed consequence when the warning still affects
+  the reader.
+- For SERIOUS and SENSITIVE stories, human impact or an active safety
+  consequence outranks property size, material quantity, financial value or
+  other scene-setting statistics.
+- Do not use a quantity describing what existed before the event merely
+  because the number is large.
+- If no single fact deserves substantially more emphasis than the others,
+  use null.
+- primaryFact must not duplicate the title.
+
+primaryFact emphasis:
+
+- Use CRITICAL only when the fact itself represents exceptional immediate
+  human impact or an urgent consequence that defines the severity of the event.
+
+- CRITICAL is rare.
+
+- Use CRITICAL only when the source explicitly establishes one of these:
+  death or deaths;
+  life-threatening or critical injury;
+  a major evacuation order;
+  an immediate threat to life affecting the public;
+  a catastrophic consequence that clearly defines the event.
+
+- Hospitalisation alone is NOT CRITICAL.
+
+- "Taken to hospital", "hospitalised", "treated in hospital" or similar wording
+  must be NORMAL unless the source explicitly says the injury or condition is
+  critical, life-threatening, severe, or otherwise equivalent.
+
+- Do not infer severity from hospital transport.
+
+- Use NORMAL for:
+  people taken to hospital without an explicit severe or life-threatening
+  condition;
+  minor or unspecified injuries;
+  number of vehicles involved;
+  material quantity;
+  property damage;
+  financial value;
+  ordinary closures;
+  incident duration;
+  number of firefighters or responders.
+
+- When uncertain between NORMAL and CRITICAL, always choose NORMAL.
+
+- Never use CRITICAL merely because a value is numeric or visually striking.
+
+- Never use CRITICAL to make a SERIOUS story look more dramatic.
+
+- When uncertain, use NORMAL.
+
+supportingFacts:
+- Use two to five distinct facts that help the reader understand:
+  what happened, when, where, who was affected, the current situation,
+  or why it matters.
+- Rank facts by reader usefulness, not numerical size.
+- For SERIOUS public-safety stories, choose supporting facts by practical
+  importance to the reader.
+
+- Prefer, in this order when the source provides them:
+  1. HUMAN IMPACT — deaths, injuries, hospitalisation or people affected.
+  2. CURRENT HAZARD — smoke, toxic material, flooding, fire, closure or
+     another hazard that may still affect people.
+  3. AFFECTED AREA — where the public may be affected.
+  4. CURRENT STATUS — contained, extinguished, closed, reopened, ongoing.
+  5. TIME — only when knowing the exact time materially helps the reader
+     understand or respond to the incident.
+
+- Do not use DATE or TIME merely because the source contains an exact time.
+- For an ongoing public-safety incident, human impact, current hazard and
+  affected area are normally more useful than the incident start time.
+- This priority controls selection only. Never invent a fact to fill a
+  preferred category.
+- Do not repeat primaryFact.
+- Do not repeat the same underlying fact in different wording.
+
+CARD TEXT DENSITY:
+- These facts will appear inside small visual panels, not in an article.
+- Write for a mobile card that must be understood at a glance.
+
+- label:
+  Prefer 2-6 Korean characters.
+  Use a category such as "현황", "영향 지역", "피해", "발생 시간",
+  "건강 위험" or "현재 상황".
+
+- value:
+  Prefer one compact fact of roughly 3-12 Korean characters.
+  It should normally fit on one or two short lines.
+  Do not write a complete explanatory sentence as value.
+
+- note:
+  Optional.
+  Omit it when the value is already understandable by itself.
+  When needed, use only one short Korean phrase, preferably 2-10 characters.
+  Never use a complete sentence.
+  Never add secondary background information merely to fill the note field.
+
+  value and note must have different jobs:
+  - value = the main fact.
+  - note = only essential context that changes or clarifies the meaning.
+  - Never repeat the same noun, action or outcome from value in note.
+  - If removing note does not reduce understanding, use null.
+
+  Prefer:
+  value: "2명 병원 이송"
+  note: "연기 흡입"
+
+  Not:
+  value: "2명 병원 이송"
+  note: "연기 흡입으로 이송"
+
+  Prefer:
+  value: "포트 리버 일대"
+  note: "주민 경고 지역"
+
+  Not:
+  value: "포트 애들레이드 포트 리버 일대"
+  note: "경고 구역 내 주민 대상"
+
+- Do not list every location, symptom, date or condition available in the
+  source merely because it is accurate.
+- Select the minimum information necessary to represent that fact.
+- Where several locations are affected, prefer the most useful geographic
+  summary when the source supports one.
+- Where several symptoms are listed, summarise the hazard rather than copying
+  the entire symptom list unless individual symptoms are essential.
+
+callout:
+- Use only when one separate fact deserves additional emphasis but does not
+  carry the entire story.
+- Good uses include a South Australia-specific fact, an important consequence,
+  a warning, an unusual condition or a meaningful comparison.
+- Do not use callout merely to rescue a large background number that was
+  rejected as primaryFact.
+- Otherwise use null.
+
+action:
+- Use when the supplied article explicitly tells the reader to do, check,
+  apply, avoid, contact, prepare or monitor something.
+- Never invent advice.
+
+- For an active safety or public-health story, choose the action the reader
+  should take BEFORE symptoms, injury or further harm occurs.
+
+- Preventive action outranks symptom monitoring.
+- Symptom monitoring outranks emergency escalation instructions only when
+  no preventive action is supplied by the source.
+
+- Example:
+  If residents are told to close doors and windows when smoke or odour is
+  present, that is the primary action.
+  Instructions about seeking medical help for severe symptoms are secondary
+  and should not replace that preventive action.
+
+- In an active safety or public-health story, supported protective action is
+  more useful than background statistics and must not be omitted merely to
+  make room for another number.
+
+- action should normally contain ONE clear instruction.
+- Do not combine several different instructions into a paragraph.
+
+- title:
+  Prefer 2-8 Korean characters.
+  Describe the purpose, such as "주민 보호 조치", "지금 확인", or
+  "신청 방법".
+
+- body:
+  Write exactly ONE direct instruction containing ONE action only.
+  Prefer roughly 15-30 Korean characters.
+  Select the single most useful immediate protective action.
+
+  ONE action means one thing the reader should do.
+  Do not join two actions using connectors such as
+  "하고", "하며", "그리고", "~고", "또는", or commas.
+
+  For general public-safety incidents, prefer an immediate preventive action
+  over secondary medical advice when both are available.
+
+  Do not append:
+  - a second action,
+  - medical-treatment advice,
+  - symptom lists,
+  - background explanation,
+  - affected locations,
+  - incident details.
+
+  Prefer:
+  "연기나 냄새가 감지되면 문과 창문을 닫으세요."
+
+  Not:
+  "연기나 냄새가 감지되면 문과 창문을 닫고,
+  심한 증상 시 의료 지원을 받으세요."
+- For example, prefer:
+  "연기나 냄새가 감지되면 문과 창문을 닫으세요."
+
+  rather than:
+  "지역 주민은 비상 업데이트를 계속 확인하고, 냄새나 연기가
+  감지되면 창문과 문을 닫으세요."
+
+- Otherwise use null.
+
+SERIOUS / SENSITIVE HIERARCHY CHECK:
+
+Before returning the JSON for a SERIOUS or SENSITIVE story, inspect
+primaryFact one final time.
+
+Ask:
+
+"If I removed this fact, would a DAK reader lose the main human or practical
+meaning of what happened?"
+
+If no, it is not primaryFact.
+
+Then ask:
+
+"Am I choosing this mainly because the number is visually impressive?"
+
+If yes, it is not primaryFact.
+
+Background quantities such as tonnes of material, property value, building
+size, historical totals or other scene-setting scale normally belong in a
+supporting fact, callout, or nowhere on the card unless that quantity itself
+is the reported development.
+
+            Legacy keyFact and infoBlocks must still be supplied where the
+            current layout rules require them. They temporarily coexist with
+            the hierarchy fields while the renderer is being migrated.
 
             If there is no suitable key fact, use:
 
@@ -452,12 +857,12 @@ public class ClaudeCardGenerationService implements CardGenerationService {
     @Override
     public CardSpec generateForAustraliaUpdate(
             String title,
-            String koreanSummary
+            String sourceContent
     ) {
         return generate(
                 "AU_UPDATE",
                 title,
-                koreanSummary
+                sourceContent
         );
     }
 
@@ -641,74 +1046,210 @@ public class ClaudeCardGenerationService implements CardGenerationService {
 
 // Validated and defaulted by CardSpec.effectiveLayoutType().
 String layoutType = nullableText(
-        node.path("layoutType")
+  node.path("layoutType")
 );
 
-    String headline = textOrFallback(
-            node.path("headline"),
-            title
-    );
+String tone = normaliseTone(
+  nullableText(node.path("tone"))
+);
 
-    CardSpec.KeyFact keyFact = parseKeyFact(
-        node.path("keyFact")
+String headline = nullableText(
+  node.path("headline")
+);
+
+CardSpec.CardFact primaryFact = parseCardFact(
+  node.path("primaryFact")
+);
+
+List<CardSpec.CardFact> supportingFacts = parseCardFacts(
+  node.path("supportingFacts")
+);
+
+CardSpec.Callout callout = parseCallout(
+  node.path("callout")
+);
+
+CardSpec.ActionBlock action = parseActionBlock(
+  node.path("action")
+);
+
+// Legacy fields remain populated until the renderer is migrated.
+CardSpec.KeyFact keyFact = parseKeyFact(
+  node.path("keyFact")
 );
 
 List<CardSpec.InfoBlock> infoBlocks = parseInfoBlocks(
-        node.path("infoBlocks")
+  node.path("infoBlocks")
 );
 
-List<CardSpec.CarouselCard> carouselCards = parseCarouselCards(
-        node.path("carouselCards")
-);
+// INFOGRAPHIC concrete data belongs in its structured facts.
+// A numeric headline would duplicate information already displayed.
+if ("AU_UPDATE".equals(contentType)
+  && "INFOGRAPHIC".equalsIgnoreCase(layoutType)
+  && containsConcreteNumber(headline)) {
 
-        JsonNode visualNode = node.path("visual");
+headline = null;
+}
 
-        String subject = textOrFallback(
-                visualNode.path("subject"),
-                "simple hand-painted editorial illustration representing "
-                        + originalTitle
-        );
+List<CardSpec.CarouselCard> carouselCards =
+        "AU_UPDATE".equals(contentType)
+                ? null
+                : parseCarouselCards(node.path("carouselCards"));
 
-        String mood = nullableText(
-                visualNode.path("mood")
-        );
+                JsonNode visualNode = node.path("visual");
 
-        String mascot = nullableText(
-                visualNode.path("mascot")
-        );
-
-        // Anything other than GRAVE is treated as neutral, so a missing or
-        // malformed value falls to the house style rather than to the
-        // restrained one — a wrong illustration is a smaller error than an
-        // ordinary notice dressed as a grave one.
-        String tone = nullableText(node.path("tone"));
-
-        String style = "GRAVE".equalsIgnoreCase(tone)
-                ? CARD_STYLE_PHOTOGRAPHIC
-                : CARD_STYLE_ILLUSTRATION;
-
-        CardSpec.VisualSpec visual = new CardSpec.VisualSpec(
-                subject,
-                mood,
-                mascot,
-                style
-        );
-
-        return new CardSpec(
-                contentType,
-                carouselCards == null ? "SINGLE" : "CAROUSEL",
-                layoutType,
-            headerTitle,
-            title,
-            headline,
-            keyFact,
-            infoBlocks,
-            carouselCards,
-            visual
-    );
+                String subject = textOrFallback(
+                        visualNode.path("subject"),
+                        "editorial visual representing " + originalTitle
+                );
+                
+                String background = nullableText(
+                        visualNode.path("background")
+                );
+                
+                String mood = nullableText(
+                        visualNode.path("mood")
+                );
+                
+                String mascot = nullableText(
+                        visualNode.path("mascot")
+                );
+                
+                // Tone controls treatment, while subject/background describe the article.
+                if ("SENSITIVE".equals(tone)) {
+                    mascot = null;
+                }
+                
+                String style =
+                        ("SERIOUS".equals(tone) || "SENSITIVE".equals(tone))
+                                ? CARD_STYLE_PHOTOGRAPHIC
+                                : CARD_STYLE_ILLUSTRATION;
+                
+                CardSpec.VisualSpec visual = new CardSpec.VisualSpec(
+                        subject,
+                        background,
+                        mood,
+                        mascot,
+                        style
+                );
+                
+                return new CardSpec(
+                        contentType,
+                        carouselCards == null ? "SINGLE" : "CAROUSEL",
+                        layoutType,
+                        tone,
+                        headerTitle,
+                        title,
+                        headline,
+                        primaryFact,
+                        supportingFacts,
+                        callout,
+                        action,
+                        keyFact,
+                        infoBlocks,
+                        carouselCards,
+                        visual
+                );
     }
 
-    private CardSpec.KeyFact parseKeyFact(JsonNode node) {
+    private String normaliseTone(String tone) {
+
+      if (tone == null) {
+          return CardSpec.CardTone.STANDARD.name();
+      }
+  
+      try {
+          return CardSpec.CardTone.valueOf(
+                  tone.trim().toUpperCase()
+          ).name();
+      } catch (IllegalArgumentException e) {
+          return CardSpec.CardTone.STANDARD.name();
+      }
+  }
+  
+  private CardSpec.CardFact parseCardFact(JsonNode node) {
+  
+      if (node == null || node.isNull() || node.isMissingNode()) {
+          return null;
+      }
+  
+      String value = nullableText(node.path("value"));
+  
+      if (value == null) {
+          return null;
+      }
+  
+      return new CardSpec.CardFact(
+        nullableText(node.path("role")),
+        nullableText(node.path("emphasis")),
+        nullableText(node.path("label")),
+        value,
+        nullableText(node.path("note")),
+        nullableText(node.path("icon"))
+);
+  }
+  
+  private List<CardSpec.CardFact> parseCardFacts(JsonNode node) {
+  
+      if (node == null || !node.isArray() || node.isEmpty()) {
+          return null;
+      }
+  
+      List<CardSpec.CardFact> facts = new ArrayList<>();
+  
+      for (JsonNode element : node) {
+  
+          CardSpec.CardFact fact = parseCardFact(element);
+  
+          if (fact != null) {
+              facts.add(fact);
+          }
+      }
+  
+      return facts.isEmpty()
+              ? null
+              : facts.stream().limit(5).toList();
+  }
+  
+  private CardSpec.Callout parseCallout(JsonNode node) {
+  
+      if (node == null || node.isNull() || node.isMissingNode()) {
+          return null;
+      }
+  
+      String value = nullableText(node.path("value"));
+  
+      if (value == null) {
+          return null;
+      }
+  
+      return new CardSpec.Callout(
+              nullableText(node.path("label")),
+              value,
+              nullableText(node.path("note"))
+      );
+  }
+  
+  private CardSpec.ActionBlock parseActionBlock(JsonNode node) {
+  
+      if (node == null || node.isNull() || node.isMissingNode()) {
+          return null;
+      }
+  
+      String body = nullableText(node.path("body"));
+  
+      if (body == null) {
+          return null;
+      }
+  
+      return new CardSpec.ActionBlock(
+              nullableText(node.path("title")),
+              body,
+              nullableText(node.path("icon"))
+      );
+  }
+  
+  private CardSpec.KeyFact parseKeyFact(JsonNode node) {
         if (node == null || node.isNull() || node.isMissingNode()) {
             return null;
         }
@@ -725,6 +1266,15 @@ List<CardSpec.CarouselCard> carouselCards = parseCarouselCards(
                 value
         );
     }
+
+    private boolean containsConcreteNumber(String text) {
+
+      if (text == null || text.isBlank()) {
+          return false;
+      }
+  
+      return text.matches(".*\\d.*");
+  }
 
     private List<CardSpec.InfoBlock> parseInfoBlocks(JsonNode node) {
 

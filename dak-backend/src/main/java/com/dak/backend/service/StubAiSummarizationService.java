@@ -21,4 +21,14 @@ public class StubAiSummarizationService implements AiSummarizationService {
         return SummarisationResult.relevant(
                 null, "No AI provider configured — relevance not assessed.");
     }
+    @Override
+public SummarisationResult summarizeManual(
+        String title,
+        String bodyText
+) {
+    return SummarisationResult.relevant(
+            null,
+            "Manual AI summarisation unavailable in stub mode."
+    );
+}
 }

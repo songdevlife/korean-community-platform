@@ -47,42 +47,75 @@ public class OpenAiHeroImageGenerationService
     private boolean enabled;
 
     @Override
-    public HeroImageResult generate(
-            CardSpec.VisualSpec visual,
-            CardSpec.LayoutType layoutType
-    ) {
+public HeroImageResult generate(
+        CardSpec.VisualSpec visual,
+        CardSpec.LayoutType layoutType
+) {
+    return generate(
+            visual,
+            layoutType,
+            CardSpec.CardTone.STANDARD
+    );
+}
 
-        if (!enabled || apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException(
-                    "OpenAI image generation is disabled or API key is missing."
-            );
-        }
+@Override
+public HeroImageResult generate(
+        CardSpec.VisualSpec visual,
+        CardSpec.LayoutType layoutType,
+        CardSpec.CardTone tone
+) {
 
-        try {
-                String prompt = usesPhotographicStyle(visual, layoutType)
-                        ? buildPhotographicPrompt(visual)
-                        : buildPrompt(visual);
-            String base64 = callApi(prompt);
-
-            String dataUrl = "data:image/png;base64," + base64;
-
-            return new HeroImageResult(
-                    dataUrl,
-                    prompt
-            );
-
-        } catch (Exception e) {
-            log.warn(
-                    "Hero image generation failed: {}",
-                    e.getMessage()
-            );
-
-            throw new IllegalStateException(
-                    "Hero image generation failed.",
-                    e
-            );
-        }
+    if (!enabled || apiKey == null || apiKey.isBlank()) {
+        throw new IllegalStateException(
+                "OpenAI image generation is disabled or API key is missing."
+        );
     }
+
+    CardSpec.CardTone effectiveTone =
+            tone == null
+                    ? CardSpec.CardTone.STANDARD
+                    : tone;
+
+    try {
+        String prompt =
+                usesPhotographicStyle(
+                        visual,
+                        layoutType,
+                        effectiveTone
+                )
+                        ? buildPhotographicPrompt(
+                                visual,
+                                effectiveTone
+                        )
+                        : buildPrompt(
+                                visual,
+                                effectiveTone
+                        );
+
+                        String base64 = callApi(
+                                prompt,
+                                effectiveTone
+                        );
+
+        String dataUrl = "data:image/png;base64," + base64;
+
+        return new HeroImageResult(
+                dataUrl,
+                prompt
+        );
+
+    } catch (Exception e) {
+        log.warn(
+                "Hero image generation failed: {}",
+                e.getMessage()
+        );
+
+        throw new IllegalStateException(
+                "Hero image generation failed.",
+                e
+        );
+    }
+}
 /**
      * Grave stories carry more weight with the restrained photographic
      * treatment. Everyday updates stay in the illustrated house style.
@@ -99,8 +132,14 @@ public class OpenAiHeroImageGenerationService
      */
 private boolean usesPhotographicStyle(
         CardSpec.VisualSpec visual,
-        CardSpec.LayoutType layoutType
+        CardSpec.LayoutType layoutType,
+        CardSpec.CardTone tone
 ) {
+
+    if (tone == CardSpec.CardTone.SERIOUS
+            || tone == CardSpec.CardTone.SENSITIVE) {
+        return true;
+    }
 
     if (layoutType == CardSpec.LayoutType.URGENT) {
         return true;
@@ -117,21 +156,73 @@ private boolean usesPhotographicStyle(
  * documentary evidence of the actual event, which the illustration style
  * never risks. Conceptual objects stay legible as metaphor.
  */
-private String buildPhotographicPrompt(CardSpec.VisualSpec visual) {
+private String buildPhotographicPrompt(
+        CardSpec.VisualSpec visual,
+        CardSpec.CardTone tone
+) {
 
-    String subject =
-            visual.subject() == null
-                    ? "A single conceptual object representing the topic"
-                    : visual.subject();
+        String subject =
+        visual.subject() == null
+                ? "A single conceptual object representing the topic"
+                : visual.subject();
 
-                    return """
-                        Create a conceptual photograph for a news information card.
-            
+String background =
+        visual.background() == null
+                || visual.background().isBlank()
+                ? "No additional article-specific environmental elements."
+                : visual.background();
+
+String toneInstruction =
+        tone == CardSpec.CardTone.SENSITIVE
+                ? """
+                  Quiet, respectful and highly restrained.
+                  Avoid spectacle, shock, visible suffering or dramatic
+                  reconstruction. Prefer symbolic contextual objects where
+                  literal depiction would be insensitive.
+                  """
+                : """
+                  Serious, factual and restrained.
+                  Give the subject appropriate visual weight without
+                  sensationalising the event.
+                  """;
+
+                  return """
+                        Create a conceptual photographic composition for a news information card.
+                
                         SUBJECT:
                         %s
-            
-            Reduce the subject to ONE simple physical object or a small
-            arrangement of objects. Do not depict the event itself.
+                
+                        ARTICLE-SPECIFIC SCENE:
+                        %s
+                
+                        TONE:
+                        %s
+                
+                        Use the ARTICLE-SPECIFIC SCENE to choose supporting objects and
+                        environmental cues that make the image specific to this report.
+                
+                        Create a complete environmental scene rather than an isolated object.
+
+                        The artwork will become the full background of a vertical DAK news card.
+                        The environment must therefore extend naturally to every edge of the image.
+                        Do not isolate the subject and do not create a transparent cut-out.
+
+                        This is an editorial reconstruction, not documentary photography.
+                        Do not imitate a specific real photograph or imply that this is an image
+                        captured at the actual event.
+
+                        Use the ARTICLE-SPECIFIC SCENE to construct a believable but clearly
+                        generic environment appropriate to the report.
+
+                        COMPOSITION FOR CARD OVERLAY:
+                        - vertical editorial scene
+                        - environment fills the entire frame
+                        - no isolated object floating in empty space
+                        - keep important visual activity mainly around the middle of the frame
+                        - preserve darker, lower-detail space near the top for headline typography
+                        - preserve lower-detail space toward the bottom for information panels
+                        - allow contextual elements to continue naturally behind those areas
+                        - compose as one coherent scene, not a collection of cut-out objects
 
             Draw what the SUBJECT above describes, not the difficulty that
             surrounds it. Where the subject is help being offered — a place
@@ -152,61 +243,98 @@ private String buildPhotographicPrompt(CardSpec.VisualSpec visual) {
             either — the register is that of a public notice rather than a
             campaign poster or a photograph of hardship.
             
-                        STYLE:
-            Studio product photography.
-            Single clear subject on a plain seamless background.
-            Soft directional light with gentle shadows.
-            Shallow depth of field.
-            Muted, desaturated palette.
-            Restrained and serious. No drama, no spectacle.
+        STYLE:
+Editorial conceptual photography.
+Realistic environmental lighting and believable physical space.
+Muted, restrained colour palette.
+Natural depth throughout the scene.
+Atmospheric but factual.
+The image must feel suitable as the background of a serious news card.
+No spectacle, sensationalism or cinematic disaster-poster treatment.
 
-            BACKGROUND:
-            Fully transparent background.
-            The subject must be cut out with nothing behind it.
-            No backdrop, no background colour, no gradient, no vignette.
-            No frame, no border, no rectangle.
-            No cast shadow on the ground.
+BACKGROUND:
+Create a complete opaque environmental scene.
+The environment must continue to every edge of the image.
+No transparency.
+No isolated cut-out subject.
+No plain studio backdrop.
+No empty white or transparent canvas.
 
-            COMPOSITION:
-            Wide landscape orientation.
-            Keep the subject large, centred and tightly cropped.
-            The image sits on a white card, so keep tonal contrast strong
-            enough to read against white.
+COMPOSITION:
+Vertical portrait composition designed as a full-card background.
+
+Use three loose visual zones:
+
+TOP:
+Keep this area darker and visually quieter.
+Do not place the main subject here.
+This area will carry the news headline.
+
+MIDDLE:
+Place the principal article-specific scene here.
+Show enough surrounding environment that the reader understands
+the context rather than seeing one isolated object.
+
+BOTTOM:
+Continue the same environment naturally, but reduce visual detail
+and contrast.
+This area will carry information panels and an action notice.
+
+Do not add artificial boxes, panels or text areas to the image itself.
+The card renderer adds those later.
 
             STRICTLY DO NOT INCLUDE:
-            - people or any part of a human body
-            - faces
-            - real buildings, offices, streets or interiors
-            - identifiable locations
-            - anything that could be mistaken for documentary evidence
-              of the actual event
-            - news photography or photojournalism framing
-            - crowds, crime scenes, emergency vehicles, damage or injury
-            - text, letters, numbers, captions
-            - logos, trademarks, watermarks
-            - brand names or product packaging
-            - Australian landmarks
-            - dramatic lighting, lens flare, motion blur
-            - graphic or distressing imagery
+        - identifiable real people
+        - recognisable faces
+        - graphic injury
+        - bodies
+        - blood or gore
+        - visible suffering
+        - identifiable private individuals
+        - exact reconstruction of a real news photograph
+        - anything presented as documentary evidence of the actual event
+        - text, letters, numbers or captions
+        - logos, trademarks or watermarks
+        - brand names or product packaging
+        - unnecessary Australian landmarks
+        - dramatic lens flare
+        - exaggerated explosions
+        - disaster-movie spectacle
+        - sensational or distressing imagery
+
+        Generic contextual elements such as roads, warehouses, emergency vehicles,
+        smoke, warning barriers, buildings, vegetation and public infrastructure
+        are allowed when they are relevant to the ARTICLE-SPECIFIC SCENE.
 
             Do not render any typography.
             """.formatted(
-            subject
-    );
+        subject,
+        background,
+        toneInstruction
+);
 }
-    private String buildPrompt(CardSpec.VisualSpec visual) {
+private String buildPrompt(
+        CardSpec.VisualSpec visual,
+        CardSpec.CardTone tone
+) {
 
         String subject =
                 visual.subject() == null
                         ? "A simple editorial illustration about the topic"
                         : visual.subject();
 
-        String mood =
-                visual.mood() == null
-                        ? "Informative and calm"
-                        : visual.mood();
-
-        String mascotInstruction =
+                        String mood =
+                        visual.mood() == null
+                                ? "Informative and calm"
+                                : visual.mood();
+                
+                String background =
+                        visual.background() == null
+                                || visual.background().isBlank()
+                                ? "No additional article-specific environmental elements."
+                                : visual.background();
+                
+                String mascotInstruction =
                 visual.mascot() == null
                         ? "Do not include the DAK chicken mascot."
                         : """
@@ -215,16 +343,28 @@ private String buildPhotographicPrompt(CardSpec.VisualSpec visual) {
                           The mascot must not dominate the composition.
                           """.formatted(visual.mascot());
 
-        return """
-                Create a hero illustration for Discover Adelaide Korea.
-
-                SUBJECT:
-                %s
-
-                MOOD:
-                %s
-
-                STYLE:
+                          return """
+                                Create a hero illustration for Discover Adelaide Korea.
+                        
+                                SUBJECT:
+                                %s
+                        
+                                ARTICLE-SPECIFIC SCENE:
+                                %s
+                        
+                                MOOD:
+                                %s
+                        
+                                The ARTICLE-SPECIFIC SCENE describes the environment and contextual
+                                elements that make this artwork specific to this story.
+                        
+                                Incorporate useful elements from that scene around the main subject,
+                                but keep the complete artwork as one isolated transparent composition.
+                        
+                                Do not create a rectangular background, backdrop or full-card scene.
+                                The final card renderer supplies the card background separately.
+                        
+                                STYLE:
                 DAK Hand-Painted Editorial v1.
 
                 Hand-painted editorial illustration.
@@ -288,31 +428,45 @@ private String buildPhotographicPrompt(CardSpec.VisualSpec visual) {
 
                 Do not render any typography.
                 """.formatted(
-                subject,
-                mood,
-                mascotInstruction
-        );
+        subject,
+        background,
+        mood,
+        mascotInstruction
+);
     }
 
-    private String callApi(String prompt) throws Exception {
+    private String callApi(
+        String prompt,
+        CardSpec.CardTone tone
+) throws Exception {
 
-        ObjectNode payload = objectMapper.createObjectNode();
+    ObjectNode payload = objectMapper.createObjectNode();
 
-        payload.put("model", model);
-        payload.put("prompt", prompt);
+    payload.put("model", model);
+    payload.put("prompt", prompt);
 
-        // Landscape hero artwork, not the final 1080x1350 card.
+    boolean fullScene =
+            tone == CardSpec.CardTone.SERIOUS
+                    || tone == CardSpec.CardTone.SENSITIVE;
+
+    /*
+     * LIGHT / STANDARD artwork remains a transparent landscape hero.
+     *
+     * SERIOUS / SENSITIVE artwork becomes the complete visual environment
+     * behind the card, so it must be portrait and opaque.
+     */
+    if (fullScene) {
+        payload.put("size", "1024x1536");
+        payload.put("background", "opaque");
+    } else {
         payload.put("size", "1536x1024");
-
-        // Medium is sufficient while testing visual consistency.
-        payload.put("quality", "medium");
-
-        // The card renderer draws the hero directly onto its own panel,
-        // so the artwork must arrive with an alpha channel and no backdrop.
         payload.put("background", "transparent");
+    }
 
-        // Required for alpha to survive; the API may otherwise return JPEG.
-        payload.put("output_format", "png");
+    // Medium is sufficient while testing visual consistency.
+    payload.put("quality", "medium");
+
+    payload.put("output_format", "png");
 
         // The generated image is returned as base64 image data.
 

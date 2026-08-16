@@ -40,6 +40,16 @@ public class AdminAustraliaUpdateController {
         return ApiResponse.ok(adminAustraliaUpdateService.importFromUrl(request));
     }
 
+        @PostMapping("/import-text")
+        @ResponseStatus(HttpStatus.CREATED)
+        public ApiResponse<ImportUpdateResponse> importFromText(
+                @Valid @RequestBody ManualImportUpdateRequest request
+        ) {
+        return ApiResponse.ok(
+                adminAustraliaUpdateService.importFromText(request)
+        );
+        }
+
     @PatchMapping("/{updateId}/metadata")
     public ApiResponse<AustraliaUpdateDetailResponse> updateMetadata(
             @PathVariable UUID updateId,

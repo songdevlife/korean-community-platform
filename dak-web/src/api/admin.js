@@ -80,6 +80,15 @@ export async function triggerRssPoll() {
   return response.data.data;
 }
 
+export async function importManualAustraliaUpdate(payload) {
+  const response = await apiClient.post(
+    '/admin/australia-updates/import-text',
+    payload
+  );
+
+  return response.data.data;
+}
+
 /**
  * Edits a guide. Send only the fields being changed; omitted fields are left
  * as they are. Note that changing slug alters the public URL.
