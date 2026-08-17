@@ -397,39 +397,58 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - This is the default when no stronger tone is justified.
 
             SERIOUS
-            - Accidents, violent crime, major public disruption, major safety
-              incidents, exploitation, severe misconduct or other stories where
-              the subject requires visible weight.
-            - Darker and more restrained than STANDARD, but still factual.
-            - Use an article-specific scene such as the actual type of road,
-              workplace, emergency setting or affected environment.
-            - Do not add danger, emergency vehicles, damage or victims unless
-              supported by the supplied source.
+- Accidents, violent crime, major public disruption, major safety
+  incidents, exploitation, severe misconduct or other stories where
+  the subject requires visible weight.
+- This includes ordinary fatal traffic crashes, workplace deaths,
+  industrial accidents and other single-incident fatalities where
+  the story is primarily about the incident, safety, investigation,
+  road closure, emergency response or public impact.
+- A death does NOT automatically make a story SENSITIVE.
+- Darker and more restrained than STANDARD, but still factual.
+- Use an article-specific scene such as the actual type of road,
+  workplace, emergency setting or affected environment.
+- Do not add danger, emergency vehicles, damage or victims unless
+  supported by the supplied source.
 
-            SENSITIVE
-            - Deaths, victims, grief, memorials, serious injury involving
-              identifiable groups, or stories requiring maximum restraint.
-            - Quiet, respectful and low-saturation.
-            - Never use the DAK mascot.
-            - Never turn deaths or victims into spectacle.
-            - Prefer symbolic or contextual imagery where a literal depiction
-              would be insensitive.
+SENSITIVE
+- Use only when the human loss itself requires exceptional restraint.
+- Examples include child deaths, multiple fatalities, mass-casualty
+  events, suicide, sexual violence, highly vulnerable victims,
+  bereavement-focused stories, memorial coverage, or incidents where
+  grief and victim suffering are the central subject.
+- Do not classify an ordinary single-fatality traffic or workplace
+  accident as SENSITIVE solely because a person died.
+- Quiet, respectful and low-saturation.
+- Never use the DAK mascot.
+- Never turn deaths or victims into spectacle.
+- Prefer symbolic or contextual imagery where a literal depiction
+  would be insensitive.
 
             Examples of the distinction:
 
-            A motorway collision with road closures and emergency response
-            may be SERIOUS.
+            A motorway collision, including a single fatal crash, with road
+closures, investigation or emergency response is normally SERIOUS.
 
-            A school bus crash in which students died is SENSITIVE.
+A school bus crash in which students died is SENSITIVE.
+
+A workplace accident in which one worker died is normally SERIOUS.
+
+A mass-casualty crash, child death, suicide or grief-focused memorial
+story is SENSITIVE.
 
             A skilled-migration invitation round is STANDARD.
 
             A Census participation reminder may be LIGHT.
 
             When unsure between LIGHT and STANDARD, choose STANDARD.
-            When unsure between SERIOUS and SENSITIVE, choose SENSITIVE only
-            when death, victims, grief or comparable human harm is central.
+            When unsure between SERIOUS and SENSITIVE, do not choose SENSITIVE
+only because a death occurred.
 
+Choose SENSITIVE only when exceptional human vulnerability, grief,
+multiple deaths, children, suicide, sexual violence, mass-casualty
+harm or comparable highly sensitive circumstances are central.
+Otherwise choose SERIOUS.
             HERO VISUAL RULES:
 
             The visual must be based on the supplied article, not on a generic
@@ -685,11 +704,44 @@ CARD TEXT DENSITY:
 
 - value:
   Prefer one compact fact of roughly 3-12 Korean characters.
-  It should normally fit on one or two short lines.
+  It must remain visually concise and should fit within one or two short lines.
   Do not write a complete explanatory sentence as value.
+  Do not preserve unnecessary detail merely because it appears in the source.
+
+  Compress locations, dates and times to the shortest form that still
+  communicates the useful fact.
+
+AUSTRALIAN PLACE-NAME RULES:
+
+- Do not literally translate Australian proper place names into Korean.
+- Street names, road names, suburb names and other geographic proper names
+  must retain their proper-name meaning.
+- Transliterate the proper name into Korean where appropriate rather than
+  translating the ordinary English meaning of its words.
+- "Park Terrace" -> "파크 테라스", never "공원 테라스".
+- "Salisbury Highway" -> "솔즈베리 하이웨이".
+- "North Terrace" -> "노스 테라스", never "북쪽 테라스".
+- "King William Street" -> "킹 윌리엄 스트리트".
+- Suburb names such as "Salisbury" -> "솔즈베리".
+- When shortening a location for a card, remove unnecessary detail rather
+  than translating or altering the proper name.
+
+  Examples:
+  - "Park Terrace and Salisbury Highway intersection" -> "솔즈베리 교차로"
+  - "29 July 2026 at approximately 6:30am" -> "7월 29일 오전 6시 30분경"
+  - Do not include the year when it is unnecessary for understanding the card.
+
+  Do not split one fact between value and note merely to make the value shorter.
+  If the complete source detail would make the value too long, summarise it
+  rather than moving the remaining words into note.
 
 - note:
   Optional.
+  Default to null.
+  Most fact boxes should not need a note.
+
+  Use note only when it provides genuinely separate context that is
+  necessary to understand the value.
   Omit it when the value is already understandable by itself.
   When needed, use only one short Korean phrase, preferably 2-10 characters.
   Never use a complete sentence.
@@ -697,10 +749,23 @@ CARD TEXT DENSITY:
 
   value and note must have different jobs:
   - value = the main fact.
-  - note = only essential context that changes or clarifies the meaning.
-  - Never repeat the same noun, action or outcome from value in note.
-  - If removing note does not reduce understanding, use null.
+  - note = only essential secondary context that adds new information.
+  - Never move part of the main fact into note just to shorten value.
+  - Never repeat, restate, narrow or paraphrase information already present
+    in value.
+  - A suburb or area name must not be used as note when that location is
+    already stated or implied by value.
+  - If removing note does not materially reduce understanding, use null.
 
+  Good:
+  label: "도로 현황"
+  value: "오후 1시 30분 재개"
+  note: null
+
+  Bad:
+  label: "발생 장소"
+  value: "솔즈베리 교차로"
+  note: "솔즈베리"
   Prefer:
   value: "2명 병원 이송"
   note: "연기 흡입"
@@ -1168,28 +1233,80 @@ List<CardSpec.CarouselCard> carouselCards =
   }
   
   private CardSpec.CardFact parseCardFact(JsonNode node) {
+
+    if (node == null || node.isNull() || node.isMissingNode()) {
+        return null;
+    }
+
+    String value = nullableText(node.path("value"));
+
+    if (value == null) {
+        return null;
+    }
+
+    String note = cleanFactNote(
+            value,
+            nullableText(node.path("note"))
+    );
+
+    return new CardSpec.CardFact(
+            nullableText(node.path("role")),
+            nullableText(node.path("emphasis")),
+            nullableText(node.path("label")),
+            value,
+            note,
+            nullableText(node.path("icon"))
+    );
+}
   
-      if (node == null || node.isNull() || node.isMissingNode()) {
-          return null;
-      }
-  
-      String value = nullableText(node.path("value"));
-  
-      if (value == null) {
-          return null;
-      }
-  
-      return new CardSpec.CardFact(
-        nullableText(node.path("role")),
-        nullableText(node.path("emphasis")),
-        nullableText(node.path("label")),
-        value,
-        nullableText(node.path("note")),
-        nullableText(node.path("icon"))
-);
-  }
-  
-  private List<CardSpec.CardFact> parseCardFacts(JsonNode node) {
+  private String cleanFactNote(
+        String value,
+        String note
+) {
+
+    if (note == null || note.isBlank()) {
+        return null;
+    }
+
+    String cleanValue =
+            value == null
+                    ? ""
+                    : value.replaceAll("\\s+", "").trim();
+
+    String cleanNote =
+            note.replaceAll("\\s+", "").trim();
+
+    /*
+     * A note must add genuinely separate context.
+     *
+     * Remove notes that merely repeat information already carried
+     * by the value.
+     */
+    if (!cleanValue.isEmpty()
+            && (cleanValue.contains(cleanNote)
+            || cleanNote.contains(cleanValue))) {
+        return null;
+    }
+
+    /*
+     * Very short fragments are usually leftovers created when Claude
+     * splits one location or fact between value and note.
+     *
+     * Examples:
+     * value: "솔즈베리 교차로"
+     * note:  "파크"
+     *
+     * Genuine contextual notes such as "연기 흡입" remain untouched.
+     */
+    if (cleanNote.length() <= 2) {
+        return null;
+    }
+
+    return note.trim();
+}
+
+
+private List<CardSpec.CardFact> parseCardFacts(JsonNode node) {
   
       if (node == null || !node.isArray() || node.isEmpty()) {
           return null;

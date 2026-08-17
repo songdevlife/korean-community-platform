@@ -1605,48 +1605,59 @@ if (fact.label() != null && !fact.label().isBlank()) {
                 width - 48
         );
 
-        for (String line : valueLines.stream().limit(2).toList()) {
+        List<String> renderedValueLines =
+        valueLines.stream()
+                .limit(2)
+                .toList();
 
-            g.drawString(
-                    line,
-                    x + 24,
-                    valueY
-            );
+for (String line : renderedValueLines) {
 
-            valueY += valueFont.getSize() + 6;
-        }
+    g.drawString(
+            line,
+            x + 24,
+            valueY
+    );
 
-        /*
-         * NOTE
-         *
-         * Slightly larger than before, but limited to one short line.
-         */
-        if (fact.note() != null && !fact.note().isBlank()) {
+    valueY += valueFont.getSize() + 6;
+}
 
-                g.setFont(
-                        regularFont.deriveFont(
-                                Font.PLAIN,
-                                23f
-                        )
-                );
-                
-                g.setColor(SERIOUS_TEXT_MUTED);
-                
-                List<String> noteLines = wrapToFit(
-                        fact.note(),
-                        g.getFontMetrics(),
-                        width - 48
-                );
-                
-                if (!noteLines.isEmpty()) {
-                
-                    g.drawString(
-                            noteLines.get(0),
-                            x + 24,
-                            SERIOUS_FACT_TOP_Y + 185
-                    );
-                }
-        }
+/*
+ * NOTE
+ *
+ * Position follows the actual value height instead of using a fixed Y.
+ * This prevents a two-line value from colliding with the note.
+ */
+if (fact.note() != null && !fact.note().isBlank()) {
+
+    g.setFont(
+            regularFont.deriveFont(
+                    Font.PLAIN,
+                    23f
+            )
+    );
+
+    g.setColor(SERIOUS_TEXT_MUTED);
+
+    List<String> noteLines = wrapToFit(
+            fact.note(),
+            g.getFontMetrics(),
+            width - 48
+    );
+
+    if (!noteLines.isEmpty()) {
+
+        int noteY = Math.min(
+                valueY + 2,
+                SERIOUS_FACT_TOP_Y + SERIOUS_FACT_HEIGHT - 14
+        );
+
+        g.drawString(
+                noteLines.get(0),
+                x + 24,
+                noteY
+        );
+    }
+}
     }
 }
 
@@ -1757,33 +1768,40 @@ private void drawSeriousAction(
      * Larger than the title because the actual instruction is what the
      * reader must notice.
      */
-    g.setFont(
-            boldFont.deriveFont(
-                    Font.PLAIN,
-                    28f
-            )
+    Font bodyFont = fitWrappedFont(
+        g,
+        action.body(),
+        boldFont,
+        28,
+        22,
+        availableWidth,
+        2
+);
+
+g.setFont(bodyFont);
+g.setColor(Color.WHITE);
+
+List<String> lines = wrapToFit(
+        action.body(),
+        g.getFontMetrics(),
+        availableWidth
+);
+
+int bodyLineHeight =
+        bodyFont.getSize() + 5;
+
+int bodyY = SERIOUS_ACTION_Y + 78;
+
+for (String line : lines.stream().limit(2).toList()) {
+
+    g.drawString(
+            line,
+            textX,
+            bodyY
     );
 
-    g.setColor(Color.WHITE);
-
-    List<String> lines = wrapToFit(
-            action.body(),
-            g.getFontMetrics(),
-            availableWidth
-    );
-
-    int bodyY = SERIOUS_ACTION_Y + 78;
-
-    for (String line : lines.stream().limit(2).toList()) {
-
-        g.drawString(
-                line,
-                textX,
-                bodyY
-        );
-
-        bodyY += 32;
-    }
+    bodyY += bodyLineHeight;
+}
 }
 
 private void drawInfoBlock(
@@ -1834,29 +1852,31 @@ BufferedImage icon =
                 (float) INFO_BLOCK_LABEL_FONT_SIZE
         );
 
-// One line where the text allows it: a two-line value in one block and
-        // a one-line value in the next reads as two different kinds of block.
-        Font valueFont = fitWrappedFont(
-                g,
-                block.value(),
-                extraBoldFont,
-                INFO_BLOCK_VALUE_FONT_SIZE,
-                24,
-                textWidth,
-                1
+// Keep a complete fact together. A value may use up to two short lines
+// rather than being aggressively shrunk or split between value and note.
+Font valueFont = fitWrappedFont(
+        g,
+        block.value(),
+        extraBoldFont,
+        INFO_BLOCK_VALUE_FONT_SIZE,
+        24,
+        textWidth,
+        2
+);
+
+        // Only force-shrink an unbreakable value. Values containing spaces may
+// naturally wrap across the two lines allowed above.
+if (!block.value().contains(" ")) {
+
+    while (valueFont.getSize() > 16
+            && g.getFontMetrics(valueFont).stringWidth(block.value()) > textWidth) {
+
+        valueFont = extraBoldFont.deriveFont(
+                Font.PLAIN,
+                (float) (valueFont.getSize() - 1)
         );
-
-        // A value with no spaces cannot be wrapped, so fitting it to a line
-        // count achieves nothing and it runs past the block edge. Shrink
-        // until it actually measures short enough.
-        while (valueFont.getSize() > 16
-                && g.getFontMetrics(valueFont).stringWidth(block.value()) > textWidth) {
-
-            valueFont = extraBoldFont.deriveFont(
-                    Font.PLAIN,
-                    (float) (valueFont.getSize() - 1)
-            );
-        }
+    }
+}
 
         Font noteFont = regularFont.deriveFont(
                 Font.PLAIN,
