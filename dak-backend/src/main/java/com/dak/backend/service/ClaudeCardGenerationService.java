@@ -131,15 +131,19 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Suits ordinary policy changes, notices, fee changes and updates.
 
             INFOGRAPHIC
-            - Use when the source contains multiple DISTINCT practical facts
-              that are useful together on one card.
-            - For AU_UPDATE, prefer INFOGRAPHIC when three or more different
-              useful facts are available.
-            - Useful facts include dates, deadlines, amounts, counts, eligibility
-              conditions, minimum scores, visa subclasses, program types,
-              locations and South Australia-specific figures.
-            - Requires infoBlocks: three to five of them, each carrying a
-              different fact.
+- Use when the source contains multiple DISTINCT practical facts
+  that are useful together on one card.
+- For AU_UPDATE, prefer INFOGRAPHIC when three or more different
+  useful facts are available, EXCEPT when tone is LIGHT.
+- LIGHT cards must not use INFOGRAPHIC.
+- LIGHT cards use the dedicated hierarchy:
+  supportingFacts for the three most useful facts,
+  and secondaryFacts for zero to two additional useful facts.
+- Useful facts include dates, deadlines, amounts, counts, eligibility
+  conditions, minimum scores, visa subclasses, program types,
+  locations and South Australia-specific figures.
+- Requires infoBlocks: three to five of them, each carrying a
+  different fact.
             - Never choose INFOGRAPHIC if the blocks would merely repeat the
               same number or event in different wording.
             - Use keyFact as null when INFOGRAPHIC is chosen; the blocks carry
@@ -315,8 +319,9 @@ For every card, decide reader-facing text in this order:
 1. title
 2. primaryFact, if needed
 3. supportingFacts
-4. action, if needed
-5. headline LAST
+4. secondaryFacts, if useful
+5. action, if needed
+6. headline LAST
 
 Do not draft the headline before the structured facts are selected.
 
@@ -324,6 +329,7 @@ When writing the headline, treat all information already used in:
 - title
 - primaryFact
 - supportingFacts
+- secondaryFacts
 - action
 
 as RESERVED.
@@ -505,12 +511,50 @@ written, return headline as null.
             Choose exactly one:
 
             LIGHT
-            - Friendly everyday information, community notices, events,
-              lifestyle information and approachable public-service content.
-            - Bright, warm and welcoming.
-            - The DAK mascot may be used where it naturally fits.
-            - Do not make a serious article LIGHT merely because the information
-              is useful or easy to understand.
+- Friendly everyday information, community notices, events,
+  lifestyle information and approachable public-service content.
+- Bright, warm and welcoming.
+- The DAK mascot may be used where it naturally fits.
+- Do not make a serious article LIGHT merely because the information
+  is useful or easy to understand.
+
+LIGHT STRUCTURE:
+- When tone is LIGHT, layoutType must be STANDARD.
+- Never use INFOGRAPHIC, FACT_HOOK or URGENT with LIGHT.
+- Use primaryFact as null.
+- Select exactly three supportingFacts when the source contains
+  at least three useful distinct facts.
+- supportingFacts are the three most useful practical facts that
+  should be understood first.
+- Use zero to two secondaryFacts for additional useful information.
+
+- After selecting the three supportingFacts, inspect the remaining
+  source-supported information for additional distinct useful facts.
+
+- If TWO OR MORE distinct useful facts remain, you MUST return
+  exactly two secondaryFacts.
+
+- If exactly ONE distinct useful fact remains, return exactly one
+  secondaryFact.
+
+- Return an empty secondaryFacts array only when no additional
+  useful distinct fact remains.
+
+- Do not combine two distinct useful facts into one secondaryFact
+  merely to reduce the number of secondaryFacts.
+
+- For example, programs, booking information, special dates,
+  venue information, eligibility, practical tips and additional
+  event activities should remain separate when they communicate
+  different information.
+
+- Never invent or duplicate information merely to reach two
+  secondaryFacts.
+- For LIGHT, infoBlocks must be null.
+- For LIGHT, keyFact must be null.
+- For LIGHT, callout should normally be null.
+- For LIGHT, action should normally be null unless the source
+  explicitly requires the reader to take an action.
 
             STANDARD
             - Normal news, migration, policy, economy, government notices,
@@ -518,6 +562,43 @@ written, return headline as null.
             - Calm, clear and editorial.
             - Use a warm contextual background related to the actual article.
             - This is the default when no stronger tone is justified.
+
+            STANDARD STRUCTURE:
+            - When tone is STANDARD and layoutType is STANDARD,
+              use supportingFacts for the three most useful distinct facts
+              that should be understood first.
+            - Prefer exactly three supportingFacts when the source contains
+              at least three useful distinct facts.
+
+            - After selecting supportingFacts, inspect the remaining
+              source-supported information for additional distinct useful facts.
+
+            - Use secondaryFacts for useful practical or contextual information
+              that is less important than supportingFacts but still helps the
+              reader understand what happens next, why the update matters,
+              what may be affected, or what additional context is useful.
+
+            - If TWO OR MORE useful distinct facts remain after selecting
+              supportingFacts, return exactly two secondaryFacts.
+
+            - If exactly ONE useful distinct fact remains, return exactly
+              one secondaryFact.
+
+            - Return an empty secondaryFacts array only when no additional
+              useful distinct fact remains.
+
+            - Never duplicate title, headline, primaryFact or supportingFacts
+              in secondaryFacts.
+
+            - Never invent information merely to create secondaryFacts.
+
+            - Do not move essential information out of supportingFacts merely
+              to populate secondaryFacts.
+
+            - For STANDARD economic or policy updates, good secondaryFacts
+              may include source-supported outlook, expected effects,
+              implementation context, affected products or groups, or another
+              practical consequence not already shown above.
 
             SERIOUS
 - Accidents, violent crime, major public disruption, major safety
@@ -659,6 +740,17 @@ Otherwise choose SERIOUS.
                   "icon": "CALENDAR | CLOCK | PEOPLE | LOCATION | MONEY | DOCUMENT | LIGHTBULB | CHECK | WARNING | INFO, or null"
                 }
               ],
+
+              "secondaryFacts": [
+  {
+    "role": "SECONDARY",
+    "emphasis": "NORMAL",
+    "label": "짧은 라벨",
+    "value": "추가로 알아둘 핵심 정보",
+    "note": "필요한 경우 짧은 보충 설명",
+    "icon": "LIGHTBULB"
+  }
+],
 
               "callout": {
                 "label": "short Korean label",
@@ -816,6 +908,21 @@ supportingFacts:
 - Do not repeat primaryFact.
 - Do not repeat the same underlying fact in different wording.
 
+secondaryFacts:
+- secondaryFacts are optional.
+- Use zero to two secondaryFacts.
+- They are useful practical or contextual information that is less important
+  than the main supportingFacts.
+- For LIGHT cards, prefer source-supported information such as:
+  venue details, special programs, booking information, eligibility,
+  practical tips, privacy information or another useful additional detail.
+- Do not move essential information into secondaryFacts.
+- Do not repeat title, headline, primaryFact or supportingFacts.
+- Do not repeat the same underlying fact using different wording.
+- Never invent secondaryFacts merely to fill empty visual space.
+- If the source does not contain useful additional information,
+  return an empty array.
+
 CARD TEXT DENSITY:
 - These facts will appear inside small visual panels, not in an article.
 - Write for a mobile card that must be understood at a glance.
@@ -833,6 +940,8 @@ CARD TEXT DENSITY:
 
   Compress locations, dates and times to the shortest form that still
   communicates the useful fact.
+
+  
 
 AUSTRALIAN PLACE-NAME RULES:
 
@@ -1249,13 +1358,21 @@ CardSpec.CardFact primaryFact = parseCardFact(
   node.path("primaryFact")
 );
 
-List<CardSpec.CardFact> supportingFacts = parseCardFacts(
-  node.path("supportingFacts")
-);
+List<CardSpec.CardFact> supportingFacts =
+        parseCardFacts(node.path("supportingFacts"));
 
-CardSpec.Callout callout = parseCallout(
-  node.path("callout")
-);
+List<CardSpec.CardFact> secondaryFacts =
+        parseCardFacts(node.path("secondaryFacts"));
+
+if (secondaryFacts != null) {
+    secondaryFacts =
+            secondaryFacts.stream()
+                    .limit(2)
+                    .toList();
+}
+
+CardSpec.Callout callout =
+        parseCallout(node.path("callout"));
 
 CardSpec.ActionBlock action = parseActionBlock(
   node.path("action")
@@ -1322,22 +1439,23 @@ List<CardSpec.CarouselCard> carouselCards =
                 );
                 
                 return new CardSpec(
-                        contentType,
-                        carouselCards == null ? "SINGLE" : "CAROUSEL",
-                        layoutType,
-                        tone,
-                        headerTitle,
-                        title,
-                        headline,
-                        primaryFact,
-                        supportingFacts,
-                        callout,
-                        action,
-                        keyFact,
-                        infoBlocks,
-                        carouselCards,
-                        visual
-                );
+                  contentType,
+                  carouselCards == null ? "SINGLE" : "CAROUSEL",
+                  layoutType,
+                  tone,
+                  headerTitle,
+                  title,
+                  headline,
+                  primaryFact,
+supportingFacts,
+secondaryFacts,
+callout,
+action,
+                  keyFact,
+                  infoBlocks,
+                  carouselCards,
+                  visual
+          );
     }
 
     private String normaliseTone(String tone) {

@@ -62,23 +62,34 @@ public record CardSpec(
      */
     CardFact primaryFact,
 
-    /**
-     * Secondary facts needed to understand the story.
-     *
-     * The renderer will decide whether these become columns, rows,
-     * cards or another example-based composition.
-     */
-    List<CardFact> supportingFacts,
+/**
+ * Core supporting facts needed to understand the story.
+ *
+ * These are the main structured facts shown prominently by the renderer.
+ */
+List<CardFact> supportingFacts,
 
-    /**
-     * One visually separate piece of context.
-     *
-     * Examples:
-     * South Australia-specific information,
-     * an important comparison,
-     * a consequence worth separating from the supporting facts.
-     */
-    Callout callout,
+/**
+ * Optional additional facts that are useful but less important than
+ * the main supporting facts.
+ *
+ * LIGHT cards may use up to two of these as a secondary information row.
+ *
+ * Examples:
+ * - live music or special program details
+ * - venue information
+ * - booking information
+ * - eligibility or practical notes
+ *
+ * Must come from the source. Do not create secondary facts merely
+ * to fill visual space.
+ */
+List<CardFact> secondaryFacts,
+
+/**
+ * One visually separate piece of context.
+ */
+Callout callout,
 
     /**
      * What the reader should do, only where the source explicitly
@@ -136,15 +147,16 @@ public record CardSpec(
                 headline,
 
                 // New hierarchy fields are populated in the next migration step.
-                null,
-                null,
-                null,
-                null,
+null,   // primaryFact
+null,   // supportingFacts
+null,   // secondaryFacts
+null,   // callout
+null,   // action
 
-                keyFact,
-                infoBlocks,
-                carouselCards,
-                visual
+keyFact,
+infoBlocks,
+carouselCards,
+visual
         );
     }
 

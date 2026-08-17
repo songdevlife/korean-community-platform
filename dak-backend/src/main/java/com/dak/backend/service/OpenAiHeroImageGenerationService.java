@@ -72,49 +72,56 @@ public HeroImageResult generate(
     }
 
     CardSpec.CardTone effectiveTone =
-            tone == null
-                    ? CardSpec.CardTone.STANDARD
-                    : tone;
+    tone == null
+            ? CardSpec.CardTone.STANDARD
+            : tone;
 
-    try {
-        String prompt =
-                usesPhotographicStyle(
+try {
+
+String prompt =
+        usesPhotographicStyle(
+                visual,
+                layoutType,
+                effectiveTone
+        )
+                ? buildPhotographicPrompt(
                         visual,
-                        layoutType,
                         effectiveTone
                 )
-                        ? buildPhotographicPrompt(
-                                visual,
-                                effectiveTone
+                : effectiveTone == CardSpec.CardTone.STANDARD
+                        ? buildStandardPrompt(
+                                visual
                         )
                         : buildPrompt(
                                 visual,
                                 effectiveTone
                         );
 
-                        String base64 = callApi(
-                                prompt,
-                                effectiveTone
-                        );
+String base64 = callApi(
+        prompt,
+        effectiveTone
+);
 
-        String dataUrl = "data:image/png;base64," + base64;
+String dataUrl =
+        "data:image/png;base64," + base64;
 
-        return new HeroImageResult(
-                dataUrl,
-                prompt
-        );
+return new HeroImageResult(
+        dataUrl,
+        prompt
+);
 
-    } catch (Exception e) {
-        log.warn(
-                "Hero image generation failed: {}",
-                e.getMessage()
-        );
+} catch (Exception e) {
 
-        throw new IllegalStateException(
-                "Hero image generation failed.",
-                e
-        );
-    }
+log.warn(
+        "Hero image generation failed: {}",
+        e.getMessage()
+);
+
+throw new IllegalStateException(
+        "Hero image generation failed.",
+        e
+);
+}
 }
 /**
      * Grave stories carry more weight with the restrained photographic
@@ -313,6 +320,136 @@ The card renderer adds those later.
         toneInstruction
 );
 }
+private String buildStandardPrompt(
+        CardSpec.VisualSpec visual
+) {
+
+    String subject =
+            visual.subject() == null
+                    ? "A calm editorial illustration representing the news topic"
+                    : visual.subject();
+
+    String background =
+            visual.background() == null
+                    || visual.background().isBlank()
+                    ? "A subtle warm editorial environment related to the subject."
+                    : visual.background();
+
+    String mood =
+            visual.mood() == null
+                    ? "Calm, trustworthy and informative"
+                    : visual.mood();
+
+    return """
+            Create a wide editorial hero background for a DAK STANDARD news card.
+
+            SUBJECT:
+            %s
+
+            ARTICLE-SPECIFIC SCENE:
+            %s
+
+            MOOD:
+            %s
+
+            PURPOSE:
+            This illustration will fill the complete upper section of a
+            vertical news card.
+
+            It is NOT a separate picture, sticker, framed illustration,
+            icon or cut-out object.
+
+            The title will be rendered by the card system over the LEFT
+            side of this artwork.
+
+            COMPOSITION:
+
+            - Use a wide landscape editorial composition.
+            - The environment must extend naturally across the full width.
+            - Reserve approximately the LEFT 45%% of the image as calm
+              negative space for large headline typography.
+            - Keep the left side low-detail, low-contrast and visually quiet.
+            - Place the principal article-specific subject mainly in the
+              RIGHT 55%% of the composition.
+            - The main subject may extend slightly toward the centre,
+              but must not dominate or obstruct the left headline area.
+            - Do not place the largest object in the exact centre.
+            - Supporting environmental elements may continue faintly
+              behind the left side.
+            - The composition should feel like one complete editorial scene,
+              not several unrelated objects arranged together.
+
+            VISUAL HIERARCHY:
+
+            LEFT:
+            Quiet warm background with generous negative space.
+            Only subtle contextual details.
+
+            RIGHT:
+            Main article-specific subject.
+            This is where the strongest visual detail belongs.
+
+            BACKGROUND:
+            Use a warm cream / soft neutral editorial environment that can
+            blend naturally into the STANDARD card background.
+
+            Do not create a hard-edged image rectangle inside the scene.
+            Do not create a white sticker or isolated transparent cut-out.
+            Do not create a visible frame, border, panel or picture box.
+
+            STYLE:
+            DAK Hand-Painted Editorial v1.
+            Hand-painted editorial illustration.
+            Slightly imperfect brush strokes.
+            Clear but restrained outlines.
+            Warm cream, amber, muted blue and neutral tones.
+            Professional and trustworthy rather than playful.
+            Detailed enough to communicate the article quickly,
+            but visually calmer than LIGHT.
+
+            IMPORTANT:
+            Show the subject described above rather than replacing it with
+            a generic financial dashboard, generic office desk or giant
+            symbolic icon unless that object is explicitly central to the
+            supplied subject.
+
+            For institutional or policy stories, prefer a recognisable
+            environmental representation of the institution or process
+            described by the SUBJECT and ARTICLE-SPECIFIC SCENE.
+
+            Do not include the DAK chicken mascot.
+
+            STRICTLY DO NOT INCLUDE:
+            - text
+            - letters
+            - numbers
+            - captions
+            - logos
+            - trademarks
+            - DAK wordmark
+            - watermark
+            - typography
+            - framed artwork
+            - square picture compositions
+            - isolated sticker-like illustrations
+            - a giant object occupying the centre of the image
+            - generic corporate stock-art composition
+            - photorealism
+            - photography
+            - 3D rendering
+            - unnecessary Australian landmarks
+            - Sydney Opera House
+            - Sydney Harbour Bridge
+
+            Do not render any typography.
+            """.formatted(
+            subject,
+            background,
+            mood
+    );
+}
+
+
 private String buildPrompt(
         CardSpec.VisualSpec visual,
         CardSpec.CardTone tone
@@ -445,23 +582,36 @@ private String buildPrompt(
     payload.put("model", model);
     payload.put("prompt", prompt);
 
-    boolean fullScene =
-            tone == CardSpec.CardTone.SERIOUS
-                    || tone == CardSpec.CardTone.SENSITIVE;
+    boolean portraitFullScene =
+    tone == CardSpec.CardTone.SERIOUS
+            || tone == CardSpec.CardTone.SENSITIVE;
 
-    /*
-     * LIGHT / STANDARD artwork remains a transparent landscape hero.
-     *
-     * SERIOUS / SENSITIVE artwork becomes the complete visual environment
-     * behind the card, so it must be portrait and opaque.
-     */
-    if (fullScene) {
-        payload.put("size", "1024x1536");
-        payload.put("background", "opaque");
-    } else {
-        payload.put("size", "1536x1024");
-        payload.put("background", "transparent");
-    }
+boolean standardLandscapeScene =
+    tone == CardSpec.CardTone.STANDARD;
+
+/*
+* LIGHT remains a transparent cut-out hero.
+*
+* STANDARD is a wide opaque editorial environment used across
+* the complete upper section of the card.
+*
+* SERIOUS / SENSITIVE remain portrait full-card environments.
+*/
+if (portraitFullScene) {
+
+payload.put("size", "1024x1536");
+payload.put("background", "opaque");
+
+} else if (standardLandscapeScene) {
+
+payload.put("size", "1536x1024");
+payload.put("background", "opaque");
+
+} else {
+
+payload.put("size", "1536x1024");
+payload.put("background", "transparent");
+}
 
     // Medium is sufficient while testing visual consistency.
     payload.put("quality", "medium");
