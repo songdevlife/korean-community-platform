@@ -560,6 +560,14 @@ if (tone == CardSpec.CardTone.SERIOUS) {
             trimmedHero
     );
 
+} else if (tone == CardSpec.CardTone.SENSITIVE) {
+
+    drawSensitiveLayout(
+            g,
+            cardSpec,
+            trimmedHero
+    );
+
 } else {
 
     CardSpec.LayoutType layout =
@@ -913,6 +921,234 @@ boolean criticalPrimary =
     );
 }
 
+/**
+ * SENSITIVE tone composition.
+ *
+ * Used for stories involving child deaths, multiple fatalities,
+ * grief, suicide, sexual violence or other circumstances requiring
+ * maximum restraint.
+ *
+ * Unlike SERIOUS:
+ * - no mascot
+ * - no red primary emphasis
+ * - no dark full-card treatment
+ * - low-saturation blue-grey palette
+ * - contextual/symbolic image remains visually quiet
+ */
+private void drawSensitiveLayout(
+        Graphics2D g,
+        CardSpec cardSpec,
+        BufferedImage hero
+) {
+
+    /*
+     * ATMOSPHERIC BACKGROUND
+     *
+     * SENSITIVE uses the article-specific artwork as part of the environment,
+     * like SERIOUS, but without the dramatic dark treatment.
+     */
+    drawCoverImage(
+            g,
+            hero,
+            PANEL_MARGIN,
+            PANEL_MARGIN,
+            WIDTH - (PANEL_MARGIN * 2),
+            HEIGHT - (PANEL_MARGIN * 2)
+    );
+
+    /*
+ * GLOBAL BLUE-GREY VEIL
+ *
+ * Keep the artwork clearly visible. SENSITIVE should feel subdued,
+ * not washed out.
+ */
+g.setColor(
+        new Color(190, 202, 210, 55)
+);
+
+g.fillRoundRect(
+        PANEL_MARGIN,
+        PANEL_MARGIN,
+        WIDTH - (PANEL_MARGIN * 2),
+        HEIGHT - (PANEL_MARGIN * 2),
+        PANEL_CORNER_RADIUS,
+        PANEL_CORNER_RADIUS
+);
+
+/*
+ * TOP READING VEIL
+ *
+ * Keep the title area calm and highly readable, then fade the veil out
+ * before the visual focal area begins.
+ */
+Paint oldPaint = g.getPaint();
+
+g.setPaint(
+        new GradientPaint(
+                0,
+                PANEL_MARGIN,
+                new Color(232, 237, 240, 220),
+                0,
+                600,
+                new Color(220, 228, 232, 35)
+        )
+);
+
+g.fillRoundRect(
+        PANEL_MARGIN,
+        PANEL_MARGIN,
+        WIDTH - (PANEL_MARGIN * 2),
+        650,
+        PANEL_CORNER_RADIUS,
+        PANEL_CORNER_RADIUS
+);
+
+/*
+ * BOTTOM READABILITY FADE
+ *
+ * Strengthens only the lower information region while preserving
+ * the middle of the image.
+ */
+g.setPaint(
+        new GradientPaint(
+                0,
+                760,
+                new Color(225, 231, 234, 0),
+                0,
+                HEIGHT - PANEL_MARGIN,
+                new Color(225, 231, 234, 205)
+        )
+);
+
+g.fillRect(
+        PANEL_MARGIN,
+        760,
+        WIDTH - (PANEL_MARGIN * 2),
+        HEIGHT - 760 - PANEL_MARGIN
+);
+
+g.setPaint(oldPaint);
+
+    /*
+     * SENSITIVE never uses the mascot.
+     */
+    drawBadge(
+            g,
+            cardSpec,
+            new Color(82, 91, 98)
+    );
+
+    /*
+     * TITLE
+     */
+    String title = cardSpec.title();
+
+    if (title == null || title.isBlank()) {
+        title = cardSpec.effectiveHeaderTitle();
+    }
+
+    if (title != null && !title.isBlank()) {
+
+        title = stripMarkers(title);
+
+        Font titleFont = fitWrappedFont(
+                g,
+                title,
+                extraBoldFont,
+                62,
+                44,
+                SERIOUS_CONTENT_WIDTH,
+                2
+        );
+
+        g.setFont(titleFont);
+        g.setColor(new Color(38, 45, 51));
+
+        int titleY = 225;
+        int lineHeight = titleFont.getSize() + 10;
+
+        for (String line : wrapToFit(
+                title,
+                g.getFontMetrics(),
+                SERIOUS_CONTENT_WIDTH
+        ).stream().limit(2).toList()) {
+
+            g.drawString(
+                    line,
+                    SERIOUS_CONTENT_X,
+                    titleY
+            );
+
+            titleY += lineHeight;
+        }
+    }
+
+    /*
+     * HEADLINE
+     */
+    String headline = cardSpec.headline();
+
+    if (headline != null && !headline.isBlank()) {
+
+        Font headlineFont = fitWrappedFont(
+                g,
+                stripMarkers(headline),
+                regularFont,
+                32,
+                26,
+                SERIOUS_CONTENT_WIDTH,
+                2
+        );
+
+        g.setFont(headlineFont);
+        g.setColor(new Color(55, 65, 73));
+
+        int headlineY = 365;
+        int lineHeight = headlineFont.getSize() + 10;
+
+        for (String line : wrapToFit(
+                stripMarkers(headline),
+                g.getFontMetrics(),
+                SERIOUS_CONTENT_WIDTH
+        ).stream().limit(2).toList()) {
+
+            g.drawString(
+                    line,
+                    SERIOUS_CONTENT_X,
+                    headlineY
+            );
+
+            headlineY += lineHeight;
+        }
+    }
+
+    /*
+     * No separate contained hero.
+     *
+     * The artwork is already the card environment.
+     */
+    drawAiNotice(
+            g,
+            WIDTH - 72,
+            760
+    );
+
+    drawSensitiveFacts(
+            g,
+            seriousFactsForRendering(
+                    cardSpec.supportingFacts()
+            )
+    );
+
+    drawSensitiveAction(
+            g,
+            cardSpec.action()
+    );
+
+    drawSensitiveFooter(g);
+}
+
+
 private void drawStandardLayout(
         Graphics2D g,
         CardSpec cardSpec,
@@ -941,6 +1177,474 @@ private void drawStandardLayout(
     drawHeadline(g, cardSpec.headline());
 
     drawKeyFact(g, cardSpec.keyFact());
+}
+
+private void drawSensitiveFacts(
+        Graphics2D g,
+        List<CardSpec.CardFact> facts
+) {
+
+    if (facts == null || facts.isEmpty()) {
+        return;
+    }
+
+    List<CardSpec.CardFact> usable = facts.stream()
+            .filter(fact -> fact != null)
+            .filter(fact ->
+                    fact.value() != null
+                            && !fact.value().isBlank()
+            )
+            .limit(3)
+            .toList();
+
+    if (usable.isEmpty()) {
+        return;
+    }
+
+    int topY = 965;
+    int gap = 18;
+    int height = 135;
+
+    int count = usable.size();
+
+    int width =
+            (SERIOUS_CONTENT_WIDTH
+                    - (gap * (count - 1)))
+                    / count;
+
+    for (int i = 0; i < count; i++) {
+
+        CardSpec.CardFact fact = usable.get(i);
+
+        int x =
+                SERIOUS_CONTENT_X
+                        + (i * (width + gap));
+
+        /*
+ * SOFT GLASS FACT PANEL
+ *
+ * Keep the background artwork faintly visible through the panel.
+ * SENSITIVE cards should feel integrated with the scene rather than
+ * placing solid white boxes on top of it.
+ */
+g.setColor(
+        new Color(230, 235, 238, 215)
+);
+
+g.fillRoundRect(
+        x,
+        topY,
+        width,
+        height,
+        24,
+        24
+);
+
+/*
+ * Very subtle border for separation from the background.
+ */
+g.setColor(
+        new Color(170, 180, 187, 120)
+);
+
+g.drawRoundRect(
+        x,
+        topY,
+        width,
+        height,
+        24,
+        24
+);
+
+/*
+ * ICON
+ *
+ * Reuse the existing DAK block icon assets.
+ * SENSITIVE keeps icons small and visually restrained.
+ */
+BufferedImage icon = null;
+
+if (fact.icon() != null && !fact.icon().isBlank()) {
+    icon = blockIcons.get(
+            fact.icon().trim().toUpperCase()
+    );
+}
+
+int labelX = x + 22;
+
+if (icon != null) {
+
+    int iconSize = 32;
+
+    g.drawImage(
+        icon,
+        x + 22,
+        topY + 8,
+        iconSize,
+        iconSize,
+        null
+);
+
+    labelX += iconSize + 10;
+}
+
+/*
+ * LABEL
+ */
+if (fact.label() != null && !fact.label().isBlank()) {
+
+    g.setFont(
+            semiBoldFont.deriveFont(
+                    Font.PLAIN,
+                    22f
+            )
+    );
+
+    g.setColor(
+            new Color(104, 111, 117)
+    );
+
+    g.drawString(
+            fact.label(),
+            labelX,
+            topY + 32
+    );
+}
+
+        /*
+         * VALUE
+         */
+        Font valueFont = fitWrappedFont(
+                g,
+                fact.value(),
+                boldFont,
+                29,
+                23,
+                width - 44,
+                2
+        );
+
+        g.setFont(valueFont);
+        g.setColor(
+                new Color(45, 50, 55)
+        );
+
+        List<String> valueLines = wrapToFit(
+                fact.value(),
+                g.getFontMetrics(),
+                width - 44
+        );
+
+        int valueY = topY + 70;
+
+        for (String line : valueLines.stream().limit(2).toList()) {
+
+            g.drawString(
+                    line,
+                    x + 22,
+                    valueY
+            );
+
+            valueY += valueFont.getSize() + 5;
+        }
+
+        /*
+ * NOTE
+ *
+ * Draw only when there is enough vertical space below the value.
+ * A useful value is more important than squeezing a note into the panel.
+ */
+if (fact.note() != null && !fact.note().isBlank()) {
+
+    Font noteFont = regularFont.deriveFont(
+            Font.PLAIN,
+            20f
+    );
+
+    g.setFont(noteFont);
+
+    List<String> noteLines = wrapToFit(
+            fact.note(),
+            g.getFontMetrics(),
+            width - 44
+    );
+
+    if (!noteLines.isEmpty()) {
+
+        int noteY = valueY + 4;
+
+        int bottomLimit =
+                topY + height - 14;
+
+        int noteBaselineBottom =
+                noteY + g.getFontMetrics().getDescent();
+
+        /*
+         * Do not force the note into the box.
+         * If a two-line value already uses the available space,
+         * omit the optional note.
+         */
+        if (noteBaselineBottom <= bottomLimit) {
+
+            g.setColor(
+                    new Color(125, 132, 138)
+            );
+
+            g.drawString(
+                    noteLines.get(0),
+                    x + 22,
+                    noteY
+            );
+        }
+    }
+}
+    }
+}
+
+private void drawSensitiveAction(
+        Graphics2D g,
+        CardSpec.ActionBlock action
+) {
+
+    if (action == null
+            || action.body() == null
+            || action.body().isBlank()) {
+        return;
+    }
+
+    int x = SERIOUS_CONTENT_X;
+    int width = SERIOUS_CONTENT_WIDTH;
+
+    /*
+     * ICON
+     */
+    BufferedImage icon = null;
+
+    if (action.icon() != null && !action.icon().isBlank()) {
+        icon = blockIcons.get(
+                action.icon().trim().toUpperCase()
+        );
+    }
+
+    int iconSize = 42;
+
+    int textX = x + 24;
+
+    if (icon != null) {
+        textX = x + 22 + iconSize + 18;
+    }
+
+    int availableWidth =
+            x + width
+                    - textX
+                    - 24;
+
+    /*
+     * Measure the body BEFORE drawing the panel.
+     *
+     * The panel grows upward when a second line is needed so the footer
+     * remains in its established position.
+     */
+    Font bodyFont = fitWrappedFont(
+            g,
+            action.body(),
+            boldFont,
+            25,
+            20,
+            availableWidth,
+            2
+    );
+
+    g.setFont(bodyFont);
+
+    List<String> lines = wrapToFit(
+            action.body(),
+            g.getFontMetrics(),
+            availableWidth
+    );
+
+    int lineCount = Math.min(2, lines.size());
+
+    int height =
+            lineCount > 1
+                    ? 106
+                    : 92;
+
+    /*
+     * Keep the bottom edge stable.
+     *
+     * 1120 + 92 = 1212 was the original bottom position.
+     */
+    int bottomY = 1212;
+    int y = bottomY - height;
+
+    /*
+     * SENSITIVE ACTION PANEL
+     *
+     * Restrained translucent red distinguishes useful action/support
+     * information without becoming as forceful as SERIOUS.
+     */
+    g.setColor(
+            new Color(185, 72, 72, 105)
+    );
+
+    g.fillRoundRect(
+            x,
+            y,
+            width,
+            height,
+            22,
+            22
+    );
+
+    g.setColor(
+            new Color(155, 65, 65, 125)
+    );
+
+    g.drawRoundRect(
+            x,
+            y,
+            width,
+            height,
+            22,
+            22
+    );
+
+    /*
+     * ICON
+     */
+    if (icon != null) {
+
+        int iconX = x + 22;
+        int iconY = y + ((height - iconSize) / 2);
+
+        g.drawImage(
+                icon,
+                iconX,
+                iconY,
+                iconSize,
+                iconSize,
+                null
+        );
+    }
+
+    /*
+     * TITLE
+     */
+    if (action.title() != null && !action.title().isBlank()) {
+
+        g.setFont(
+                semiBoldFont.deriveFont(
+                        Font.PLAIN,
+                        20f
+                )
+        );
+
+        g.setColor(
+                new Color(115, 72, 72)
+        );
+
+        g.drawString(
+                action.title(),
+                textX,
+                y + 29
+        );
+    }
+
+    /*
+     * BODY
+     */
+    g.setFont(bodyFont);
+
+    g.setColor(
+            new Color(48, 54, 59)
+    );
+
+    int bodyY = y + 59;
+    int lineHeight = bodyFont.getSize() + 4;
+
+    for (String line : lines.stream().limit(2).toList()) {
+
+        g.drawString(
+                line,
+                textX,
+                bodyY
+        );
+
+        bodyY += lineHeight;
+    }
+}
+
+private void drawSensitiveFooter(
+        Graphics2D g
+) {
+
+    int footerY = 1260;
+
+    /*
+     * DAK logo
+     *
+     * Brand remains visible, but the footer stays visually quiet.
+     */
+    drawImageAtWidth(
+            g,
+            footerLogo,
+            72,
+            footerY - 32,
+            250
+    );
+
+    /*
+     * Separator
+     */
+    g.setColor(
+            new Color(180, 186, 190)
+    );
+
+    g.fillRoundRect(
+            350,
+            footerY - 29,
+            2,
+            34,
+            2,
+            2
+    );
+
+    /*
+ * Website
+ *
+ * Right-align the website to the same content edge
+ * used throughout the SENSITIVE / SERIOUS layouts.
+ */
+g.setFont(
+        regularFont.deriveFont(
+                Font.PLAIN,
+                22f
+        )
+);
+
+g.setColor(
+        new Color(100, 107, 112)
+);
+
+FontMetrics websiteMetrics = g.getFontMetrics();
+
+int websiteX =
+        WIDTH
+                - SERIOUS_CONTENT_X
+                - websiteMetrics.stringWidth(FOOTER_WEBSITE);
+
+/*
+ * Place the website slightly lower so it sits visually centred
+ * against the DAK logo, matching the SERIOUS footer composition.
+ */
+int websiteY = footerY + 14;
+
+g.drawString(
+        FOOTER_WEBSITE,
+        websiteX,
+        websiteY
+);
 }
 
 /**

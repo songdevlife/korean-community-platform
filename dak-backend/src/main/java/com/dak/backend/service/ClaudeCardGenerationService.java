@@ -226,14 +226,137 @@ public class ClaudeCardGenerationService implements CardGenerationService {
               "오리진 정보 유출", "2026 호주 센서스", "학생비자 규정 변경".
             - headerTitle must never repeat title word for word.
             - title should identify the topic immediately, in roughly fifteen
-              to twenty-five Korean characters. It is set large, and a title
-              that wraps onto a second line with one word on it reads as a
-              mistake.
-            - headline must add context that the title does not already say.
-            - Keep the headline concise and natural in Korean.
-            - Do not use the headline as another fact box.
-            - Do not repeat a number, date, amount, score, deadline or other
-              concrete value that is already shown in keyFact or infoBlocks.
+  to twenty-five Korean characters. It is set large, and a title
+  that wraps onto a second line with one word on it reads as a
+  mistake.
+- Write the title in plain, natural Korean that a general Korean reader
+  can understand immediately.
+- Avoid compressed Sino-Korean newspaper shorthand when a clearer
+  everyday expression is available.
+- NEVER use "모자" to mean mother and child in a card title, headline,
+  primaryFact, facts or action.
+  "모자" is ambiguous in modern Korean because it is commonly understood
+  as "hat".
+  Always write the relationship explicitly, such as "어머니와 자녀",
+  "어머니와 두 자녀", or another source-supported plain expression.
+
+- Use age-specific terms such as "영아", "유아" or "아동" only when
+  that age distinction is important to understanding the story.
+
+- Before returning the JSON, perform a final Korean-language check:
+  1. Replace ambiguous family shorthand such as "모자" with plain Korean.
+  2. Remove unnatural translated or compressed news-headline expressions.
+  3. Compare the headline against the title, primaryFact, supportingFacts
+   and action.
+
+   Treat a fact as duplicated even when it is expressed using different
+   Korean wording.
+
+   Do not repeat the same underlying information by adding modifiers
+   or changing sentence structure.
+
+   Examples of duplication:
+   - title: "3개월 영아 수색 계속"
+     headline: "광범위한 수색이 계속되고 있습니다."
+   - supportingFact: "광범위한 수색 중"
+     headline: "광범위한 수색이 계속되고 있습니다."
+   - supportingFact: "경찰·소방 합동 수색"
+     headline: "경찰과 소방이 수색을 진행하고 있습니다."
+
+   Remove every duplicated idea from the headline.
+
+   The final headline must contain at least one meaningful,
+   source-supported development or context that is not already
+   communicated anywhere else on the card.
+
+   If only part of the headline is new, keep only the new information
+   and rewrite it as natural Korean.
+
+   If no genuinely new information remains, return headline as null.
+  4. Check that facts do not unnecessarily repeat information already
+     communicated by the title or headline.
+  5. Remove awkward repetition within the same sentence.
+   Do not repeat the same Korean noun or phrase unnecessarily.
+
+6. For SERIOUS and SENSITIVE stories, verify that every person's status
+   remains accurate.
+   Do not merge confirmed deaths, missing persons, suspected deaths or
+   people still being searched for into one collective description.
+   If the title could imply that a missing person is already confirmed dead,
+   rewrite it before returning the JSON.
+     For example, avoid expressions such as
+     "수색은 광범위한 수색 지역에서 계속되고 있습니다."
+     Prefer concise natural Korean such as
+     "광범위한 수색이 계속되고 있습니다."
+- Otherwise prefer a natural description such as "어린 자녀",
+  "아기", "자녀", or a verified age from the source.
+- For SERIOUS or SENSITIVE stories, prefer respectful human wording
+  over terse crime-headline shorthand.
+- Do not compress people into an ambiguous collective term merely
+  to make the title shorter.
+
+- When confirmed deaths and an unresolved missing-person search are both
+  present, keep those statuses clearly separate in the title.
+- Never write a title that can imply a missing person has already been
+  confirmed dead.
+- Do not group confirmed victims and a still-missing person under one
+  shared death phrase.
+- Prefer wording such as:
+  "어머니와 자녀 사망… 실종 아동 수색 계속"
+  rather than:
+  "어머니와 두 자녀 사망, 수색 계속 중"
+- The title must preserve the source's certainty:
+  confirmed death, missing, presumed, suspected and under investigation
+  are different statuses and must not be blended together.
+CARD TEXT GENERATION ORDER:
+
+For every card, decide reader-facing text in this order:
+
+1. title
+2. primaryFact, if needed
+3. supportingFacts
+4. action, if needed
+5. headline LAST
+
+Do not draft the headline before the structured facts are selected.
+
+When writing the headline, treat all information already used in:
+- title
+- primaryFact
+- supportingFacts
+- action
+
+as RESERVED.
+
+The headline must not repeat, paraphrase or recombine reserved information.
+
+The headline must contribute genuinely new context that helps the reader
+understand the story.
+
+For SERIOUS and SENSITIVE stories, useful headline context may include:
+- an ongoing search
+- a distinct investigation development
+- a public appeal
+- a separate current status
+- another source-supported development not already shown elsewhere
+
+If no genuinely new useful context remains after the other card fields are
+written, return headline as null.
+
+- headline must add NEW context that the title does not already communicate.
+- Never paraphrase or restate the title in the headline.
+- If the title already says who died, what happened, or that an investigation
+  is ongoing, do not repeat those facts in the headline.
+- Do not repeat victim counts, ages, dates, locations or investigation status
+  when those facts already appear in the title or supportingFacts.
+- Prefer current useful context that advances the story, such as:
+  an ongoing search, a public appeal, a supported next step, or another
+  distinct development explicitly stated in the source.
+- If no genuinely new contextual sentence is available, return headline as null.
+- Keep the headline concise and natural in Korean.
+- Do not use the headline as another fact box.
+- Do not repeat a number, date, amount, score, deadline or other
+  concrete value that is already shown elsewhere on the card.
             - When INFOGRAPHIC is used, the headline should explain what the
               collection of facts means or what event they describe.
             - Prefer a short contextual sentence over repeating the most
