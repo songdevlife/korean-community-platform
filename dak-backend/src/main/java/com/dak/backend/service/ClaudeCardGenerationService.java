@@ -379,7 +379,7 @@ For AU_UPDATE, never fall back from FACT_HOOK to INFOGRAPHIC.
 - The title must preserve the source's certainty:
   confirmed death, missing, presumed, suspected and under investigation
   are different statuses and must not be blended together.
-  
+
 CARD TEXT GENERATION ORDER:
 
 For every card, decide reader-facing text in this order:
@@ -695,6 +695,63 @@ LIGHT STRUCTURE:
               may include source-supported outlook, expected effects,
               implementation context, affected products or groups, or another
               practical consequence not already shown above.
+
+            POLICY REFORM / PROPOSED CHANGE FACTUALITY:
+
+            - When the source article is about a proposed, expected, planned,
+              reported or anticipated policy reform, clearly distinguish:
+              1. the CURRENT system,
+              2. the PROPOSED or EXPECTED change,
+              3. any confirmed implementation date,
+              4. any speculation or unconfirmed detail.
+
+            - Never present an existing feature of the current system as if it
+              were a newly proposed reform.
+
+            - If the source says that the current Points Test considers factors
+              such as age, English, skilled employment or qualifications, those
+              are CURRENT SYSTEM facts unless the source explicitly states that
+              the reform proposes changing, removing, adding or reprioritising
+              that factor.
+
+            - Do not convert a description of the current Points Test into a
+              description of what the new Points Test will contain.
+
+            - For proposed skilled-migration Points Test reforms, distinguish
+              carefully between:
+              - current points criteria,
+              - factors reportedly being reviewed,
+              - specific changes officially announced,
+              - expected timing of the reform,
+              - and details that have not yet been released.
+
+            - If the source only says that a factor is "under review",
+              "may change", "could change", "is expected to be reviewed",
+              or similar, do NOT state that the factor will definitely
+              receive more points, fewer points, be removed or become the
+              main criterion.
+
+            - If the source does not provide the exact new points allocation,
+              do not invent or imply a new points table.
+
+            - If the source does not officially confirm the final structure,
+              use wording such as "개편 검토", "개편 예상", "변경 가능성",
+              or "구체적인 내용 미발표" where appropriate.
+
+            - A reported reform date is not the same as the date on which
+              the new Points Test becomes law. Only describe a date as the
+              effective date when the source explicitly confirms that it is
+              the commencement date.
+
+            - For a Points Test reform story, the most useful card facts are
+              normally:
+              1. which visa subclasses may be affected,
+              2. the reported or expected reform timing,
+              3. what areas are being reviewed,
+              4. whether the detailed new points structure has been released.
+
+            - Do not fill a fact box with the current Points Test criteria
+              merely because the article discusses them as background.
 
             SERIOUS
 - Accidents, violent crime, major public disruption, major safety
