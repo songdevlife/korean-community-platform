@@ -72,11 +72,13 @@ public class AustraliaUpdateService {
                 .orElseThrow(() -> ApiException.badRequest("INVALID_CATEGORY", "Category not found."));
 
                 AustraliaUpdate update = AustraliaUpdate.createNew(
-                        request.title().trim(),
-                        request.koreanSummary().trim(),
-                        category,
-                        request.geographicScope()
-                );
+                    request.title().trim(),
+                    appendOriginalSourceNotice(
+                            request.koreanSummary()
+                    ),
+                    category,
+                    request.geographicScope()
+            );
                 // No summariser on this path, so there is no English slug to work from
                 // and a Korean title slugifies to nothing. The dated fallback is what
                 // an administrator would get anyway, and it can be corrected from the
@@ -99,9 +101,33 @@ public class AustraliaUpdateService {
         australiaUpdateRepository.save(update);
 
         return toDetail(update);
-    }
-
-    private AustraliaUpdateSummaryResponse toSummary(AustraliaUpdate u) {
+        }
+        
+        private String appendOriginalSourceNotice(
+                String koreanSummary
+        ) {
+        
+            String notice =
+                    "자세한 내용은 원문을 참고하세요.";
+        
+            if (koreanSummary == null
+                    || koreanSummary.isBlank()) {
+                return notice;
+            }
+        
+            String trimmed =
+                    koreanSummary.trim();
+        
+            if (trimmed.endsWith(notice)) {
+                return trimmed;
+            }
+        
+            return trimmed
+                    + "\n\n"
+                    + notice;
+        }
+        
+        private AustraliaUpdateSummaryResponse toSummary(AustraliaUpdate u) {
         UpdateCategoryResponse category = u.getCategory() == null ? null
                 : new UpdateCategoryResponse(
                         u.getCategory().getId(), u.getCategory().getName(), u.getCategory().getSlug());

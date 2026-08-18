@@ -290,6 +290,29 @@ This area will carry information panels and an action notice.
 Do not add artificial boxes, panels or text areas to the image itself.
 The card renderer adds those later.
 
+            AUSTRALIAN CONTEXT:
+
+            This artwork is for an Australian news card.
+
+            - Keep government, legal, regulatory, financial and public-service
+              imagery Australian or visually neutral.
+            - Never depict United States flags, U.S. government seals,
+              American government emblems, the White House, the U.S. Capitol,
+              recognisably American courthouses or other U.S. civic symbolism.
+            - Never substitute another country's government, legal or civic
+              imagery for an Australian context.
+            - Do not invent Australian government seals, agency logos,
+              official emblems or institutional branding.
+            - Do not add an Australian flag merely to communicate that the
+              story is Australian.
+            - If the specific Australian institution or setting cannot be
+              represented reliably, use neutral contextual imagery instead:
+              legal scales, documents, an office, a generic courtroom,
+              financial records, public infrastructure or other
+              non-country-specific objects appropriate to the article.
+            - Accuracy is more important than adding recognisable national
+              symbolism.
+
             STRICTLY DO NOT INCLUDE:
         - identifiable real people
         - recognisable faces
@@ -300,9 +323,44 @@ The card renderer adds those later.
         - identifiable private individuals
         - exact reconstruction of a real news photograph
         - anything presented as documentary evidence of the actual event
-        - text, letters, numbers or captions
-        - logos, trademarks or watermarks
-        - brand names or product packaging
+        - readable text or typography of any kind
+        - numbers or monetary values
+        - logos, trademarks or branding
+
+                TEXT-FREE VISUAL DIRECTION:
+
+        Build the scene entirely from physical, non-textual visual symbolism.
+
+        Choose objects whose meaning is clear without written language,
+        such as legal scales, a gavel, coins, unmarked payment cards,
+        locks, shields, neutral architecture, furniture and other
+        relevant physical objects.
+
+        All surfaces must be plain and unmarked.
+        Any papers must be blank.
+        Any screens must be blank.
+        Any cards must be unmarked.
+
+        Written language is not part of this artwork.
+
+        Communicate the article through objects, composition, lighting
+        and environment only.
+
+        The SUBJECT and ARTICLE-SPECIFIC SCENE are semantic context for
+        choosing the visual concept; they are not content to reproduce
+        visually as writing.
+
+        All reader-facing information is added separately by the
+        DAK card renderer.
+
+        - United States flags
+        - U.S. government seals or emblems
+        - the White House
+        - the U.S. Capitol
+        - recognisably American government buildings
+        - recognisably American courtroom symbolism
+        - foreign national symbols that are not explicitly relevant to the article
+        - invented Australian government logos, seals or emblems
         - unnecessary Australian landmarks
         - dramatic lens flare
         - exaggerated explosions

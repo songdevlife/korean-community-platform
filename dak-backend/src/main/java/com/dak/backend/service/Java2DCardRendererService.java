@@ -932,7 +932,7 @@ boolean criticalPrimary =
                                 );
                             }
                             
-                            drawLightFacts(
+                            drawSeriousSupportingFacts(
                                 g,
                                 seriousFactsForRendering(
                                         cardSpec.supportingFacts()
@@ -976,7 +976,7 @@ private void drawLightSecondaryInfo(
     }
 
     int x = SERIOUS_CONTENT_X;
-int topY = 820;
+int topY = 745;
 int totalWidth = SERIOUS_CONTENT_WIDTH;
 int gap = 18;
 int height = 230;
@@ -1631,6 +1631,9 @@ drawBadge(
 
 /*
  * PRIMARY INFORMATION ROW
+ *
+ * LIGHT uses its own bright fact-card treatment.
+ * Keep the primary row to at most three facts.
  */
 drawLightFacts(
         g,
@@ -1764,7 +1767,7 @@ private Color lightIconColor(String iconName) {
         return;
     }
 
-    int topY = 525;
+    int topY = 450;
     int gap = 18;
     int height = 245;
 
@@ -2003,19 +2006,43 @@ private void drawStandardToneLayout(
         BufferedImage hero
 ) {
 
-    boolean hasSecondaryFacts =
-            cardSpec.secondaryFacts() != null
-                    && !cardSpec.secondaryFacts().isEmpty();
+        List<CardSpec.CardFact> standardPrimaryFacts =
+        seriousFactsForRendering(
+                cardSpec.supportingFacts()
+        );
 
-    int heroHeight =
-            hasSecondaryFacts
-                    ? 675
-                    : 850;
+boolean hasPrimaryFacts =
+        !standardPrimaryFacts.isEmpty();
 
-    int primaryFactsY =
-            hasSecondaryFacts
-                    ? 625
-                    : 800;
+boolean hasSecondaryFacts =
+        cardSpec.secondaryFacts() != null
+                && !cardSpec.secondaryFacts().isEmpty();
+
+boolean hasAction =
+        cardSpec.action() != null
+                && cardSpec.action().body() != null
+                && !cardSpec.action().body().isBlank();
+
+/*
+ * Compact hero is needed when there is enough lower content
+ * to occupy the body area.
+ *
+ * Action-only cards keep the taller hero because one small
+ * action panel does not need the full lower content region.
+ */
+boolean useCompactHero =
+        hasSecondaryFacts
+                || (hasPrimaryFacts && hasAction);
+
+int heroHeight =
+        useCompactHero
+                ? 675
+                : 850;
+
+int primaryFactsY =
+        useCompactHero
+                ? 625
+                : 800;
 
 // STANDARD uses the outer card panel created in renderSingle().
 // Do not draw a second rounded panel here.
@@ -2131,9 +2158,7 @@ if (hero != null) {
      */
     drawStandardFacts(
         g,
-        seriousFactsForRendering(
-                cardSpec.supportingFacts()
-        ),
+        standardPrimaryFacts,
         primaryFactsY
 );
 
@@ -2148,12 +2173,201 @@ drawStandardSecondaryFacts(
         cardSpec.secondaryFacts()
 );
 
+drawStandardAction(
+        g,
+        cardSpec.action(),
+        hasPrimaryFacts,
+        hasSecondaryFacts
+);
+
 /*
  * STANDARD FOOTER
  */
 drawStandardFooter(g);
 }
 
+private void drawStandardAction(
+        Graphics2D g,
+        CardSpec.ActionBlock action,
+        boolean hasPrimaryFacts,
+        boolean hasSecondaryFacts
+) {
+
+    if (action == null
+            || action.body() == null
+            || action.body().isBlank()) {
+        return;
+    }
+
+    int x = 72;
+    int width = 936;
+    int height = 125;
+
+/*
+ * ACTION POSITION
+ *
+ * secondary + action:
+ *     action sits below secondary information.
+ *
+ * primary + action:
+ *     action occupies the normal secondary-information position.
+ *
+ * action only:
+ *     action floats across the bottom edge of the taller hero,
+ *     avoiding a large empty body area.
+ */
+int y;
+
+if (hasSecondaryFacts) {
+    y = 1080;
+} else if (hasPrimaryFacts) {
+    y = 880;
+} else {
+    y = 800;
+}
+
+    /*
+     * WARM STANDARD ACTION PANEL
+     */
+    g.setColor(
+            new Color(255, 246, 222)
+    );
+
+    g.fillRoundRect(
+            x,
+            y,
+            width,
+            height,
+            24,
+            24
+    );
+
+    g.setColor(
+            new Color(224, 190, 120)
+    );
+
+    g.drawRoundRect(
+            x,
+            y,
+            width,
+            height,
+            24,
+            24
+    );
+
+    /*
+     * ICON
+     */
+    BufferedImage icon = null;
+
+    if (action.icon() != null
+            && !action.icon().isBlank()) {
+
+        icon = blockIcons.get(
+                action.icon()
+                        .trim()
+                        .toUpperCase()
+        );
+    }
+
+    int iconSize = 42;
+    int textX = x + 26;
+
+    if (icon != null) {
+
+        BufferedImage standardIcon =
+                tintStandardIcon(icon);
+
+        int iconX = x + 24;
+        int iconY =
+                y + ((height - iconSize) / 2);
+
+        g.drawImage(
+                standardIcon,
+                iconX,
+                iconY,
+                iconSize,
+                iconSize,
+                null
+        );
+
+        textX =
+                iconX + iconSize + 20;
+    }
+
+    int availableWidth =
+            x + width
+                    - textX
+                    - 26;
+
+    /*
+     * TITLE
+     */
+    int bodyY = y + 54;
+
+    if (action.title() != null
+            && !action.title().isBlank()) {
+
+        g.setFont(
+                semiBoldFont.deriveFont(
+                        Font.PLAIN,
+                        21f
+                )
+        );
+
+        g.setColor(
+                STANDARD_TEXT_MUTED
+        );
+
+        g.drawString(
+                action.title(),
+                textX,
+                y + 35
+        );
+
+        bodyY = y + 75;
+    }
+
+    /*
+     * ACTION BODY
+     */
+    Font bodyFont = fitWrappedFont(
+            g,
+            action.body(),
+            boldFont,
+            27,
+            21,
+            availableWidth,
+            2
+    );
+
+    g.setFont(bodyFont);
+    g.setColor(STANDARD_TEXT);
+
+    List<String> lines =
+            wrapToFit(
+                    action.body(),
+                    g.getFontMetrics(),
+                    availableWidth
+            );
+
+    int lineHeight =
+            bodyFont.getSize() + 5;
+
+    for (String line :
+            lines.stream()
+                    .limit(2)
+                    .toList()) {
+
+        g.drawString(
+                line,
+                textX,
+                bodyY
+        );
+
+        bodyY += lineHeight;
+    }
+}
 
 private BufferedImage tintStandardIcon(
         BufferedImage source

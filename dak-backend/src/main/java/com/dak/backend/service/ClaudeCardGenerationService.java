@@ -102,6 +102,59 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             "10,000 EOIs invited" must be expressed as "EOI 10,000건 초청",
             not "10,000명 초청".
 
+            KOREAN NUMBER AND CURRENCY FORMATTING:
+
+            - Write numbers and monetary amounts in natural Korean notation
+              when they appear in reader-facing Korean card text.
+            - Never mix an English numeric scale word or symbol with a Korean
+              scale word in an unnatural form.
+            - In particular, never write expressions such as:
+              "$248.3 백만", "$1.2 십억", "248.3 million 달러".
+
+            - Convert English million and billion amounts into natural Korean
+              number units when practical, while preserving the exact magnitude.
+
+            Examples:
+            - "$248.3 million" -> "2억 4,830만 호주달러"
+            - "$1.2 billion" -> "12억 호주달러"
+            - "$25 million" -> "2,500만 호주달러"
+            - "$3.5 million" -> "350만 호주달러"
+
+- When the source clearly establishes that a monetary amount is in
+  Australian dollars, ALWAYS write "호주달러" for that amount in
+  Korean reader-facing card text.
+
+- Apply this rule consistently to EVERY reader-facing field,
+  including:
+  title, headline, primaryFact, supportingFacts, secondaryFacts,
+  callout, action, keyFact and infoBlocks.
+
+- Within the same card, never mix "달러", "$" and "호주달러" for
+  amounts that the source establishes are Australian dollars.
+
+- For example, if all three amounts are Australian dollars:
+  "390만 호주달러"
+  "3,200만 호주달러"
+  "32만 5천 호주달러"
+
+  Never return:
+  "390만 호주달러"
+  "3,200만 달러"
+  "32만 5천 달러"
+
+- This consistency rule also applies when the currency is obvious
+  from an earlier sentence or from the article context. Once the
+  supplied source establishes that the relevant amounts are AUD,
+  preserve "호주달러" for subsequent AUD amounts on the card.
+
+- Do not assume that an unspecified "$" means Australian dollars
+  unless the supplied source establishes the currency.
+
+- Do not perform exchange-rate conversion.
+- Do not round or alter the source amount merely to make it shorter.
+- Preserve qualifiers such as "more than", "at least", "up to",
+  "approximately" and "over" when they are present in the source.
+
             For GUIDE content, a carousel may still be used where the content
             genuinely forms a useful sequence.
 
@@ -131,25 +184,24 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             - Suits ordinary policy changes, notices, fee changes and updates.
 
             INFOGRAPHIC
-- Use when the source contains multiple DISTINCT practical facts
-  that are useful together on one card.
-- For AU_UPDATE, prefer INFOGRAPHIC when three or more different
-  useful facts are available, EXCEPT when tone is LIGHT.
-- LIGHT cards must not use INFOGRAPHIC.
-- LIGHT cards use the dedicated hierarchy:
-  supportingFacts for the three most useful facts,
-  and secondaryFacts for zero to two additional useful facts.
-- Useful facts include dates, deadlines, amounts, counts, eligibility
-  conditions, minimum scores, visa subclasses, program types,
-  locations and South Australia-specific figures.
-- Requires infoBlocks: three to five of them, each carrying a
-  different fact.
-            - Never choose INFOGRAPHIC if the blocks would merely repeat the
-              same number or event in different wording.
-            - Use keyFact as null when INFOGRAPHIC is chosen; the blocks carry
-              the concrete facts instead.
-            - When relevant South Australia-specific information exists in the
-              supplied source, strongly prefer including at least one such fact.
+            - Do NOT use INFOGRAPHIC for AU_UPDATE content.
+            - AU_UPDATE cards now use the hierarchy fields rendered by the
+              current DAK card renderer instead of legacy infoBlocks.
+            - For AU_UPDATE:
+              - LIGHT tone must use layoutType STANDARD.
+              - STANDARD tone must use layoutType STANDARD.
+              - Use supportingFacts for the most useful distinct facts.
+              - Use secondaryFacts for additional useful distinct facts.
+              - Use primaryFact only when one fact genuinely deserves
+                substantially greater prominence.
+            - INFOGRAPHIC remains available only for non-AU_UPDATE content
+              where a structured block layout is genuinely useful.
+            - When INFOGRAPHIC is used for non-AU_UPDATE content:
+              - Requires infoBlocks: three to five of them.
+              - Every infoBlock must carry a different source-supported fact.
+              - Never choose INFOGRAPHIC if the blocks merely repeat the same
+                number or event in different wording.
+              - Use keyFact as null because the blocks carry the concrete facts.
 
             FACT_HOOK
             - Use only when ONE verified figure overwhelmingly carries the story.
@@ -186,7 +238,8 @@ public class ClaudeCardGenerationService implements CardGenerationService {
             3. Are there fewer than three other distinct practical facts that
                deserve similar prominence?
 
-            If the answer to any of these is no, prefer STANDARD or INFOGRAPHIC.
+            If the answer to any of these is no, prefer STANDARD.
+For AU_UPDATE, never fall back from FACT_HOOK to INFOGRAPHIC.
 
             URGENT
             - Use ONLY for a specific event in which people were killed or
@@ -305,13 +358,28 @@ public class ClaudeCardGenerationService implements CardGenerationService {
   confirmed dead.
 - Do not group confirmed victims and a still-missing person under one
   shared death phrase.
+
+- Respectful wording must NEVER make a confirmed death ambiguous.
+  If the source explicitly states that a person was found dead,
+  died, or that a body was recovered, preserve that status explicitly
+  in Korean.
+
+- Never shorten a confirmed death to ambiguous wording such as:
+  "발견", "찾아", "확인" or "발견됨".
+
+- Prefer clear but restrained wording such as:
+  "숨진 채 발견", "사망 확인", or "시신 발견",
+  according to what the source explicitly supports.
+
 - Prefer wording such as:
-  "어머니와 자녀 사망… 실종 아동 수색 계속"
+  "어머니와 자녀 숨진 채 발견… 실종 아동 수색 계속"
   rather than:
-  "어머니와 두 자녀 사망, 수색 계속 중"
+  "어머니와 자녀 발견… 실종 아동 수색 계속"
+
 - The title must preserve the source's certainty:
   confirmed death, missing, presumed, suspected and under investigation
   are different statuses and must not be blended together.
+  
 CARD TEXT GENERATION ORDER:
 
 For every card, decide reader-facing text in this order:
@@ -562,16 +630,44 @@ LIGHT STRUCTURE:
             - Calm, clear and editorial.
             - Use a warm contextual background related to the actual article.
             - This is the default when no stronger tone is justified.
+            - For AU_UPDATE, when tone is STANDARD, layoutType MUST be STANDARD.
+            - Never return INFOGRAPHIC, FACT_HOOK or URGENT for a STANDARD
+              AU_UPDATE card.
 
             STANDARD STRUCTURE:
-            - When tone is STANDARD and layoutType is STANDARD,
-              use supportingFacts for the three most useful distinct facts
-              that should be understood first.
-            - Prefer exactly three supportingFacts when the source contains
-              at least three useful distinct facts.
+- When tone is STANDARD and layoutType is STANDARD,
+  supportingFacts are REQUIRED whenever the source contains
+  useful distinct facts that can be represented accurately.
 
-            - After selecting supportingFacts, inspect the remaining
-              source-supported information for additional distinct useful facts.
+- Count the useful distinct source-supported facts BEFORE deciding
+  whether supportingFacts may be empty.
+
+- If the source contains THREE OR MORE useful distinct facts,
+  you MUST return exactly three supportingFacts.
+
+- If the source contains exactly TWO useful distinct facts,
+  you MUST return exactly two supportingFacts.
+
+- If the source contains exactly ONE useful distinct fact,
+  you MUST return exactly one supportingFact.
+
+- Return an empty supportingFacts array ONLY when the source contains
+  no useful distinct fact suitable for a supportingFact.
+
+- A fact is suitable when it provides useful concrete information such as:
+  a date, amount, count, affected group, location, program, purpose,
+  eligibility condition, current status, practical effect or other
+  source-supported information that helps explain the update.
+
+- Do not omit an otherwise useful fact merely because it is already
+  broadly related to the title. Only exclude it when it would repeat
+  the same underlying information without adding useful detail.
+
+- Never invent, infer or duplicate information merely to satisfy
+  the required number of supportingFacts.
+
+- After selecting supportingFacts, inspect the remaining
+  source-supported information for additional distinct useful facts.
 
             - Use secondaryFacts for useful practical or contextual information
               that is less important than supportingFacts but still helps the
@@ -602,8 +698,14 @@ LIGHT STRUCTURE:
 
             SERIOUS
 - Accidents, violent crime, major public disruption, major safety
-  incidents, exploitation, severe misconduct or other stories where
-  the subject requires visible weight.
+  incidents, exploitation, severe misconduct, organised scams,
+  coordinated fraud, coercive consumer conduct, threatening trade
+  practices or other stories where the subject requires visible weight.
+  
+- Consumer warnings involving organised offenders, repeated deception,
+  intimidation, coercion, unlawful trading or substantial risk of harm
+  should normally be SERIOUS rather than STANDARD.
+
 - This includes ordinary fatal traffic crashes, workplace deaths,
   industrial accidents and other single-incident fatalities where
   the story is primarily about the incident, safety, investigation,
@@ -884,9 +986,19 @@ primaryFact emphasis:
 - When uncertain, use NORMAL.
 
 supportingFacts:
-- Use two to five distinct facts that help the reader understand:
+- Use one to five distinct facts that help the reader understand:
   what happened, when, where, who was affected, the current situation,
   or why it matters.
+- Make each label and value form a natural semantic pair in Korean.
+  The label must describe the type of information shown in the value.
+  For example, do not use a label meaning "분야" when the value
+  describes locations or road sections; use "시험 구간" instead.
+- Prefer short, natural Korean news wording over literal translations
+  of English source phrasing.
+- Never return zero supportingFacts merely because fewer than two
+  useful facts are available.
+- If exactly one useful distinct source-supported fact is available,
+  return that one fact.
 - Rank facts by reader usefulness, not numerical size.
 - For SERIOUS public-safety stories, choose supporting facts by practical
   importance to the reader.
@@ -1032,67 +1144,93 @@ callout:
 - Otherwise use null.
 
 action:
-- Use when the supplied article explicitly tells the reader to do, check,
-  apply, avoid, contact, prepare or monitor something.
-- Never invent advice.
+- Use action ONLY when the supplied article explicitly tells the reader
+  to do, check, apply, avoid, contact, prepare, report or monitor something.
+- Never invent advice or infer an action from general context.
 
-- For an active safety or public-health story, choose the action the reader
-  should take BEFORE symptoms, injury or further harm occurs.
+- action represents exactly ONE reader action.
+- It is NOT a checklist, sequence, workflow or summary of several recommendations.
 
-- Preventive action outranks symptom monitoring.
-- Symptom monitoring outranks emergency escalation instructions only when
-  no preventive action is supplied by the source.
+- First identify every source-supported action in the article.
+- Then rank those actions by immediate usefulness to the reader.
+- Select ONLY the single highest-priority action for action.body.
+- Discard the other actions from the ActionBlock.
 
-- Example:
-  If residents are told to close doors and windows when smoke or odour is
-  present, that is the primary action.
-  Instructions about seeking medical help for severe symptoms are secondary
-  and should not replace that preventive action.
+- NEVER combine multiple actions into one body, even if they are all
+  explicitly supported by the source.
 
-- In an active safety or public-health story, supported protective action is
-  more useful than background statistics and must not be omitted merely to
-  make room for another number.
+- NEVER use:
+  arrows such as "→",
+  numbered steps,
+  semicolons,
+  slash-separated instructions,
+  multiple imperative sentences,
+  or labels such as "멈추세요 / 확인하세요 / 보호하세요"
+  inside one ActionBlock.
 
-- action should normally contain ONE clear instruction.
-- Do not combine several different instructions into a paragraph.
+- If action.body contains two different things the reader should do,
+  it is invalid. Rewrite it so only ONE action remains.
+
+- For active safety or public-health stories:
+  immediate preventive action outranks later response action.
+  Preventive action outranks symptom monitoring.
+  Symptom monitoring outranks emergency escalation only when no
+  preventive action is supplied.
+
+- For scams or consumer warnings:
+  if the source explicitly instructs victims to report the incident,
+  contacting or reporting to the official authority may be selected
+  as the single action.
+  Do not additionally include checking, stopping payment, contacting
+  a bank, contacting police or other steps in the same ActionBlock.
 
 - title:
   Prefer 2-8 Korean characters.
-  Describe the purpose, such as "주민 보호 조치", "지금 확인", or
-  "신청 방법".
+  The title describes the ONE action only.
+  Examples:
+  "피해 신고"
+  "지금 확인"
+  "신청 방법"
+  "주민 보호"
 
 - body:
-  Write exactly ONE direct instruction containing ONE action only.
+  Write exactly ONE Korean imperative instruction.
   Prefer roughly 15-30 Korean characters.
-  Select the single most useful immediate protective action.
+  The body must contain only one main verb/action.
 
-  ONE action means one thing the reader should do.
-  Do not join two actions using connectors such as
-  "하고", "하며", "그리고", "~고", "또는", or commas.
+  GOOD:
+  "피해를 입었다면 Scamwatch에 신고하세요."
 
-  For general public-safety incidents, prefer an immediate preventive action
-  over secondary medical advice when both are available.
+  GOOD:
+  "의심스러운 거래는 즉시 중단하세요."
 
-  Do not append:
-  - a second action,
-  - medical-treatment advice,
-  - symptom lists,
-  - background explanation,
-  - affected locations,
-  - incident details.
+  GOOD:
+  "CBS에 131 882로 신고하세요."
 
-  Prefer:
+  GOOD:
   "연기나 냄새가 감지되면 문과 창문을 닫으세요."
 
-  Not:
-  "연기나 냄새가 감지되면 문과 창문을 닫고,
-  심한 증상 시 의료 지원을 받으세요."
-- For example, prefer:
-  "연기나 냄새가 감지되면 문과 창문을 닫으세요."
+  BAD:
+  "멈추세요 → 확인하세요 → 보호하세요."
 
-  rather than:
-  "지역 주민은 비상 업데이트를 계속 확인하고, 냄새나 연기가
-  감지되면 창문과 문을 닫으세요."
+  BAD:
+  "거래를 중단하고 업체를 확인하세요."
+
+  BAD:
+  "은행에 연락한 뒤 Scamwatch에 신고하세요."
+
+  BAD:
+  "공식 연락처를 확인하고 은행과 경찰에 신고하세요."
+
+  BAD:
+  "피해를 신고하세요. 그리고 은행에도 연락하세요."
+
+- Before returning JSON, perform this final ActionBlock check:
+
+  "Does action.body tell the reader to perform more than one distinct action?"
+
+  If YES:
+  remove every action except the single most important one.
 
 - Otherwise use null.
 

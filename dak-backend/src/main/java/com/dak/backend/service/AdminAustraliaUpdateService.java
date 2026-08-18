@@ -134,8 +134,11 @@ public class AdminAustraliaUpdateService {
                 ? result.koreanTitle()
                 : sourceTitle;
 
-        AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
-                displayTitle, content.bodyText(), result.koreanDraft());
+                AustraliaUpdate update = AustraliaUpdate.createDraftFromImport(
+                        displayTitle,
+                        content.bodyText(),
+                        appendOriginalSourceNotice(result.koreanDraft())
+                );
         update.setSlug(AustraliaUpdateService.resolveSlug(
                 result.slug(), displayTitle, australiaUpdateRepository::existsBySlug));
         // Scope tracks the source rather than the article: an Adelaide feed
@@ -201,12 +204,12 @@ UpdateSource source =
                         ? result.koreanTitle()
                         : sourceTitle;
 
-        AustraliaUpdate update =
-                AustraliaUpdate.createDraftFromImport(
-                        displayTitle,
-                        sourceContent,
-                        result.koreanDraft()
-                );
+                        AustraliaUpdate update =
+                        AustraliaUpdate.createDraftFromImport(
+                                displayTitle,
+                                sourceContent,
+                                appendOriginalSourceNotice(result.koreanDraft())
+                        );
 
         update.setSlug(
                 AustraliaUpdateService.resolveSlug(
@@ -295,12 +298,16 @@ UpdateSource source =
         }
 
         if (request.koreanSummary() != null) {
-            String summary = request.koreanSummary().trim();
-            // An empty summary is accepted here and refused at publication
-            // instead: a half-written draft has to be savable, and the guard
-            // that matters is the one immediately before it goes public.
-            update.setKoreanSummary(summary.isEmpty() ? null : summary);
-        }
+                String summary = request.koreanSummary().trim();
+                // An empty summary is accepted here and refused at publication
+                // instead: a half-written draft has to be savable, and the guard
+                // that matters is the one immediately before it goes public.
+                update.setKoreanSummary(
+                        summary.isEmpty()
+                                ? null
+                                : appendOriginalSourceNotice(summary)
+                );
+            }
 
         return toDetail(update);
     }
@@ -540,6 +547,23 @@ boolean needsHero = cardIndex == 0;
         );
     }
 
+    private String appendOriginalSourceNotice(String koreanSummary) {
+
+        String notice = "자세한 내용은 원문을 참고하세요.";
+    
+        if (koreanSummary == null || koreanSummary.isBlank()) {
+            return notice;
+        }
+    
+        String trimmed = koreanSummary.trim();
+    
+        if (trimmed.endsWith(notice)) {
+            return trimmed;
+        }
+    
+        return trimmed + "\n\n" + notice;
+    }
+    
     private CardSpec.CardTone effectiveTone(CardSpec cardSpec) {
 
         if (cardSpec.tone() == null || cardSpec.tone().isBlank()) {
