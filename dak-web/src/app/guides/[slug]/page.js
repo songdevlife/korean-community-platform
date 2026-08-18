@@ -8,6 +8,7 @@ import SaveButton from '@/components/SaveButton';
 import GuideAdminBar from '@/components/GuideAdminBar';
 import { timeAgo } from '@/utils/date';
 import { DEFAULT_OG_IMAGE } from '@/utils/og';
+import { PUBLISHER, SITE_IMAGE, buildBreadcrumb } from '@/utils/schema';
 
 /**
  * Guide detail. The page this rebuild exists for: a stranger arriving from a
@@ -63,26 +64,45 @@ export default async function GuidePage({ params }) {
   // a date. dateModified carries real weight here — these cover regulations
   // that shift, and a revision date is how a crawler tells a page that was
   // re-checked from one merely left up.
+  const url = `https://discoveradelaidekorea.au/guides/${guide.slug}`;
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: guide.title,
     inLanguage: 'ko',
+    // Ties the markup to the canonical address. Without it a crawler that
+    // reached the page by a parameterised URL has nothing saying which
+    // address the article belongs to.
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    // Google's Article guidance treats image as required. The site card is
+    // the same one og:image already points at.
+        // A bare absolute URL string. DEFAULT_OG_IMAGE is an object with a
+    // relative url — right for Next's metadata, wrong for JSON-LD.
+    image: [SITE_IMAGE],
     ...(guide.summary && { description: guide.summary }),
     ...(guide.publishedAt && { datePublished: guide.publishedAt }),
     ...(guide.updatedAt &&
       guide.updatedAt !== guide.publishedAt && { dateModified: guide.updatedAt }),
     ...(guide.category && { articleSection: guide.category.name }),
-    author: { '@type': 'Organization', name: 'DAK — Discover Adelaide Korea' },
-    publisher: { '@type': 'Organization', name: 'DAK — Discover Adelaide Korea' },
+    author: PUBLISHER,
+    publisher: PUBLISHER,
   };
+
+  const breadcrumb = buildBreadcrumb([
+    { name: '홈', path: '/' },
+    { name: '가이드', path: '/guides' },
+    { name: guide.title, path: `/guides/${guide.slug}` },
+  ]);
 
   return (
     <PageShell>
       {/* JSON-LD in the server-rendered body, so it is present without JS. */}
+      {/* One script, two graphs — Google accepts an array and it keeps the
+          document to a single JSON-LD block. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([schema, breadcrumb]) }}
       />
 
       <div className="flex items-center justify-between mb-5">

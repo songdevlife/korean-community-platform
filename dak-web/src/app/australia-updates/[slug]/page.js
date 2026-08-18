@@ -7,6 +7,7 @@ import SaveButton from '@/components/SaveButton';
 import SourceList from '@/components/SourceList';
 import { timeAgo } from '@/utils/date';
 import { DEFAULT_OG_IMAGE } from '@/utils/og';
+import { PUBLISHER, SITE_IMAGE, buildBreadcrumb } from '@/utils/schema';
 import UpdateAdminBar from '@/components/UpdateAdminBar';
 
 /**
@@ -77,25 +78,40 @@ export default async function AustraliaUpdatePage({ params }) {
   // change. Citing the sources makes the relationship 03 MVP 12 requires —
   // that a reader retains access to the original — explicit in the markup as
   // well as in the interface.
+  const url = `https://discoveradelaidekorea.au/australia-updates/${update.slug}`;
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
     headline: update.title,
     inLanguage: 'ko',
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    // A bare absolute URL string. DEFAULT_OG_IMAGE is an object with a
+    // relative url — right for Next's metadata, wrong for JSON-LD.
+    image: [SITE_IMAGE],
     datePublished: update.createdAt,
+    ...(update.updatedAt &&
+      update.updatedAt !== update.createdAt && { dateModified: update.updatedAt }),
     ...(update.koreanSummary && {
       description: update.koreanSummary.replace(/\s+/g, ' ').slice(0, 200),
     }),
     ...(update.category && { articleSection: update.category.name }),
     ...(sources.length > 0 && { citation: sources.map((s) => s.sourceUrl) }),
-    publisher: { '@type': 'Organization', name: 'DAK — Discover Adelaide Korea' },
+    author: PUBLISHER,
+    publisher: PUBLISHER,
   };
+
+  const breadcrumb = buildBreadcrumb([
+    { name: '홈', path: '/' },
+    { name: '호주 소식', path: '/australia-updates' },
+    { name: update.title, path: `/australia-updates/${update.slug}` },
+  ]);
 
   return (
     <PageShell>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([schema, breadcrumb]) }}
       />
 
       <div className="flex items-center justify-between mb-5">
