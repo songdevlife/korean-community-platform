@@ -4290,12 +4290,6 @@ if (!block.value().contains(" ")) {
                 block.value(),
                 g.getFontMetrics(valueFont),
                 textWidth
-        );
-
-        List<String> valueLines = wrapToFit(
-                block.value(),
-                g.getFontMetrics(valueFont),
-                textWidth
         ).stream()
                 .limit(2)
                 .toList();
@@ -5559,15 +5553,15 @@ private List<String> wrapToFit(
             
                 String candidateChar = String.valueOf(word.charAt(i));
             
-                String candidate =
-                        brokenWord.isEmpty()
-                                ? candidateChar
-                                : brokenWord + candidateChar;
-            
-                if (metrics.stringWidth(candidate) <= maxWidth) {
-                    brokenWord.append(candidateChar);
-                    continue;
-                }
+                String characterCandidate =
+                brokenWord.isEmpty()
+                        ? candidateChar
+                        : brokenWord + candidateChar;
+        
+        if (metrics.stringWidth(characterCandidate) <= maxWidth) {
+            brokenWord.append(candidateChar);
+            continue;
+        }
             
                 if (!brokenWord.isEmpty()) {
                     lines.add(brokenWord.toString());
