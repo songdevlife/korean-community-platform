@@ -66,3 +66,5 @@ See `07_Backend_Development_Log.docx` in the project files for step-by-step prog
 response/error envelope, health check). Not yet compiled/verified locally — see note above.
 
 **Next step:** Flyway migration scripts from `04_Database_Design_DAK.docx`, then JPA entities.
+
+<!-- deploy test -->
