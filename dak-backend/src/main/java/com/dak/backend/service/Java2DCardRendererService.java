@@ -4292,10 +4292,23 @@ if (!block.value().contains(" ")) {
                 textWidth
         );
 
+        List<String> valueLines = wrapToFit(
+                block.value(),
+                g.getFontMetrics(valueFont),
+                textWidth
+        ).stream()
+                .limit(2)
+                .toList();
+        
         List<String> noteLines = hasNote
-                ? wrapToFit(block.note(), g.getFontMetrics(noteFont), textWidth)
+                ? wrapToFit(
+                        block.note(),
+                        g.getFontMetrics(noteFont),
+                        textWidth
+                ).stream()
+                        .limit(1)
+                        .toList()
                 : List.of();
-
         // Measure before drawing. Blocks share a height, so a block with no
         // note would otherwise sit against its top edge while the one beside
         // it filled the space — which reads as a block missing its last line.
@@ -5528,11 +5541,45 @@ private List<String> wrapToFit(
         }
 
         if (!currentLine.isEmpty()) {
-            lines.add(currentLine.toString());
-            currentLine.setLength(0);
-        }
-
-        currentLine.append(word);
+                lines.add(currentLine.toString());
+                currentLine.setLength(0);
+            }
+            
+            /*
+             * The word itself is wider than the available box.
+             * This happens easily with long Korean text because Korean
+             * content is not always separated into short whitespace tokens.
+             *
+             * Break the word character-by-character so text can never
+             * extend beyond the box width.
+             */
+            StringBuilder brokenWord = new StringBuilder();
+            
+            for (int i = 0; i < word.length(); i++) {
+            
+                String candidateChar = String.valueOf(word.charAt(i));
+            
+                String candidate =
+                        brokenWord.isEmpty()
+                                ? candidateChar
+                                : brokenWord + candidateChar;
+            
+                if (metrics.stringWidth(candidate) <= maxWidth) {
+                    brokenWord.append(candidateChar);
+                    continue;
+                }
+            
+                if (!brokenWord.isEmpty()) {
+                    lines.add(brokenWord.toString());
+                    brokenWord.setLength(0);
+                }
+            
+                brokenWord.append(candidateChar);
+            }
+            
+            if (!brokenWord.isEmpty()) {
+                currentLine.append(brokenWord);
+            }
     }
 
     if (!currentLine.isEmpty()) {
