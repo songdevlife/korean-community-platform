@@ -43,6 +43,9 @@ public class KakaoSkillController {
 
     private static final int SUMMARY_LENGTH = 70;
 
+    /** Short enough not to wrap on a narrow phone screen. */
+    private static final String DIVIDER = "──────────";
+
     private final DakSearchService dakSearchService;
 
     public KakaoSkillController(DakSearchService dakSearchService) {
@@ -126,43 +129,52 @@ public class KakaoSkillController {
                             다른 단어로 다시 물어보셔도 됩니다.""";
                 }
         
-                StringBuilder sb = new StringBuilder("DAK에서 찾은 내용입니다.\n");
-        
+                StringBuilder sb = new StringBuilder("DAK에서 찾은 내용입니다.");
+
                 boolean updateHeaderWritten = false;
                 boolean guideHeaderWritten = false;
         
                 for (DakSearchResult result : results) {
                     if (result.type() == DakSearchResult.Type.GUIDE && !guideHeaderWritten) {
-                        sb.append("\n[생활 가이드]\n");
+                        sb.append("\n\n").append(DIVIDER).append("\n[생활 가이드]");
                         guideHeaderWritten = true;
                     } else if (result.type() == DakSearchResult.Type.UPDATE && !updateHeaderWritten) {
-                        sb.append("\n[관련 소식]\n");
+                        sb.append("\n\n").append(DIVIDER).append("\n[관련 소식]");
                         updateHeaderWritten = true;
                     }
         
-                    sb.append("\n").append(result.title()).append("\n");
+                    // KakaoTalk collapses consecutive newlines, so a blank line between
+                    // entries does not survive - everything arrives as one dense block.
+                    // A visible rule is the only separator that renders.
+                    sb.append("\n\n▪ ").append(truncate(result.title(), 200));
         
                     String summary = truncate(result.summary(), SUMMARY_LENGTH);
                     if (!summary.isEmpty()) {
-                        sb.append(summary).append("\n");
+                        sb.append("\n").append(summary);
                     }
         
-                    sb.append(result.url()).append("\n");
+                    sb.append("\n").append(result.url());
                 }
         
-                // Guides state the date their facts were checked, and rules change after
-                // publication. Sending someone to the article rather than answering from
-                // it is the point of this stage.
-                sb.append("\n자세한 내용은 링크에서 확인해 주세요.");
-        
-                return sb.toString();
+        // Guides state the date their facts were checked, and rules change after
+        // publication. Sending someone to the article rather than answering from
+        // it is the point of this stage.
+        sb.append("\n\n").append(DIVIDER)
+          .append("\n자세한 내용은 링크에서 확인해 주세요.");
+
+        return sb.toString();
             }
         
             private static String truncate(String text, int max) {
                 if (text == null || text.isBlank()) {
                     return "";
                 }
-                String cleaned = text.strip().replaceAll("\\s+", " ");
+                // \s does not cover the non-breaking space and other Unicode spaces that
+                // arrive in pasted content, which is why a leading space survived strip()
+                // and showed up as an indent on some results but not others.
+                String cleaned = text
+                        .replaceAll("[\\s\\p{Z}\\uFEFF]+", " ")
+                        .strip();
                 return cleaned.length() <= max ? cleaned : cleaned.substring(0, max) + "...";
             }
 
