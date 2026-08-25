@@ -53,6 +53,30 @@ public class DakSearchService {
     private static final int MIN_TERM_LENGTH = 2;
 
     /**
+     * Where a term was found decides how much it counts.
+     *
+     * The repositories match title, summary and body with one LIKE each and
+     * return a flat list, so an article whose title is almost the question
+     * ranked equal with one that mentioned a word once in passing. Two test
+     * questions put the correct guide second behind an unrelated one for exactly
+     * this reason. A title is what an article is about; a body mention is a
+     * coincidence until something else supports it.
+     */
+    private static final int TITLE_WEIGHT = 3;
+    private static final int SUMMARY_WEIGHT = 2;
+    private static final int BODY_WEIGHT = 1;
+
+    /**
+     * A single body mention and nothing else is noise. Asking about rent
+     * returned a news item about driveway scammers, and asking about a bond
+     * returned an energy-company data breach - both scored one, both from a word
+     * appearing once somewhere in the text. A wrong answer delivered confidently
+     * is worse than no answer, so anything that cannot clear a body mention plus
+     * one more signal is dropped.
+     */
+    private static final int MIN_SCORE = 2;
+
+    /**
      * Words that carry no subject: question forms, polite endings, and requests.
      * Left in, they match nothing useful but still cost a query each, and they
      * crowd out the real terms under the MAX_TERMS cap.
@@ -126,14 +150,13 @@ public class DakSearchService {
             // question may be ranked low for any single term, and it can only
             // win on combined score if it was retrieved at all.
             guideService.search(null, term, 0, 5)
-                    .forEach(g -> accumulate(guideHits, toResult(g)));
+                    .forEach(g -> accumulate(guideHits, toResult(g, term)));
 
             Pageable updatePage = PageRequest.of(0, 5,
                     Sort.by(Sort.Direction.DESC, "createdAt"));
             australiaUpdateService.search(null, null, term, updatePage)
-                    .forEach(u -> accumulate(updateHits, toResult(u)));
+                    .forEach(u -> accumulate(updateHits, toResult(u, term)));
         }
-
         List<DakSearchResult> results = new ArrayList<>();
         results.addAll(rankAndCap(guideHits, maxGuides));
         results.addAll(rankAndCap(updateHits, maxUpdates));
@@ -200,11 +223,12 @@ public class DakSearchService {
     }
 
     /**
-     * Adds a hit, or increments the score of one already found.
+     * Adds a hit, or adds its score to one already found.
      *
-     * The score is simply how many distinct terms found this article. An article
-     * matching three terms of a question is more likely to be about that
-     * question than one matching a single term.
+     * Scores accumulate across terms, so an article matching three words of a
+     * question by title outranks one matching a single word by body several
+     * times over. That is the intent: agreement across the whole question is the
+     * strongest signal available without a real relevance model.
      */
     private void accumulate(Map<String, DakSearchResult> hits, DakSearchResult result) {
         DakSearchResult existing = hits.get(result.slug());
@@ -213,41 +237,65 @@ public class DakSearchService {
         } else {
             hits.put(result.slug(), new DakSearchResult(
                     existing.type(), existing.title(), existing.slug(),
-                    existing.summary(), existing.url(), existing.score() + 1));
+                    existing.summary(), existing.url(),
+                    existing.score() + result.score()));
         }
     }
 
     /**
-     * Highest score first. Ties keep insertion order, which is the order the
-     * repositories returned them - newest published first.
+     * Scores where a term was found.
+     *
+     * The repository already decided this article matches; the only question
+     * left is where. Title and summary are checked directly - if neither
+     * contains the term, the repository must have matched on body, which is the
+     * weakest of the three and is what the floor in rankAndCap exists to filter.
+     */
+    private int scoreFor(String term, String title, String summary) {
+        String needle = term.toLowerCase();
+        if (title != null && title.toLowerCase().contains(needle)) {
+            return TITLE_WEIGHT;
+        }
+        if (summary != null && summary.toLowerCase().contains(needle)) {
+            return SUMMARY_WEIGHT;
+        }
+        return BODY_WEIGHT;
+    }
+
+    /**
+     * Highest score first, with anything below the floor discarded.
+     *
+     * Returning fewer results than the cap allows is deliberate. The caller
+     * handles an empty list by pointing at the guide and update indexes, which
+     * is a more useful reply than a confident link to something unrelated.
      */
     private List<DakSearchResult> rankAndCap(Map<String, DakSearchResult> hits, int cap) {
         if (cap <= 0) {
             return List.of();
         }
         return hits.values().stream()
+                .filter(r -> r.score() >= MIN_SCORE)
                 .sorted(Comparator.comparingInt(DakSearchResult::score).reversed())
                 .limit(cap)
                 .toList();
     }
 
-    private DakSearchResult toResult(GuideSummaryResponse g) {
+    private DakSearchResult toResult(GuideSummaryResponse g, String term) {
         return new DakSearchResult(
                 DakSearchResult.Type.GUIDE,
                 g.title(),
                 g.slug(),
                 g.summary(),
                 siteBaseUrl + "/guides/" + g.slug(),
-                1);
+                scoreFor(term, g.title(), g.summary()));
     }
 
-    private DakSearchResult toResult(AustraliaUpdateSummaryResponse u) {
+    private DakSearchResult toResult(AustraliaUpdateSummaryResponse u, String term) {
         return new DakSearchResult(
                 DakSearchResult.Type.UPDATE,
                 u.title(),
                 u.slug(),
                 u.koreanSummary(),
                 siteBaseUrl + "/australia-updates/" + u.slug(),
-                1);
+                scoreFor(term, u.title(), u.koreanSummary()));
     }
 }
