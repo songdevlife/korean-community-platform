@@ -250,7 +250,7 @@ public class DakSearchService {
      * contains the term, the repository must have matched on body, which is the
      * weakest of the three and is what the floor in rankAndCap exists to filter.
      */
-    private int scoreFor(String term, String title, String summary) {
+    private int scoreForGuide(String term, String title, String summary) {
         String needle = term.toLowerCase();
         if (title != null && title.toLowerCase().contains(needle)) {
             return TITLE_WEIGHT;
@@ -258,7 +258,32 @@ public class DakSearchService {
         if (summary != null && summary.toLowerCase().contains(needle)) {
             return SUMMARY_WEIGHT;
         }
+        // Neither field contains it, so the repository matched on body.
         return BODY_WEIGHT;
+    }
+
+    /**
+     * Updates score on title alone.
+     *
+     * The two summary fields are not comparable. A guide's summary is one
+     * sentence stating what the guide is about, so a term appearing there is
+     * about the subject. An update's koreanSummary is a full-paragraph digest of
+     * a news article, which is closer to a guide's body than to its summary -
+     * long enough that common words appear in most of them. That is how a rent
+     * question returned a driveway-scam article and a bond question returned an
+     * energy-company data breach: both matched a single ordinary word buried in
+     * the digest.
+     *
+     * Scoring the summary at zero means an update only appears when the question
+     * matches its headline, which is the one field written to say what the item
+     * is. "조류독감" still returns the bird flu article, because that word is in
+     * the title.
+     */
+    private int scoreForUpdate(String term, String title) {
+        String needle = term.toLowerCase();
+        return (title != null && title.toLowerCase().contains(needle))
+                ? TITLE_WEIGHT
+                : 0;
     }
 
     /**
@@ -286,7 +311,7 @@ public class DakSearchService {
                 g.slug(),
                 g.summary(),
                 siteBaseUrl + "/guides/" + g.slug(),
-                scoreFor(term, g.title(), g.summary()));
+                scoreForGuide(term, g.title(), g.summary()));
     }
 
     private DakSearchResult toResult(AustraliaUpdateSummaryResponse u, String term) {
@@ -296,6 +321,6 @@ public class DakSearchService {
                 u.slug(),
                 u.koreanSummary(),
                 siteBaseUrl + "/australia-updates/" + u.slug(),
-                scoreFor(term, u.title(), u.koreanSummary()));
+                scoreForUpdate(term, u.title()));
     }
 }
