@@ -77,6 +77,23 @@ public class DakSearchService {
     private static final int MIN_SCORE = 2;
 
     /**
+     * A result must score at least this share of the best result to be shown.
+     *
+     * MIN_SCORE is an absolute floor and cannot tell a weak result from a weak
+     * result standing next to a strong one. Asking about breaking a lease scored
+     * the Lease Break guide 9 - three title matches - while a working holiday
+     * guide scored 2 from two ordinary words buried in its body, cleared the
+     * floor, and appeared directly beneath the right answer. When something
+     * matches the question that well, showing a distant second alongside it
+     * makes the good answer look like a guess.
+     *
+     * Relative rather than absolute because question length changes the ceiling:
+     * a one-word question tops out at 3, and a fixed floor high enough to filter
+     * the long case would empty the short one.
+     */
+    private static final double MIN_SCORE_RATIO = 0.5;
+
+    /**
      * Words that carry no subject: question forms, polite endings, and requests.
      * Left in, they match nothing useful but still cost a query each, and they
      * crowd out the real terms under the MAX_TERMS cap.
@@ -297,9 +314,23 @@ public class DakSearchService {
         if (cap <= 0) {
             return List.of();
         }
-        return hits.values().stream()
+
+        List<DakSearchResult> ranked = hits.values().stream()
                 .filter(r -> r.score() >= MIN_SCORE)
                 .sorted(Comparator.comparingInt(DakSearchResult::score).reversed())
+                .toList();
+
+        if (ranked.isEmpty()) {
+            return List.of();
+        }
+
+        // The floor is set by the best result, so it only bites when there is
+        // something clearly better to compare against. A single result, or
+        // several of similar strength, all survive.
+        double floor = ranked.get(0).score() * MIN_SCORE_RATIO;
+
+        return ranked.stream()
+                .filter(r -> r.score() >= floor)
                 .limit(cap)
                 .toList();
     }
