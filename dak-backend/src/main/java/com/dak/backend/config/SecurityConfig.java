@@ -77,6 +77,14 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/guide-categories").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/events", "/api/v1/events/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/rentals", "/api/v1/rentals/**").permitAll()
+
+                // KakaoTalk chatbot skill endpoint. Kakao's servers call this with
+                // no credentials, so it cannot be authenticated. POST only: Kakao
+                // never sends GET, and opening GET would make the skill URL
+                // reachable from a browser address bar. Abuse control belongs in
+                // the controller (rate limiting, payload validation), not here.
+                .requestMatchers(HttpMethod.POST, "/api/v1/kakao/**").permitAll()
+
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
