@@ -41,7 +41,11 @@ public class KakaoSkillController {
     private static final int MAX_GUIDES = 2;
     private static final int MAX_UPDATES = 1;
 
-    private static final int SUMMARY_LENGTH = 70;
+    // KakaoTalk truncates long messages behind a "view all" tap that most people
+    // will not make. Everything below the fold may as well not have been sent,
+    // so the reply is kept short enough to arrive whole.
+    private static final int SUMMARY_LENGTH = 45;
+    private static final int TITLE_LENGTH = 60;
 
     /** Short enough not to wrap on a narrow phone screen. */
     private static final String DIVIDER = "──────────";
@@ -146,7 +150,7 @@ public class KakaoSkillController {
                     // KakaoTalk collapses consecutive newlines, so a blank line between
                     // entries does not survive - everything arrives as one dense block.
                     // A visible rule is the only separator that renders.
-                    sb.append("\n\n▪ ").append(truncate(result.title(), 200));
+                    sb.append("\n\n▪ ").append(truncate(result.title(), TITLE_LENGTH));
         
                     String summary = truncate(result.summary(), SUMMARY_LENGTH);
                     if (!summary.isEmpty()) {
@@ -156,12 +160,8 @@ public class KakaoSkillController {
                     sb.append("\n").append(result.url());
                 }
         
-        // Guides state the date their facts were checked, and rules change after
-        // publication. Sending someone to the article rather than answering from
-        // it is the point of this stage.
-        sb.append("\n\n").append(DIVIDER)
-          .append("\n자세한 내용은 링크에서 확인해 주세요.");
-
+        // No closing line: a visible link needs no instruction to tap it, and
+        // every line spent here is one that pushes a real result below the fold.
         return sb.toString();
             }
         
