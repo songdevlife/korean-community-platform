@@ -27,7 +27,7 @@ const EMPTY = {
 const LISTING_TYPES = [
   { value: 'SHARE_ROOM', label: '방 임대' },
   { value: 'WHOLE_PROPERTY', label: '집 전체' },
-  { value: 'LEASE_TRANSFER', label: '계약 승계' },
+  { value: 'LEASE_TRANSFER', label: '테이크오버' },
   { value: 'STUDENT_ACCOMMODATION', label: '학생 숙소' },
 ];
 

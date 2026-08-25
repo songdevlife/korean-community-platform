@@ -99,11 +99,21 @@ public class DakSearchService {
      * crowd out the real terms under the MAX_TERMS cap.
      */
     private static final Set<String> STOPWORDS = Set.of(
-            "뭐", "뭔가", "무엇", "어떻게", "어떡해", "어디", "언제", "누구", "왜", "얼마",
-            "알려줘", "알려주세요", "가르쳐줘", "해줘", "해주세요", "궁금해", "궁금해요",
-            "있나요", "있어요", "있음", "인가요", "일까요", "되나요", "될까요", "하나요",
-            "그리고", "그런데", "근데", "혹시", "좀", "제발", "please", "the", "and", "for"
-    );
+        "뭐", "뭔가", "무엇", "어떻게", "어떡해", "어디", "언제", "누구", "왜", "얼마",
+        "알려줘", "알려주세요", "가르쳐줘", "해줘", "해주세요", "궁금해", "궁금해요",
+        "있나요", "있어요", "있음", "인가요", "일까요", "되나요", "될까요", "하나요",
+        "그리고", "그런데", "근데", "혹시", "좀", "제발", "please", "the", "and", "for",
+
+        // Taken from how Korean speakers in Adelaide actually end a question
+        // on the local community board, rather than from guesswork. These
+        // appear in hundreds of post titles and carry no subject, but under
+        // the MAX_TERMS cap each one displaces a word that would have found
+        // something.
+        "아시는분", "아시는", "계신가요", "계실까요", "계시나요", "있을까요",
+        "찾습니다", "찾고", "구합니다", "구해요",
+        "문의", "문의드려요", "문의드립니다", "질문", "질문드립니다",
+        "부탁드립니다", "부탁해요", "안녕하세요", "추천", "추천해주세요"
+);
 
     /**
      * Korean is agglutinative: a particle attaches directly to the noun, so
@@ -114,7 +124,32 @@ public class DakSearchService {
      *
      * Longer forms come first so that "에서" is tried before "서".
      */
-    private static final List<String> PARTICLES = List.of(
+    /**
+     * Words the community uses for things DAK's own content calls something else.
+     *
+     * Every entry here is backed by frequency on the local Korean board, not by
+     * guesswork about what people might type. The one that matters most is
+     * 테이크오버: it appears 77 times on the rental board and nowhere in DAK's
+     * content, which describes the same thing as a Lease Assignment. Without
+     * this table, the single most common way of asking about it returns nothing.
+     *
+     * Terms are expanded, never replaced. The word as typed still gets its own
+     * query, because it may well match a title directly.
+     */
+    private static final Map<String, List<String>> SYNONYMS = Map.of(
+        "테이크오버", List.of("lease transfer", "lease assignment", "양도"),
+        "쉐어", List.of("share", "셰어"),
+        "셰어", List.of("share", "쉐어"),
+        "렌트", List.of("rent", "rental"),
+        "독방", List.of("single", "싱글룸"),
+        "싱글룸", List.of("single", "독방"),
+        "인스펙션", List.of("inspection"),
+        "시티", List.of("city", "cbd"),
+        "본드", List.of("bond"),
+        "노티스", List.of("notice")
+);
+
+private static final List<String> PARTICLES = List.of(
             "에서는", "에서도", "으로는", "이라고", "라고", "에서", "에게", "한테",
             "으로", "부터", "까지", "보다", "처럼", "이나", "든지",
             "은", "는", "이", "가", "을", "를", "의", "에", "도", "만", "과", "와", "로"
@@ -163,16 +198,23 @@ public class DakSearchService {
         Map<String, DakSearchResult> updateHits = new LinkedHashMap<>();
 
         for (String term : terms) {
-            // Over-fetch relative to the caps: the best result for the whole
-            // question may be ranked low for any single term, and it can only
-            // win on combined score if it was retrieved at all.
-            guideService.search(null, term, 0, 5)
-                    .forEach(g -> accumulate(guideHits, toResult(g, term)));
+            // Synonyms are searched alongside the term rather than counted
+            // against MAX_TERMS. That cap exists to stop a long sentence firing
+            // a query per word; an alternative spelling of a word already chosen
+            // is not the same thing, and charging it to the same budget would
+            // let one mapped word crowd out the rest of the question.
+            for (String variant : withSynonyms(term)) {
+                // Over-fetch relative to the caps: the best result for the whole
+                // question may be ranked low for any single variant, and it can
+                // only win on combined score if it was retrieved at all.
+                guideService.search(null, variant, 0, 5)
+                        .forEach(g -> accumulate(guideHits, toResult(g, variant)));
 
-            Pageable updatePage = PageRequest.of(0, 5,
-                    Sort.by(Sort.Direction.DESC, "createdAt"));
-            australiaUpdateService.search(null, null, term, updatePage)
-                    .forEach(u -> accumulate(updateHits, toResult(u, term)));
+                Pageable updatePage = PageRequest.of(0, 5,
+                        Sort.by(Sort.Direction.DESC, "createdAt"));
+                australiaUpdateService.search(null, null, variant, updatePage)
+                        .forEach(u -> accumulate(updateHits, toResult(u, variant)));
+            }
         }
         List<DakSearchResult> results = new ArrayList<>();
         results.addAll(rankAndCap(guideHits, maxGuides));
@@ -222,6 +264,24 @@ public class DakSearchService {
         }
 
         return List.copyOf(terms);
+    }
+
+    /**
+     * The term plus any known alternatives for it.
+     *
+     * Scores from all variants land on the same article through accumulate, so a
+     * guide found by both 쉐어 and share scores as strongly as one found by two
+     * different words of the question. That is intended: they are the same word.
+     */
+    private List<String> withSynonyms(String term) {
+        List<String> mapped = SYNONYMS.get(term.toLowerCase());
+        if (mapped == null) {
+            return List.of(term);
+        }
+        List<String> all = new ArrayList<>();
+        all.add(term);
+        all.addAll(mapped);
+        return all;
     }
 
     /**
