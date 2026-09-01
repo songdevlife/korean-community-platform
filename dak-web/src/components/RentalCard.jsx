@@ -4,7 +4,7 @@ import { sized } from '@/utils/image';
 const TYPE_LABELS = {
   SHARE_ROOM: '방 임대',
   WHOLE_PROPERTY: '집 전체',
-  LEASE_TRANSFER: '계약 승계',
+  LEASE_TRANSFER: '테이크오버',
   STUDENT_ACCOMMODATION: '학생 숙소',
 };
 

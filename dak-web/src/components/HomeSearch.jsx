@@ -39,7 +39,7 @@ export default function HomeSearch() {
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           aria-label="Search"
-          className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-border-dark bg-night
+          className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-border-dark bg-nightG
                      text-[16px] md:text-[15px] text-snow
                      placeholder:text-faint placeholder:font-semibold
                      outline-none focus:border-faint transition-colors [color-scheme:dark]"
